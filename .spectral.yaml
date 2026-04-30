@@ -1,0 +1,14 @@
+extends:
+  - "spectral:oas"
+
+# Custom rule overrides per la spec Magware.
+# Documentazione: https://docs.stoplight.io/docs/spectral/01baf06bdd05a-spectral-cli
+rules:
+  # Esempio: rendere obbligatorio il campo `description` su ogni operazione.
+  # operation-description: error
+
+  # Tag obbligatori: ogni endpoint deve avere almeno una tag (per raggruppamento Scalar).
+  operation-tag-defined: error
+
+  # Schema components devono avere description per leggibilità della reference.
+  oas3-unused-component: warn

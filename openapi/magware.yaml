@@ -1,0 +1,76 @@
+openapi: 3.1.0
+info:
+  title: Magware API
+  version: 0.1.0
+  summary: REST API del WMS Magware
+  description: |
+    API REST di **Magware**, il Warehouse Management System sviluppato da
+    [Restore S.r.l.](https://www.re-store.it) dal 2005.
+
+    > **TODO**: questo file è uno skeleton di partenza. Il primo step operativo
+    > è esportare la spec attuale da Stoplight (`api.re-store.it/docs/magware-api`)
+    > e sostituire integralmente questo contenuto. Vedi `CLAUDE.md` → roadmap → Step 0.
+  contact:
+    name: Restore S.r.l.
+    url: https://www.re-store.it
+    email: info@re-store.it
+  license:
+    name: Proprietary — © Restore S.r.l.
+    url: https://www.re-store.it
+  termsOfService: https://www.re-store.it
+servers:
+  - url: https://api.re-store.it/v1
+    description: Production
+tags:
+  - name: TODO
+    description: Placeholder. Sostituire con i tag reali (Inbound, Outbound, Inventory, Returns, ecc.)
+paths: {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Autenticazione tramite **JWT Bearer Token** rilasciato dall'endpoint
+        di autenticazione (TODO: definire path).
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Codice errore applicativo Magware.
+          example: VALIDATION_FAILED
+        message:
+          type: string
+          description: Messaggio leggibile dall'umano.
+          example: Il campo `sku` è obbligatorio.
+        details:
+          type: object
+          description: Dettagli aggiuntivi specifici dell'errore.
+          additionalProperties: true
+  responses:
+    BadRequest:
+      description: Richiesta malformata o validazione fallita.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Token mancante o non valido.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Risorsa non trovata.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+security:
+  - bearerAuth: []
