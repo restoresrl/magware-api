@@ -1,317 +1,79 @@
 openapi: 3.1.0
 info:
   title: Magware API
-  version: "21.11"
-  description: >+
-    ![image](https://i.imgur.com/S8b6o7m.png)
+  version: 1.0.0
+  description: |
+    # Magware API
 
+    The Magware API is a REST-based web service for integrating external Host
+    systems with the Magware Warehouse Management System (WMS). It exposes a
+    standardized interface to manage the full warehouse lifecycle: item master
+    data, inbound goods (ASN), outbound delivery orders, delivery notes,
+    shipments, inventory adjustments and stock queries.
 
-    # Magware API - Comprehensive WMS Integration
+    ## Endpoints
 
+    This reference documents the public **sandbox** endpoint:
+    `https://sandbox.magware.it:9999`. Production URLs are tenant-specific
+    and provided by Restore during customer onboarding.
 
-    Magware API is a comprehensive REST-based web service designed for seamless integration between the Magware WMS
-    (Warehouse Management System) and external Host systems. This API provides a standardized and robust interface for
-    complete warehouse process management.
+    ## Authentication
 
+    Every request requires two headers:
 
-    ## 🎯 Overview
+    - `APIKey` — API key issued by Restore
+    - `owner` — multi-tenant identifier (the customer code)
 
+    Both are mandatory; missing or invalid values return `401 Unauthorized`.
 
-    The Magware API enables businesses to:
+    ## Polling pattern: "List → Details"
 
-    - **Synchronize items** between external systems and the WMS
+    Magware uses a polling-based synchronization model rather than pushing
+    events. Integrators retrieve resources in two phases.
 
-    - **Manage complete workflows** from inbound goods to outbound shipments, including adjustments
-
-    - **Monitor real-time status** of inventory and operations
-
-    - **Automate processes** for receiving, picking, and shipping
-
-
-    ## 🏗️ API Architecture
-
-
-    ### Standardized REST Model
-
-    The API follows REST principles with:
-
-    - **Logically organized endpoints** by resource (items, deliveries, shipments, etc.)
-
-    - **Semantic HTTP methods** (GET, POST, PUT, DELETE)
-
-    - **Standard HTTP status codes** to indicate operation results
-
-    - **JSON format** for all request and response payloads
-
-
-    ### Authentication & Security
-
-    - **API Key** in `APIKey` header for authentication
-
-    - **Owner Code** in `owner` header for multi-tenant isolation
-
-    - **Strict validation** of all input data
-
-
-    ## 📊 Core Operational Flow
-
-
-    ### 1. Item Management
-
-    ```
-
-    Host System → POST /items → Magware WMS
-               ← GET /items/{code} ← 
-               ← PUT /items/{code} ← 
-    ```
-
-
-    ### 2. Receiving Process (ASN - Advanced Shipping Notice)
-
-    ```
-
-    Host → POST /asn → Magware (Create ASN)
-
-    Host ← GET /asn/received ← Magware (List received ASNs)
-
-    Host ← GET /asn/received/{id} ← Magware (Receiving details)
-
-    ```
-
-
-    ### 3. Delivery Order Management
-
-    ```
-
-    Host → POST /deliveries → Magware (New order)
-
-    Host ← GET /deliveries/prepared ← Magware (Prepared orders)
-
-    Host ← GET /deliveries/prepared/{id} ← Magware (Order details)
-
-    ```
-
-
-    ### 4. Shipment Tracking
-
-    ```
-
-    Host → POST /shipments → Magware (New shipment)
-
-    Host ← GET /shipments ← Magware (Shipment list)
-
-    Host ← GET /shipments/{id} ← Magware (Shipment tracking)
-
-    ```
-
-
-
-    ## 🔄 Data Synchronization Mechanism
-
-
-    ### Polling-Based Architecture
-
-    The Magware API implements a **polling-based synchronization model** specifically designed to minimize system
-    overhead while ensuring reliable data consistency. This approach provides optimal performance for warehouse
-    operations where real-time updates are balanced against system stability.
-
-
-    ### "List → Details" Pattern
-
-    To ensure efficient and reliable synchronization, the API implements a standardized "List → Details" pattern:
-
-
-    #### Phase 1: Retrieve List
+    **1. Retrieve list** — a `GET` on the resource collection returns an
+    array of IDs of records ready to be processed:
 
     ```http
-
-    GET /resource_type/status_filter
-
-    ```
-
-    **Examples:**
-
-    ```http
-
     GET /deliveries/prepared
-
     GET /asn/received
-
-    GET /deliveries/cancelled
-
+    GET /delivery_notes/prepared
     ```
 
-
-    **Response:**
+    Response:
 
     ```json
-
-    [
-      12131237,
-      43534534,
-      77539764
-    ]
-
+    [12131237, 43534534, 77539764]
     ```
 
-
-    #### Phase 2: Retrieve Details
-
-    For each ID received in the list:
+    **2. Retrieve details** — for each ID, a `GET` on the detail endpoint
+    returns the full record:
 
     ```http
-
-    GET /resource_type/status_filter/{id}
-
+    GET /deliveries/prepared/{id}
     ```
 
-
-    **Example:**
-
-    ```http
-
-    GET /deliveries/prepared/12131237
-
-    ```
-
-
-    **Detailed response:**
-
-    ```json
-
-    {
-      "id": 12131237,
-      "order_number": "ORD001",
-      "status": "prepared",
-      "items": [...],
-      "shipping_address": {...},
-      "tracking_info": {...}
-    }
-
-    ```
-
-
-    #### Phase 3: Automatic State Management
-
-    After the Host system successfully retrieves the detailed data via the GET call, Magware automatically marks the
-    record as "transmitted" and removes it from subsequent list responses. This ensures:
-
-
-    - **No duplicate processing**: Records are automatically excluded from future list calls once retrieved
-
-    - **Clean state management**: The list endpoint always returns only new/unprocessed items
-
-    - **Simplified integration**: No manual acknowledgment required from the Host system
-
-    - **Idempotent operations**: Repeated detail calls for the same ID remain safe and consistent
-
-
-    <!-- theme: warning -->
-
-    > **Important**: The detail retrieval (GET) call itself serves as the acknowledgment mechanism. Once you
-    successfully fetch the details of a record, it will no longer appear in the list endpoint response.
-
-
-    <!-- theme: warning -->
-
-    > **Error handling**: If the detail call fails (network error, timeout, etc.), the record remains in the list and
-    will be included in subsequent polling cycles, ensuring no data loss.
-
-    ### Recommended Polling Frequency
-
-    - **List endpoints**: Poll every **5 minutes** for optimal balance between timeliness and system load
-
-    - **Detail endpoints**: Fetch immediately after receiving new IDs from list calls
-
-    - **High-priority resources**: Can be polled more frequently (minimum 1 minute intervals)
-
-
-    ### Pattern Benefits
-
-
-    1. **Minimal Overhead**: Lists contain only IDs, dramatically reducing network traffic and processing load
-
-    2. **Reliability**: Granular detail retrieval with per-item error handling
-
-    3. **Scalability**: Support for very large lists without performance degradation
-
-    4. **Consistency**: Consistent state between successive calls prevents data races
-
-    5. **Recovery**: Easy resumption after interruptions with idempotent operations
-
-    6. **Rate-Friendly**: Optimized polling frequency reduces API rate limit consumption
-
-
-    ### Webhook Alternative (Custom Projects)
-
-    For specialized integration requirements, **webhook notifications** are available for custom projects:
-
-
-    - **Event-driven updates**: Immediate notifications for critical state changes
-
-    - **Custom endpoints**: Configure your own webhook URLs for real-time updates
-
-    - **Selective events**: Choose specific events to subscribe to (order prepared, shipment dispatched, etc.)
-
-    - **Retry mechanism**: Automatic retry with exponential backoff for failed webhook deliveries
-
-    - **Security**: Webhook signatures for payload verification
-
-
-    <!-- theme: info -->
-
-    > **Note**: Webhook functionality requires custom project setup and additional configuration. Contact
-    support@re-store.it for webhook implementation details.
-
-
-    ### Polling vs Push
-
-
-    | Aspect | Polling (Standard) | Webhooks (Custom) |
-
-    |--------|-------------------|-------------------|
-
-    | **Latency** | 5-minute intervals | Near real-time |
-
-    | **Reliability** | Very high | High (with fallback) |
-
-    | **Setup Complexity** | Simple | Requires custom config |
-
-    | **System Load** | Optimized | Event-driven |
-
-    | **Cost** | Standard | Custom project pricing |
-
-    | **Use Case** | Most integrations | Critical real-time needs |
-
-
-
-    ### Pattern Benefits
-
-
-    1. **Efficiency**: Lists contain only IDs, reducing network traffic
-
-    2. **Reliability**: Granular detail retrieval with per-item error handling
-
-    3. **Scalability**: Support for very large lists
-
-    4. **Consistency**: Consistent state between successive calls
-
-    5. **Recovery**: Easy resumption after interruptions
-
-
-
-
-    <!-- theme: warning -->
-
-    > ⚠️ **Important**: If you find any inconsistencies or errors in this documentation, please report them immediately
-    to support@re-store.it
-
-
-    <!-- theme: info -->
-
-    > 💡 **Tip**: Always start integration using the Sandbox environment to familiarize yourself with API flows before
-    moving to production.
-
+    The successful detail call **acts as the acknowledgment**: Magware
+    automatically marks the record as transmitted and removes it from the
+    next list response. If the detail call fails (network error, timeout),
+    the record stays in the list and is returned again on the next poll —
+    no data is lost.
+
+    Recommended polling frequency: **5 minutes** for list endpoints, with
+    detail calls fired immediately after IDs are received.
+
+    ## Webhook alternative
+
+    For latency-sensitive use cases, **webhook notifications** are available
+    on a custom-project basis. Webhooks deliver event-driven updates with
+    automatic retry and signature-based payload verification. Contact
+    `support@re-store.it` for setup and pricing.
+
+    ## Reporting issues
+
+    If you find inconsistencies or errors in this documentation, please
+    report them to `support@re-store.it`. We recommend always starting
+    integration on the sandbox before moving to production.
   contact:
     name: Magware Support Team
     url: http://support.re-store.it
@@ -2178,7 +1940,6 @@ components:
       x-internal: false
       required:
         - code
-        - date
         - courier_code
         - weight
         - volume
@@ -2188,12 +1949,6 @@ components:
           type: string
           maxLength: 100
           example: "800123456"
-        date:
-          type: string
-          format: date
-          description: Delivery note date
-          x-stoplight:
-            id: zsdy42k21ndfw
         courier_code:
           type: string
           description: Courier expected for the shipments
@@ -2740,21 +2495,31 @@ components:
   examples: {}
 tags:
   - name: ASN
-    description: ASN
-  - name: Deliveries
-    description: Deliveries
-  - name: Delivery Notes
-    description: Delivery Notes
-  - name: Inventory
-    description: Inventory
+    description: >-
+      Advanced Shipping Notices: notify the WMS that goods are about to arrive at the warehouse, then poll the list of
+      received ASNs and fetch their details.
   - name: Items
-    description: Items
-  - name: Models
-    description: Models
+    description: >-
+      Item master data: create new items, update existing ones, fetch item details, and check existence (single or
+      batch).
+  - name: Deliveries
+    description: >-
+      Outbound delivery orders: create a new delivery order, then poll the lists of prepared and cancelled orders and
+      fetch their details.
+  - name: Delivery Notes
+    description: >-
+      Delivery notes (DDT) generated by the WMS for prepared shipments: list prepared notes and fetch the details of
+      each one.
   - name: Shipments
-    description: Shipments
+    description: >-
+      Shipments dispatched from the warehouse: create a new shipment, list dispatched shipments, and fetch
+      tracking/delivery details.
+  - name: Inventory
+    description: >-
+      Warehouse inventory: query stock levels by item or warehouse-wide, and retrieve adjustments (corrections to stock
+      quantities).
   - name: Utility
-    description: Utility
+    description: Service and diagnostic endpoints (e.g. API version).
 servers:
   - url: https://sandbox.magware.it:9999
     description: Sandbox
