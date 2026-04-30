@@ -17,6 +17,7 @@ L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YA
 - **2026-04-30**: scelto di tenere la spec in un **repo dedicato (`magware-api`)** anziché in una sottocartella di `restore-site`. Motivo: la spec ha un suo ciclo di vita (versioning, contributi futuri, eventualmente CI separata, repo pubblicabile a terze parti) e merita un repository proprio.
 - **2026-04-30**: scelto **OpenAPI 3.1** (e non 3.0) per allineamento a JSON Schema 2020-12 e webhook nativi.
 - **2026-04-30**: file unico (`openapi/magware.yaml`) anziché split multi-file in stile Stoplight. Un solo manutentore + Claude Code lavorano meglio su file unico, diff git puliti.
+- **2026-04-30**: per la pubblicazione su `api.magware.it` (Fase 3) scelta **Opzione A** — sito Astro + `@scalar/api-reference` **dentro questo stesso repo `magware-api`**, deploy autonomo su Cloudflare Workers. Scartata Opzione B (rendering ospitato in `restore-site` con Worker Route). Motivi: spec/rendering/deploy convivono nello stesso ciclo di vita (un push = aggiorna tutto, niente sync cross-repo); isolamento dei deploy (un cambio al sito istituzionale non rompe la API reference e viceversa); coerenza con la decisione strutturale di tenere `magware-api` come repo dedicato e auto-contenuto. Il "Worker Cloudflare in più" da gestire è un costo operativo trascurabile rispetto al coupling cross-repo che B avrebbe introdotto.
 
 ### Stack
 
@@ -94,9 +95,7 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 - [ ] **Fase 0 — Import da Stoplight**. Esportare la spec attuale (`api.re-store.it/docs/magware-api`) come singolo file YAML e sostituire `openapi/magware.yaml`. Verificare che `npm run lint:api` passi pulito.
 - [ ] **Fase 1 — CI verde**. Push iniziale su GitHub, verificare che il workflow `lint.yml` passi.
 - [ ] **Fase 2 — Preview locale Scalar**. Aggiungere `preview/index.html` con CDN Scalar + script `npm run preview` che serve la cartella. Provare il rendering su tutta la spec.
-- [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Decidere fra due opzioni e implementare:
-  - **Opzione A** (consigliata): aggiungere a questo stesso repo un piccolo sito Astro + `@scalar/api-reference` (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers. Tutto in un repo solo, deploy autonomo.
-  - **Opzione B**: integrare il rendering Scalar in `restore-site` e usare un Worker Route `api.magware.it/*` per servire la pagina dedicata da lì. Meno isolamento ma un Worker in meno da gestire.
+- [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Aggiungere a questo stesso repo un piccolo sito **Astro + `@scalar/api-reference`** (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers (deploy autonomo, repo auto-contenuto). Decisione presa il 2026-04-30 — vedi "Storia delle decisioni".
 - [ ] **Fase 4 — DNS `api.magware.it`**. Configurare il record DNS (Cloudflare) per puntare al Worker. Verificare TLS e cache headers.
 - [ ] **Fase 5 — Redirect dal vecchio Stoplight**. Aggiornare `api.re-store.it/docs/magware-api` per fare 301 verso `api.magware.it/...` corrispondenti. Sostituire i link nel sito `restore-site` (oggi presenti in `src/pages/magware.astro` e `docs/02-magware/04-architettura-tecnica.md`).
 - [ ] **Fase 6 — Disattivazione Stoplight**. Cancellare l'abbonamento a fine ciclo di fatturazione, dopo aver verificato che `api.magware.it` funziona e i 301 sono attivi.
