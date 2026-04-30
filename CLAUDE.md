@@ -51,6 +51,13 @@ L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YA
 - Branch model: `main` = spec corrente in produzione. Feature branch + PR per ogni modifica significativa quando ci saranno collaboratori esterni (oggi: si lavora direttamente su `main`).
 - Tag git per ogni release (`vX.Y.Z`) — utile per consumatori che vogliono pinnare a una versione.
 
+### Slash command
+
+Due comandi custom in `.claude/commands/` per allinearsi rapidamente all'inizio di una sessione:
+
+- **`/avvia-fase [Fase N]`** — apre una nuova fase della Roadmap. Riallineamento (CLAUDE.md auto, `git log`/`status`, rilettura Roadmap, segnalazione decisioni aperte), peek leggero alla spec quando esiste, brief 5-10 righe su cosa farò + cosa serve da te + mini-Q&A su decisioni puntuali. Aspetta OK prima di toccare file. Se l'argomento è omesso, propone la prossima Fase non chiusa.
+- **`/riprendi [note opzionali]`** — riprende lavoro a metà di una fase già in corso. Riallineamento più rapido (`git log`/`status`/`branch`, lettura file modificati di recente), brief 3-5 righe su dove eravamo + cosa sto per fare + dubbi bloccanti, poi prosegue senza Q&A ampie.
+
 ---
 
 ## Comandi utili
@@ -82,15 +89,15 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 
 ## Roadmap
 
-- [ ] **Step 0 — Import da Stoplight**. Esportare la spec attuale (`api.re-store.it/docs/magware-api`) come singolo file YAML e sostituire `openapi/magware.yaml`. Verificare che `npm run lint:api` passi pulito.
-- [ ] **Step 1 — CI verde**. Push iniziale su GitHub, verificare che il workflow `lint.yml` passi.
-- [ ] **Step 2 — Preview locale Scalar**. Aggiungere `preview/index.html` con CDN Scalar + script `npm run preview` che serve la cartella. Provare il rendering su tutta la spec.
-- [ ] **Step 3 — Sito di pubblicazione su `api.magware.it`**. Decidere fra due opzioni e implementare:
+- [ ] **Fase 0 — Import da Stoplight**. Esportare la spec attuale (`api.re-store.it/docs/magware-api`) come singolo file YAML e sostituire `openapi/magware.yaml`. Verificare che `npm run lint:api` passi pulito.
+- [ ] **Fase 1 — CI verde**. Push iniziale su GitHub, verificare che il workflow `lint.yml` passi.
+- [ ] **Fase 2 — Preview locale Scalar**. Aggiungere `preview/index.html` con CDN Scalar + script `npm run preview` che serve la cartella. Provare il rendering su tutta la spec.
+- [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Decidere fra due opzioni e implementare:
   - **Opzione A** (consigliata): aggiungere a questo stesso repo un piccolo sito Astro + `@scalar/api-reference` (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers. Tutto in un repo solo, deploy autonomo.
   - **Opzione B**: integrare il rendering Scalar in `restore-site` e usare un Worker Route `api.magware.it/*` per servire la pagina dedicata da lì. Meno isolamento ma un Worker in meno da gestire.
-- [ ] **Step 4 — DNS `api.magware.it`**. Configurare il record DNS (Cloudflare) per puntare al Worker. Verificare TLS e cache headers.
-- [ ] **Step 5 — Redirect dal vecchio Stoplight**. Aggiornare `api.re-store.it/docs/magware-api` per fare 301 verso `api.magware.it/...` corrispondenti. Sostituire i link nel sito `restore-site` (oggi presenti in `src/pages/magware.astro` e `docs/02-magware/04-architettura-tecnica.md`).
-- [ ] **Step 6 — Disattivazione Stoplight**. Cancellare l'abbonamento a fine ciclo di fatturazione, dopo aver verificato che `api.magware.it` funziona e i 301 sono attivi.
+- [ ] **Fase 4 — DNS `api.magware.it`**. Configurare il record DNS (Cloudflare) per puntare al Worker. Verificare TLS e cache headers.
+- [ ] **Fase 5 — Redirect dal vecchio Stoplight**. Aggiornare `api.re-store.it/docs/magware-api` per fare 301 verso `api.magware.it/...` corrispondenti. Sostituire i link nel sito `restore-site` (oggi presenti in `src/pages/magware.astro` e `docs/02-magware/04-architettura-tecnica.md`).
+- [ ] **Fase 6 — Disattivazione Stoplight**. Cancellare l'abbonamento a fine ciclo di fatturazione, dopo aver verificato che `api.magware.it` funziona e i 301 sono attivi.
 
 ### Decisioni rinviate
 
