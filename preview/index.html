@@ -8,12 +8,14 @@
   </head>
   <body>
     <!--
-      Local preview della reference Scalar per openapi/magware.yaml.
+      Local preview della reference Scalar.
       Avviata da `npm run preview`, accessibile su http://localhost:3000/preview/.
-      Lo `data-url` è un path assoluto: il server statico (`npx serve`) gira
-      sulla root del repo e serve la spec come asset.
+      Lo `data-url` punta a `preview/magware.yaml` (file derivato, gitignored)
+      generato dallo script `scripts/inject-changelog.mjs` che inietta il
+      contenuto di CHANGELOG.md come tag fittizio "Changelog" nella spec.
+      La spec sorgente openapi/magware.yaml resta pulita.
     -->
-    <script id="api-reference" data-url="/openapi/magware.yaml"></script>
+    <script id="api-reference" data-url="/preview/magware.yaml"></script>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
   </body>
 </html>

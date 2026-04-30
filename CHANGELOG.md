@@ -1,18 +1,29 @@
 # Changelog
 
-All notable changes to the **Magware API specification** (`openapi/magware.yaml`) are documented here.
+## [Unreleased]
 
-The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and the project follows [Semantic Versioning](https://semver.org/), aligned with the `info.version` field of the spec.
+### Added
 
-## Scope and update policy
+- 7 globally declared tags (`Items`, `ASN`, `Deliveries`, `Delivery Notes`, `Shipments`, `Inventory`, `Utility`) with descriptive content for sidebar navigation in the API reference.
+- Note in `info.description` clarifying that the documented endpoint is the public sandbox; production URLs are tenant-specific and provided by Restore during onboarding.
 
-This file records **only public API contract changes** — anything visible to consumers of `openapi/magware.yaml` or to readers of the reference site at `api.magware.it`: new or removed endpoints, schema and parameter changes, deprecations, breaking changes, corrections to documented examples or descriptions.
+### Changed
 
-It is updated **only when a new release is published** (semver bump + annotated git tag + GitHub release). The decision between `MAJOR`, `MINOR` and `PATCH` is made on a release-by-release basis. Day-to-day, per-commit work is tracked separately in `CHANGELOG-INTERNAL.md` (Italian, contributor-facing); public release entries here are consolidated from that history.
+- Spec format upgraded to OpenAPI **3.1.0** (from 3.0.2), aligning with JSON Schema 2020-12 and native webhooks.
+- Spec serialized as YAML (single file `openapi/magware.yaml`); previously distributed as JSON via Stoplight.
+- Tag order in the sidebar is now logical-by-warehouse-flow: `Items` → `ASN` → `Deliveries` → `Delivery Notes` → `Shipments` → `Inventory` → `Utility` (previously alphabetical).
+- `info.description` rewritten to be concise and tool-agnostic: removed external image dependency, decorative emoji, ASCII flow diagrams, duplicated sections, and the polling-vs-push comparison table. Kept and tightened: overview, authentication, "List → Details" polling pattern, webhook alternative, reporting issues. Length reduced from ~310 to ~76 lines.
 
-<!--
-  No releases yet. The first public release will be cut once the spec
-  revision work is complete; an entry will be added here at that time
-  alongside the semver bump and the annotated git tag (vX.Y.Z).
-  Day-to-day work in progress is tracked in CHANGELOG-INTERNAL.md.
--->
+### Fixed
+
+- `info.license.url` now uses an absolute URI scheme (`https://`).
+- `paths./delivery_notes/{id}.get.operationId` is now unique (previously duplicated with `/deliveries/prepared/{id}`).
+- `delivery_note_details` schema: removed the non-existent `date` property at the root level. The actual backend exposes `preparation_date` (root) and `delivery_note.date` (nested).
+
+### Removed
+
+- Tag `Models` from the global tag declarations: it was declared but not used by any operation.
+
+### Known issues
+
+- The `Prepared delivery` example for `GET /delivery_notes/{id}` includes some root-level fields not declared in the `delivery_note_details` schema (`preparation_date`, `cancelled`, `channel`, nested `delivery_note` object); conversely the schema declares `destination` and `tracking` which are not present in the example. This is a residual spec ↔ backend divergence inherited from the previous Stoplight edition; reconciliation is planned for a future release.

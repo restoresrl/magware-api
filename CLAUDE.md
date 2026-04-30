@@ -53,8 +53,16 @@ L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YA
 - Tag git per ogni release (`vX.Y.Z`) — utile per consumatori che vogliono pinnare a una versione.
 - **Changelog (due file distinti)**:
   - **`CHANGELOG-INTERNAL.md`** (italiano, contributor-facing): aggiornato **ad ogni commit** che tocca `openapi/magware.yaml`. Sotto `## [Unreleased]` si accumulano tutte le modifiche granulari per-commit, con dettagli operativi (motivazioni, alternative scartate, scoperte collaterali). Audience: tu/manutentore/Claude.
-  - **`CHANGELOG.md`** (inglese, public-facing): aggiornato **solo al rilascio di una nuova release**. Al bump di `info.version` (decisione MAJOR/MINOR/PATCH presa di volta in volta in base alle modifiche) si crea una nuova entry `## [X.Y.Z] - YYYY-MM-DD` consolidata in inglese, riassumendo lo stato finale del contratto e ignorando lo storico delle iterazioni intermedie. Subito dopo: tag git annotato `vX.Y.Z` + GitHub release. Niente `[Unreleased]` su questo file. Audience: integratori esterni che consumano la spec.
+  - **`CHANGELOG.md`** (inglese, public-facing): contiene **solo entries di release** (formato Keep a Changelog), niente testo introduttivo o di "scope" (le spiegazioni vivono qui in CLAUDE.md). Le entries partono da `### Added / Changed / Deprecated / Removed / Fixed / Security / Known issues` (h3), raggruppate sotto `## [X.Y.Z] - YYYY-MM-DD` (h2) per ogni release. Mentre la prossima release è in lavorazione si usa `## [Unreleased]` in alto, che al rilascio viene rinominato nella versione semver definitiva (`## [X.Y.Z] - YYYY-MM-DD`). Le voci sono **consolidate in inglese**, asciutte, release-level: descrivono lo stato finale del contratto, non lo storico delle iterazioni intermedie (quello sta nell'internal). Audience: integratori esterni che consumano la spec.
+  - **Quando bumpare semver**: la decisione MAJOR/MINOR/PATCH si prende caso per caso al momento del rilascio in base al contenuto di `[Unreleased]`. Il rilascio comprende: bump `info.version` + bump `package.json.version` + rinomina `## [Unreleased]` in `## [X.Y.Z] - YYYY-MM-DD` nel public, tag git annotato `vX.Y.Z` + GitHub release.
+  - **Iniezione nel sito**: `scripts/inject-changelog.mjs` appende il contenuto del public CHANGELOG.md alla `info.description` come sezione `## Changelog`, così la reference su `api.magware.it` mostra il changelog come ultima parte della homepage. Il CHANGELOG-INTERNAL non viene mai mostrato pubblicamente.
   - In entrambi i file: **solo cambi al contratto pubblico** (endpoint, schema, parametri, response, esempi/description). Tooling/CI/CLAUDE.md/slash command restano fuori, tracciati solo nel `git log`.
+
+### Build step: iniezione del CHANGELOG nella reference
+
+`scripts/inject-changelog.mjs` legge `CHANGELOG.md` (public, EN) e lo inietta come `description` di un tag fittizio `Changelog` nella spec, scrivendo il risultato in `preview/magware.yaml` (file derivato, gitignored). La spec sorgente `openapi/magware.yaml` resta pulita: la fonte di verità del changelog è `CHANGELOG.md`.
+
+Lo script viene invocato automaticamente da `npm run preview` tramite l'hook `prepreview` di npm. In Fase 3 (sito Astro) lo stesso script sarà riusato dal build del sito.
 
 ### Slash command
 
@@ -88,7 +96,7 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 3. **Spec valida prima del commit**. Mai committare se `npm run lint:api` segnala errori. I warning si possono valutare caso per caso.
 4. **Niente endpoint inventati**. Se manca informazione su un endpoint (path, schema, esempi), inserisci un `TODO` esplicito nel YAML e segnalalo a Carlo. Non riempire con dati plausibili-ma-falsi.
 5. **Coerenza dei nomi**. Path in kebab-case (`/shipping-orders`), proprietà degli schema in camelCase (`createdAt`), enum in UPPER_SNAKE_CASE quando rappresentano costanti di dominio.
-6. **Aggiorna `CHANGELOG-INTERNAL.md` ad ogni modifica della spec**. Qualsiasi modifica a `openapi/magware.yaml` va riflessa in `CHANGELOG-INTERNAL.md` (italiano) sotto `## [Unreleased]`, nello stesso commit, con le categorie standard (`Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`). Solo cambi al contratto pubblico. Modifiche a tooling/repo/CI/CLAUDE.md non vanno qui (restano nel `git log`). Il `CHANGELOG.md` (inglese, public) **non si tocca per-commit**: viene aggiornato solo al rilascio di una nuova release con bump semver e tag git.
+6. **Aggiorna `CHANGELOG-INTERNAL.md` ad ogni modifica della spec**. Qualsiasi modifica a `openapi/magware.yaml` va riflessa in `CHANGELOG-INTERNAL.md` (italiano) sotto `## [Unreleased]`, nello stesso commit, con le categorie standard (`Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`). Solo cambi al contratto pubblico. Modifiche a tooling/repo/CI/CLAUDE.md non vanno qui (restano nel `git log`). Il `CHANGELOG.md` (inglese, public) si aggiorna in modo consolidato sotto `## [Unreleased]` quando il cambio è user-facing significativo (le iterazioni minori restano solo nell'internal); al rilascio `[Unreleased]` viene rinominato nella versione semver definitiva.
 7. **Mantieni questo file aggiornato**. Se vengono prese decisioni strutturali (es. split multi-file, cambio di tooling, attivazione di un generatore client SDK), aggiorna `CLAUDE.md` nello stesso commit.
 
 ---

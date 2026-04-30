@@ -35,6 +35,7 @@ pnpm-debug.log*
 dist/
 .cache/
 .parcel-cache/
+preview/magware.yaml
 
 # --- Tooling cache ---
 .eslintcache
