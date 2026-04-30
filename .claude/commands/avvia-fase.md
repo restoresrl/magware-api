@@ -3,7 +3,7 @@ description: Avvia una fase del progetto magware-api (Fase 0, Fase 1, …)
 argument-hint: "[Fase N]"
 ---
 
-Lavoriamo sul progetto **magware-api** (spec OpenAPI 3.1 delle API REST di Magware, Restore S.r.l. — file unico `openapi/magware.yaml`, lint Spectral, pubblicazione finale su `api.magware.it` via Scalar).
+Lavoriamo sul progetto **magware-api**. Lo scopo primario del progetto è **migliorare qualità, chiarezza, coerenza e fruibilità della spec OpenAPI delle API REST di Magware** (e farla evolvere quando l'API si arricchisce di nuove funzioni). La pubblicazione su `api.magware.it` via Scalar è il canale di consumo, non lo scopo. Stella polare per ogni decisione sulla spec: chiarezza per gli integratori, non solo "is it valid OpenAPI". Vedi `CLAUDE.md` → "Scopo primario" per il dettaglio.
 
 Per riallinearti, in quest'ordine:
 

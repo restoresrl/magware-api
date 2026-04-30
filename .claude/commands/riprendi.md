@@ -3,7 +3,7 @@ description: Riprendi il lavoro a metà di una fase già avviata su magware-api
 argument-hint: "[note opzionali sul punto di ripresa]"
 ---
 
-Riprendiamo il progetto **magware-api** (spec OpenAPI 3.1 delle API REST di Magware, file unico `openapi/magware.yaml`, pubblicazione su `api.magware.it`).
+Riprendiamo il progetto **magware-api**. Ricorda: lo scopo primario è **migliorare qualità ed evolvere la spec OpenAPI**, non semplicemente pubblicarla. Stella polare per le modifiche alla spec: chiarezza/coerenza/completezza per gli integratori (vedi `CLAUDE.md` → "Scopo primario").
 
 Per riallinearti, in quest'ordine:
 

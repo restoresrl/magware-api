@@ -6,9 +6,19 @@
 
 ## Contesto del progetto
 
-**magware-api** è il repository sorgente delle **API REST di Magware**, il WMS di [Restore S.r.l.](https://www.re-store.it).
+### Scopo primario — leggere prima di tutto
 
-L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YAML. Da qui parte sia il lint/validazione automatica (Spectral) sia la pubblicazione finale come API reference interattiva su **`api.magware.it`** (rendering tramite Scalar).
+`magware-api` è il repository in cui Restore S.r.l. **cura la specifica OpenAPI delle API REST di Magware** (il WMS di [Restore](https://www.re-store.it)) come prodotto a sé stante. Lo scopo primario di questo repo, e del coinvolgimento di Claude Code, **non è la pubblicazione tecnica** della reference — pure necessaria — **ma il lavoro continuo di miglioramento qualitativo della spec e la sua evoluzione** quando l'API si arricchisce di nuove funzioni.
+
+Concretamente, "miglioramento qualitativo" significa: struttura e tassonomia coerenti, descrizioni chiare e utili agli integratori, esempi completi e veritieri, naming uniforme, `required`/`nullable`/default corretti, gestione errori coerente, individuazione e risoluzione di incongruenze e disallineamenti spec ↔ backend reale.
+
+La pubblicazione finale su **`api.magware.it`** (Scalar self-hosted, in sostituzione del precedente Stoplight) è il **canale di consumo** di questo lavoro per gli integratori esterni — un effetto, non lo scopo. Le fasi 0-6 della Roadmap (import, CI, preview, sito, DNS, redirect, dismissione Stoplight) sono lavoro infrastrutturale **al servizio** dello scopo primario; la Fase 2bis (revisione qualitativa della spec) è invece la **prima espressione concreta** dello scopo primario stesso.
+
+**Stella polare per ogni decisione sulla spec**: chiarezza e fruibilità per chi integra. Non basta che sia OpenAPI valido (lo verifica Spectral); deve essere comprensibile, completo, coerente.
+
+### Inquadramento tecnico
+
+L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YAML. Da qui parte sia il lint/validazione automatica (Spectral) sia la pubblicazione finale come API reference interattiva su `api.magware.it` (rendering tramite Scalar).
 
 ### Storia delle decisioni
 
@@ -18,6 +28,7 @@ L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YA
 - **2026-04-30**: scelto **OpenAPI 3.1** (e non 3.0) per allineamento a JSON Schema 2020-12 e webhook nativi.
 - **2026-04-30**: file unico (`openapi/magware.yaml`) anziché split multi-file in stile Stoplight. Un solo manutentore + Claude Code lavorano meglio su file unico, diff git puliti.
 - **2026-04-30**: per la pubblicazione su `api.magware.it` (Fase 3) scelta **Opzione A** — sito Astro + `@scalar/api-reference` **dentro questo stesso repo `magware-api`**, deploy autonomo su Cloudflare Workers. Scartata Opzione B (rendering ospitato in `restore-site` con Worker Route). Motivi: spec/rendering/deploy convivono nello stesso ciclo di vita (un push = aggiorna tutto, niente sync cross-repo); isolamento dei deploy (un cambio al sito istituzionale non rompe la API reference e viceversa); coerenza con la decisione strutturale di tenere `magware-api` come repo dedicato e auto-contenuto. Il "Worker Cloudflare in più" da gestire è un costo operativo trascurabile rispetto al coupling cross-repo che B avrebbe introdotto.
+- **2026-05-01**: cristallizzato lo **scopo primario** del progetto (vedi sezione "Scopo primario" in cima): **revisione qualitativa ed evoluzione della spec OpenAPI**, non semplicemente "uscire da Stoplight". Le fasi 0-2 e 3-6 della roadmap sono lavoro infrastrutturale al servizio di questo scopo. Aggiunta in roadmap la **Fase 2bis — Revisione qualitativa della spec** come fase a sé stante (iterativa, dialogica, si chiude quando Carlo dichiara "soddisfatto"), prima espressione concreta dello scopo primario. Da qui in poi ogni decisione di prodotto sulla spec (modifiche di struttura, naming, esempi, descrizioni, breaking change) viene presa avendo come stella polare la qualità e fruibilità per gli integratori — non solo "is it valid OpenAPI".
 - **2026-04-30**: `api.magware.it` resta dedicato **esclusivamente** alla spec pubblica di Magware. Niente multi-tenancy, niente portale unificato di clienti custom. I 5 progetti API custom oggi presenti su Stoplight sono "morti" e moriranno con Stoplight in Fase 6 (no migrazione). Per **progetti custom futuri**: ogni cliente avrà un sottodominio dedicato `clienteX-api.re-store.it` (single-level, non `api.clienteX.re-store.it` per evitare complicazioni con cert wildcard di secondo livello), con repo privato dedicato `magware-clienteX-api` clonato dal template di questo repo. Auth per-cliente (Cloudflare Access se serve gating, oppure pubblico) decisa caso per caso. Scartate: piattaforme SaaS dedicate (ReadMe/Mintlify/nuovo Stoplight) per evitare lock-in vendor analogo a quello da cui usciamo oggi; portale unificato `customers.magware.it/clienteX/` per non mescolare il branding Magware con API non-Magware. Il pattern scala a costo marginale ~0 (clone repo + deploy Worker + CNAME) anche per più clienti, e si attiverà quando arriverà il primo progetto custom reale.
 
 ### Stack
@@ -108,6 +119,17 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 - [x] **Fase 0bis — Decisioni editoriali sulla spec importata**. Lingua mantenuta inglese; tag descriptions riscritte + tag `Models` inutilizzato rimosso; `info.description` ridotta da ~310 a ~76 righe (rimosse imgur image, emoji, ASCII diagram, sezioni duplicate); server URL invariato (sandbox `:9999` unico, nota onboarding production aggiunta); fix esempio `Prepared delivery` con rimozione property `date` dallo schema (chiarito che backend ha `preparation_date` non `date` al root). Tutto il lavoro è in `[Unreleased]` del `CHANGELOG-INTERNAL.md`; nessuna release pubblica ancora — il primo bump semver + tag git `vX.Y.Z` + entry consolidata sul `CHANGELOG.md` pubblico avverrà al termine della revisione complessiva della spec.
 - [x] **Fase 1 — CI verde**. Workflow `.github/workflows/lint.yml` verde su tutti i push da `afc0dc6` in poi.
 - [x] **Fase 2 — Preview locale Scalar**. Aggiunto `preview/index.html` con Scalar via CDN (`@scalar/api-reference`) + script `npm run preview` che serve la root del repo via `npx serve` su porta 3000. Reference accessibile su `http://localhost:3000/preview/`, fa fetch della spec da `/openapi/magware.yaml`. Sanity check OK.
+- [ ] **Fase 2bis — Revisione qualitativa della spec** (prima espressione concreta dello scopo primario del progetto — vedi sezione "Scopo primario"). Lavoro **iterativo e dialogico** su `openapi/magware.yaml` per migliorare qualità, chiarezza, coerenza e fruibilità per gli integratori. Non è un check meccanico (quello lo fa già Spectral): è il giudizio di prodotto di Carlo in dialogo con Claude. Si chiude quando Carlo dichiara "soddisfatto" della qualità raggiunta. Track espliciti che la compongono (non si spuntano singolarmente, sono solo guida per non dimenticare aree):
+  1. **Struttura e tassonomia** — organizzazione di tag, raggruppamenti, ordine di lettura, eventuali endpoint/schema fuori posto.
+  2. **Naming** — coerenza dei path (kebab-case), parametri, nomi di schema, nomi di property, valori di enum.
+  3. **Descrizioni** — `summary` e `description` di operation, parametri, schema, property: chiarezza, utilità per l'integratore, niente boilerplate.
+  4. **Mandatory / nullable / default** — verifica `required` arrays, gestione di campi opzionali, valori di default sensati, `nullable` (3.1: `type` union) corretto.
+  5. **Esempi e response** — `examples` significativi e veritieri per ogni operation, allineamento esempio ↔ schema, esempi di errore.
+  6. **Errori** — coerenza di response codes, struttura unica di payload errore, mappatura tra codici di errore applicativi e HTTP status.
+  7. **Coerenza spec ↔ backend reale** — risoluzione delle `Known issues` di Fase 0+0bis (es. campi `preparation_date` / `cancelled` / `channel` / `delivery_note` nell'esempio `Prepared delivery` non dichiarati nello schema), e individuazione di altri disallineamenti analoghi.
+
+  L'output di ogni track va in `CHANGELOG-INTERNAL.md` (per-commit, IT) e — al rilascio finale — consolidato in `CHANGELOG.md` (release-level, EN). La Fase 2bis non blocca la Fase 3: si può lavorare in parallelo sul sito Astro mentre la spec viene revisionata.
+
 - [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Aggiungere a questo stesso repo un piccolo sito **Astro + `@scalar/api-reference`** (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers (deploy autonomo, repo auto-contenuto). Decisione presa il 2026-04-30 — vedi "Storia delle decisioni".
 - [ ] **Fase 4 — DNS `api.magware.it`**. Configurare il record DNS (Cloudflare) per puntare al Worker. Verificare TLS e cache headers.
 - [ ] **Fase 5 — Redirect dal vecchio Stoplight**. Aggiornare `api.re-store.it/docs/magware-api` per fare 301 verso `api.magware.it/...` corrispondenti. Sostituire i link nel sito `restore-site` (oggi presenti in `src/pages/magware.astro` e `docs/02-magware/04-architettura-tecnica.md`).

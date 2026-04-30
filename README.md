@@ -1,14 +1,14 @@
 # magware-api
 
-Spec sorgente delle **API REST di Magware** — il WMS di [Restore S.r.l.](https://www.re-store.it).
+Repository in cui [Restore S.r.l.](https://www.re-store.it) **cura la specifica OpenAPI delle API REST di Magware** (WMS) come prodotto a sé stante.
 
-La spec è scritta in **OpenAPI 3.1** (YAML) e mantenuta in questo repository come unica fonte di verità. Sostituisce l'editing precedente su [Stoplight](https://stoplight.io), che viene dismesso.
+Lo scopo primario non è la pubblicazione tecnica — pure necessaria — ma il lavoro continuo di **miglioramento qualitativo della spec** (struttura, descrizioni, esempi, naming, coerenza spec ↔ backend) e la **sua evoluzione** quando l'API si arricchisce di nuove funzioni.
 
-La pubblicazione finale avverrà su **`api.magware.it`** come API reference interattiva, renderizzata con [**Scalar**](https://scalar.com).
+La spec è scritta in **OpenAPI 3.1** (YAML, file unico `openapi/magware.yaml`) ed è la fonte di verità unica. La pubblicazione finale avverrà su **`api.magware.it`** come API reference interattiva renderizzata con [**Scalar**](https://scalar.com), in sostituzione della precedente edizione [Stoplight](https://stoplight.io) che verrà dismessa.
 
 ## Stato
 
-Repository **appena creato** (2026-04-30). Lo skeleton OpenAPI in `openapi/magware.yaml` è un placeholder valido — il primo step operativo è **esportare la spec attuale da Stoplight** (`api.re-store.it/docs/magware-api`) e sostituire il contenuto.
+Spec importata da Stoplight, lint Spectral pulito, preview locale Scalar funzionante. La revisione qualitativa della spec (Fase 2bis della roadmap) è il prossimo grosso blocco di lavoro; in parallelo si svilupperà il sito di pubblicazione (Fase 3). Per il dettaglio operativo e le decisioni storiche vedere `CLAUDE.md`.
 
 ## Struttura
 
@@ -38,15 +38,15 @@ npm run check            # tutti i check (lint + format) — usato in CI
 
 ### Preview locale
 
-Verrà aggiunta in Step 2 della roadmap: una pagina `preview/index.html` che carica `openapi/magware.yaml` e lo renderizza con Scalar via CDN. Servita in locale con `npx http-server -p 4000` per avere un'anteprima fedele a quello che apparirà su `api.magware.it`.
+```bash
+npm run preview          # genera preview/magware.yaml (CHANGELOG iniettato) e serve la root su :3000
+```
+
+Reference accessibile su `http://localhost:3000/preview/`.
 
 ## Pubblicazione
 
-Pipeline pianificata (non ancora attiva):
-
-1. **Edit** della spec in questo repo → push/PR → CI (`spectral lint` + format check)
-2. **Merge** su `main`
-3. **Deploy** su `api.magware.it` — soluzione candidata: piccolo sito Astro + Scalar in questo stesso repo, deployato su Cloudflare Workers. Decisione finale rinviata allo Step 3 della roadmap (vedi `CLAUDE.md`).
+Pipeline pianificata (vedi roadmap completa in `CLAUDE.md`): sito Astro + Scalar nello stesso repo, deploy su Cloudflare Workers, dominio `api.magware.it`.
 
 ## Licenza
 
