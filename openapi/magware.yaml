@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Magware API
-  version: 1.0.0
+  version: 0.1.0
   description: |
     # Magware API
 
@@ -2494,14 +2494,14 @@ components:
       description: Unique identification number of Magware object
   examples: {}
 tags:
-  - name: ASN
-    description: >-
-      Advanced Shipping Notices: notify the WMS that goods are about to arrive at the warehouse, then poll the list of
-      received ASNs and fetch their details.
   - name: Items
     description: >-
       Item master data: create new items, update existing ones, fetch item details, and check existence (single or
       batch).
+  - name: ASN
+    description: >-
+      Advanced Shipping Notices: notify the WMS that goods are about to arrive at the warehouse, then poll the list of
+      received ASNs and fetch their details.
   - name: Deliveries
     description: >-
       Outbound delivery orders: create a new delivery order, then poll the lists of prepared and cancelled orders and
