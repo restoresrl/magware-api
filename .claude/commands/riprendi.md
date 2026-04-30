@@ -20,4 +20,4 @@ Brief breve (3-5 righe) su:
 - Cosa stai per fare ora
 - Eventuali domande puntuali bloccanti (decisione di tooling, contenuto mancante della spec, asset, ecc.)
 
-Poi prosegui. Niente Q&A ampie a meno che tu non incontri davvero un dubbio bloccante. Ricorda: niente push automatici, niente endpoint inventati, `npm run check` deve passare pulito prima del commit.
+Poi prosegui. Niente Q&A ampie a meno che tu non incontri davvero un dubbio bloccante. Ricorda: niente push automatici, niente endpoint inventati, `npm run check` deve passare pulito prima del commit. Se stai toccando `openapi/magware.yaml`, aggiorna `CHANGELOG.md` (sezione `[Unreleased]`) nello stesso commit.

@@ -50,6 +50,7 @@ L'unica fonte di verità è `openapi/magware.yaml` — un file OpenAPI 3.1 in YA
 - La spec ha un campo `info.version` (semver). Bump al merge di breaking changes.
 - Branch model: `main` = spec corrente in produzione. Feature branch + PR per ogni modifica significativa quando ci saranno collaboratori esterni (oggi: si lavora direttamente su `main`).
 - Tag git per ogni release (`vX.Y.Z`) — utile per consumatori che vogliono pinnare a una versione.
+- **Changelog**: ogni modifica alla spec va annotata in `CHANGELOG.md` (formato Keep a Changelog) sotto `## [Unreleased]`, nello stesso commit della modifica. Al momento del bump di `info.version` e del tag git `vX.Y.Z`, le voci `[Unreleased]` vengono promosse a una nuova sezione versionata. Documenta solo cambi al contratto pubblico (endpoint, schema, parametri, response, esempi); tooling/CI/CLAUDE.md restano fuori.
 
 ### Slash command
 
@@ -83,7 +84,8 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 3. **Spec valida prima del commit**. Mai committare se `npm run lint:api` segnala errori. I warning si possono valutare caso per caso.
 4. **Niente endpoint inventati**. Se manca informazione su un endpoint (path, schema, esempi), inserisci un `TODO` esplicito nel YAML e segnalalo a Carlo. Non riempire con dati plausibili-ma-falsi.
 5. **Coerenza dei nomi**. Path in kebab-case (`/shipping-orders`), proprietà degli schema in camelCase (`createdAt`), enum in UPPER_SNAKE_CASE quando rappresentano costanti di dominio.
-6. **Mantieni questo file aggiornato**. Se vengono prese decisioni strutturali (es. split multi-file, cambio di tooling, attivazione di un generatore client SDK), aggiorna `CLAUDE.md` nello stesso commit.
+6. **Aggiorna `CHANGELOG.md` ad ogni modifica della spec**. Qualsiasi modifica a `openapi/magware.yaml` deve essere riflessa in `CHANGELOG.md` sotto `## [Unreleased]`, nello stesso commit, usando le categorie standard (`Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`). Solo cambi al contratto pubblico — modifiche a tooling/repo/CI/CLAUDE.md non vanno qui (restano nel `git log`).
+7. **Mantieni questo file aggiornato**. Se vengono prese decisioni strutturali (es. split multi-file, cambio di tooling, attivazione di un generatore client SDK), aggiorna `CLAUDE.md` nello stesso commit.
 
 ---
 
