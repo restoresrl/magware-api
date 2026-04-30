@@ -1,76 +1,2762 @@
 openapi: 3.1.0
 info:
   title: Magware API
-  version: 0.1.0
-  summary: REST API del WMS Magware
-  description: |
-    API REST di **Magware**, il Warehouse Management System sviluppato da
-    [Restore S.r.l.](https://www.re-store.it) dal 2005.
+  version: "21.11"
+  description: >+
+    ![image](https://i.imgur.com/S8b6o7m.png)
 
-    > **TODO**: questo file è uno skeleton di partenza. Il primo step operativo
-    > è esportare la spec attuale da Stoplight (`api.re-store.it/docs/magware-api`)
-    > e sostituire integralmente questo contenuto. Vedi `CLAUDE.md` → roadmap → Step 0.
+
+    # Magware API - Comprehensive WMS Integration
+
+
+    Magware API is a comprehensive REST-based web service designed for seamless integration between the Magware WMS
+    (Warehouse Management System) and external Host systems. This API provides a standardized and robust interface for
+    complete warehouse process management.
+
+
+    ## 🎯 Overview
+
+
+    The Magware API enables businesses to:
+
+    - **Synchronize items** between external systems and the WMS
+
+    - **Manage complete workflows** from inbound goods to outbound shipments, including adjustments
+
+    - **Monitor real-time status** of inventory and operations
+
+    - **Automate processes** for receiving, picking, and shipping
+
+
+    ## 🏗️ API Architecture
+
+
+    ### Standardized REST Model
+
+    The API follows REST principles with:
+
+    - **Logically organized endpoints** by resource (items, deliveries, shipments, etc.)
+
+    - **Semantic HTTP methods** (GET, POST, PUT, DELETE)
+
+    - **Standard HTTP status codes** to indicate operation results
+
+    - **JSON format** for all request and response payloads
+
+
+    ### Authentication & Security
+
+    - **API Key** in `APIKey` header for authentication
+
+    - **Owner Code** in `owner` header for multi-tenant isolation
+
+    - **Strict validation** of all input data
+
+
+    ## 📊 Core Operational Flow
+
+
+    ### 1. Item Management
+
+    ```
+
+    Host System → POST /items → Magware WMS
+               ← GET /items/{code} ← 
+               ← PUT /items/{code} ← 
+    ```
+
+
+    ### 2. Receiving Process (ASN - Advanced Shipping Notice)
+
+    ```
+
+    Host → POST /asn → Magware (Create ASN)
+
+    Host ← GET /asn/received ← Magware (List received ASNs)
+
+    Host ← GET /asn/received/{id} ← Magware (Receiving details)
+
+    ```
+
+
+    ### 3. Delivery Order Management
+
+    ```
+
+    Host → POST /deliveries → Magware (New order)
+
+    Host ← GET /deliveries/prepared ← Magware (Prepared orders)
+
+    Host ← GET /deliveries/prepared/{id} ← Magware (Order details)
+
+    ```
+
+
+    ### 4. Shipment Tracking
+
+    ```
+
+    Host → POST /shipments → Magware (New shipment)
+
+    Host ← GET /shipments ← Magware (Shipment list)
+
+    Host ← GET /shipments/{id} ← Magware (Shipment tracking)
+
+    ```
+
+
+
+    ## 🔄 Data Synchronization Mechanism
+
+
+    ### Polling-Based Architecture
+
+    The Magware API implements a **polling-based synchronization model** specifically designed to minimize system
+    overhead while ensuring reliable data consistency. This approach provides optimal performance for warehouse
+    operations where real-time updates are balanced against system stability.
+
+
+    ### "List → Details" Pattern
+
+    To ensure efficient and reliable synchronization, the API implements a standardized "List → Details" pattern:
+
+
+    #### Phase 1: Retrieve List
+
+    ```http
+
+    GET /resource_type/status_filter
+
+    ```
+
+    **Examples:**
+
+    ```http
+
+    GET /deliveries/prepared
+
+    GET /asn/received
+
+    GET /deliveries/cancelled
+
+    ```
+
+
+    **Response:**
+
+    ```json
+
+    [
+      12131237,
+      43534534,
+      77539764
+    ]
+
+    ```
+
+
+    #### Phase 2: Retrieve Details
+
+    For each ID received in the list:
+
+    ```http
+
+    GET /resource_type/status_filter/{id}
+
+    ```
+
+
+    **Example:**
+
+    ```http
+
+    GET /deliveries/prepared/12131237
+
+    ```
+
+
+    **Detailed response:**
+
+    ```json
+
+    {
+      "id": 12131237,
+      "order_number": "ORD001",
+      "status": "prepared",
+      "items": [...],
+      "shipping_address": {...},
+      "tracking_info": {...}
+    }
+
+    ```
+
+
+    #### Phase 3: Automatic State Management
+
+    After the Host system successfully retrieves the detailed data via the GET call, Magware automatically marks the
+    record as "transmitted" and removes it from subsequent list responses. This ensures:
+
+
+    - **No duplicate processing**: Records are automatically excluded from future list calls once retrieved
+
+    - **Clean state management**: The list endpoint always returns only new/unprocessed items
+
+    - **Simplified integration**: No manual acknowledgment required from the Host system
+
+    - **Idempotent operations**: Repeated detail calls for the same ID remain safe and consistent
+
+
+    <!-- theme: warning -->
+
+    > **Important**: The detail retrieval (GET) call itself serves as the acknowledgment mechanism. Once you
+    successfully fetch the details of a record, it will no longer appear in the list endpoint response.
+
+
+    <!-- theme: warning -->
+
+    > **Error handling**: If the detail call fails (network error, timeout, etc.), the record remains in the list and
+    will be included in subsequent polling cycles, ensuring no data loss.
+
+    ### Recommended Polling Frequency
+
+    - **List endpoints**: Poll every **5 minutes** for optimal balance between timeliness and system load
+
+    - **Detail endpoints**: Fetch immediately after receiving new IDs from list calls
+
+    - **High-priority resources**: Can be polled more frequently (minimum 1 minute intervals)
+
+
+    ### Pattern Benefits
+
+
+    1. **Minimal Overhead**: Lists contain only IDs, dramatically reducing network traffic and processing load
+
+    2. **Reliability**: Granular detail retrieval with per-item error handling
+
+    3. **Scalability**: Support for very large lists without performance degradation
+
+    4. **Consistency**: Consistent state between successive calls prevents data races
+
+    5. **Recovery**: Easy resumption after interruptions with idempotent operations
+
+    6. **Rate-Friendly**: Optimized polling frequency reduces API rate limit consumption
+
+
+    ### Webhook Alternative (Custom Projects)
+
+    For specialized integration requirements, **webhook notifications** are available for custom projects:
+
+
+    - **Event-driven updates**: Immediate notifications for critical state changes
+
+    - **Custom endpoints**: Configure your own webhook URLs for real-time updates
+
+    - **Selective events**: Choose specific events to subscribe to (order prepared, shipment dispatched, etc.)
+
+    - **Retry mechanism**: Automatic retry with exponential backoff for failed webhook deliveries
+
+    - **Security**: Webhook signatures for payload verification
+
+
+    <!-- theme: info -->
+
+    > **Note**: Webhook functionality requires custom project setup and additional configuration. Contact
+    support@re-store.it for webhook implementation details.
+
+
+    ### Polling vs Push
+
+
+    | Aspect | Polling (Standard) | Webhooks (Custom) |
+
+    |--------|-------------------|-------------------|
+
+    | **Latency** | 5-minute intervals | Near real-time |
+
+    | **Reliability** | Very high | High (with fallback) |
+
+    | **Setup Complexity** | Simple | Requires custom config |
+
+    | **System Load** | Optimized | Event-driven |
+
+    | **Cost** | Standard | Custom project pricing |
+
+    | **Use Case** | Most integrations | Critical real-time needs |
+
+
+
+    ### Pattern Benefits
+
+
+    1. **Efficiency**: Lists contain only IDs, reducing network traffic
+
+    2. **Reliability**: Granular detail retrieval with per-item error handling
+
+    3. **Scalability**: Support for very large lists
+
+    4. **Consistency**: Consistent state between successive calls
+
+    5. **Recovery**: Easy resumption after interruptions
+
+
+
+
+    <!-- theme: warning -->
+
+    > ⚠️ **Important**: If you find any inconsistencies or errors in this documentation, please report them immediately
+    to support@re-store.it
+
+
+    <!-- theme: info -->
+
+    > 💡 **Tip**: Always start integration using the Sandbox environment to familiarize yourself with API flows before
+    moving to production.
+
   contact:
-    name: Restore S.r.l.
-    url: https://www.re-store.it
-    email: info@re-store.it
+    name: Magware Support Team
+    url: http://support.re-store.it
+    email: support@re-store.it
   license:
-    name: Proprietary — © Restore S.r.l.
+    name: (C) 2022-2025 Restore SRL
     url: https://www.re-store.it
-  termsOfService: https://www.re-store.it
-servers:
-  - url: https://api.re-store.it/v1
-    description: Production
-tags:
-  - name: TODO
-    description: Placeholder. Sostituire con i tag reali (Inbound, Outbound, Inventory, Returns, ecc.)
-paths: {}
+paths:
+  /items:
+    post:
+      summary: Create a new item
+      operationId: post-items
+      responses:
+        "201":
+          $ref: "#/components/responses/success"
+        "400":
+          $ref: "#/components/responses/error"
+      description: Create an item to be managed by the warehouse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/item"
+            examples:
+              example-1:
+                value:
+                  code: 1234567890AB
+                  description: string
+                  um: PCS
+                  note: string
+                  warehouse_category:
+                    code: "001"
+                    description: Clothing
+                  owner_category:
+                    code: "001"
+                    description: T-shirt
+                  variants:
+                    - code: "10"
+                      description: XXS
+                      quantity: 1
+                      barcodes:
+                        - "1234567890123"
+                      volume: 0.12
+                      weight: 1.23
+                      shippable: false
+                  lot_control: false
+                  serial_number_control: false
+                  expiration_date_control: false
+                  expedition_date_control: true
+                  expedition_days: 0
+                  obsolete: false
+        description: ""
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - Items
+  /items/{item_code}:
+    summary: Path used to manage a single item.
+    description: >-
+      The REST endpoint/path used to get, update, and delete single instances of an `item`.  This path contains `GET`,
+      `PUT`, and `DELETE` operations used to perform the get, update, and delete tasks, respectively.
+    put:
+      requestBody:
+        description: Updated item details
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/item"
+        required: true
+      operationId: updateitem
+      summary: Update an item
+      description: Updates an existing item
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          $ref: "#/components/responses/success"
+        "400":
+          $ref: "#/components/responses/error"
+      tags:
+        - Items
+    parameters:
+      - name: item_code
+        description: A unique identifier for a `item`, URL encoded.
+        schema:
+          type: string
+          example: 123456789AB
+        in: path
+        required: true
+    get:
+      summary: Get item details
+      operationId: get-items-item_code
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/item"
+        "404":
+          description: Not Found
+      tags:
+        - Items
+      description: Returns item details
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      x-internal: false
+    head:
+      summary: Check if one item exists
+      operationId: head-items-item_code
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      description: Check if an item exists
+      tags:
+        - Items
+  /items/exists:
+    post:
+      summary: Check if items exists
+      tags:
+        - Items
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  x-stoplight:
+                    id: gzxdj8ajzk1xg
+                  type: object
+                  properties:
+                    item:
+                      $ref: "#/components/schemas/item_reference"
+                    exists:
+                      type: boolean
+                      x-stoplight:
+                        id: 8hse0a2nyv3as
+                      description: true if item/variant exists in Magware
+              examples:
+                Example 1:
+                  value:
+                    - item:
+                        code: A000010003
+                        variant: "01"
+                      exists: true
+                    - item:
+                        code: A000010003
+                        variant: "02"
+                      exists: true
+                    - item:
+                        code: "123456789"
+                        variant: "-"
+                      exists: false
+        "400":
+          $ref: "#/components/responses/error"
+        "500":
+          description: Internal Server Error
+      operationId: post-items-exists
+      x-stoplight:
+        id: pksnoht4p5ol8
+      description: "Checks whether one or more items/variants exists in Magware.  \r\nAccepts a list of item/variant code and returns their existence status. \r\nIt is intended to validate item presence before performing \r\nfurther operations (e.g., inventory updates, order processing, etc.)."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/item_reference"
+            examples:
+              Example 1:
+                value:
+                  - code: A000010003
+                    variant: "01"
+                  - code: A000010003
+                    variant: "02"
+                  - code: "123456789"
+                    variant: "-"
+  /asn:
+    post:
+      summary: Create a new ASN
+      operationId: post-asn
+      responses:
+        "201":
+          $ref: "#/components/responses/success"
+        "400":
+          $ref: "#/components/responses/error"
+      description: Create a new Advanced Shipping Notice that must be received by the warehouse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/asn_creation"
+            examples: {}
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - ASN
+    parameters: []
+  /asn/received:
+    get:
+      summary: Get received ASN list
+      operationId: get-asn-received
+      description: Return a list of received ASNs, not yet acquired by Host system
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          $ref: "#/components/responses/error"
+      tags:
+        - ASN
+    parameters: []
+  /asn/received/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 55134833
+        description: Unique identification number of a Magware object
+    get:
+      summary: Get received ASN details
+      operationId: get-asn-received-id
+      description: "Return information about a received ASN and mark it as acquired by host system "
+      responses:
+        "200":
+          description: Received ASN details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/asn_received_details"
+              examples:
+                example-1:
+                  value:
+                    asn_code: ASN123456
+                    supplier: F0001
+                    delivery_note:
+                      code: D123456AB
+                      date: "2021-06-09"
+                    movement_type:
+                      code: P001
+                      description: Purchase from supplier
+                    arrival_date: "2021-06-24"
+                    stock_date: "2021-06-26"
+                    items:
+                      - row_number: 1
+                        item:
+                          code: A000010003
+                          variant: "01"
+                        expected_quantity: 5
+                        received_quantity: 4
+                        stock_type: AVAIL
+                        reference: "5000123401"
+                      - row_number: 1
+                        item:
+                          code: A000010003
+                          variant: "01"
+                        expected_quantity: 5
+                        received_quantity: 1
+                        stock_type: FLAWED
+                        reference: "5000123401"
+                      - row_number: 2
+                        item:
+                          code: A000010005
+                          variant: "01"
+                        expected_quantity: 7
+                        received_quantity: 7
+                        stock_type: AVAIL
+                        reference: "5000123402"
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - ASN
+  /deliveries:
+    post:
+      summary: Create a new delivery order
+      operationId: post-orders
+      responses:
+        "201":
+          $ref: "#/components/responses/success"
+        "400":
+          $ref: "#/components/responses/error"
+      description: Create a delivery order that must be fulfilled by the warehouse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/delivery_creation"
+            examples: {}
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - Deliveries
+    parameters: []
+  /deliveries/prepared:
+    get:
+      summary: Get prepared delivery list
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-deliveries-prepared
+      description: Return a list of prepared deliveries not yet acquired by Host
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - Deliveries
+    parameters: []
+  /deliveries/prepared/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 55134833
+        description: Unique identification number of Magware object
+    get:
+      summary: Get prepared delivery details
+      operationId: get-deliveries-prepared-id
+      description: Return detailed information about a prepared delivery order and mark it as acquired by host system
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          description: Prepared delivery details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/delivery_prepared_details"
+              examples:
+                Prepared delivery:
+                  value:
+                    code: "800123456"
+                    preparation_date: "2019-08-24T14:15:22Z"
+                    cancelled: false
+                    courier_code: DHLEXP
+                    delivery_note:
+                      code: DEL00000001
+                      date: "2021-06-24"
+                    weight: 12
+                    volume: 0.45
+                    channel: WS
+                    packages:
+                      - code: XU12345
+                        alternative_code: "11112222333344445555"
+                        weight: 12
+                        volume: 0.45
+                        package_type: T1
+                        items:
+                          - row_number: 1
+                            item:
+                              code: A000010003
+                              variant: "01"
+                            quantity: 1
+                            reference: aaabbbcc
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+            multipart/form-data:
+              schema:
+                type: object
+                properties: {}
+            text/html:
+              schema:
+                type: object
+                properties: {}
+        "400":
+          $ref: "#/components/responses/error"
+      tags:
+        - Deliveries
+  /deliveries/cancelled:
+    get:
+      summary: Get cancelled delivery list
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-deliveries-cancelled
+      description: Return a list of cancelled (not fulfilled) deliveries not yet acquired by Host
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      tags:
+        - Deliveries
+    parameters: []
+  /deliveries/cancelled/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 55134833
+        description: Unique identification number of Magware object
+    get:
+      summary: Get cancelled delivery details
+      operationId: get-deliveries-cancelled-id
+      description: Return information about a cancelled (not fulfilled) delivery order and mark it as acquired by host system
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          description: Cancelled delivery details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/delivery_cancelled_details"
+              examples:
+                Cancelled delivery:
+                  value:
+                    code: "800123456"
+                    cancellation_date: "2019-08-24T14:15:22Z"
+                    channel: WS
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+            multipart/form-data:
+              schema:
+                type: object
+                properties: {}
+            text/html:
+              schema:
+                type: object
+                properties: {}
+        "400":
+          $ref: "#/components/responses/error"
+      tags:
+        - Deliveries
+  /shipments:
+    post:
+      summary: Create shipment
+      tags:
+        - Shipments
+      responses:
+        "201":
+          $ref: "#/components/responses/success"
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: post-shipments
+      x-stoplight:
+        id: t2twrx28mwg9u
+      description: "Create a shipment for one or more deliveries to the same destination.\r\nThis API allows you to unlock the shipment of a delivery when the `ship_on_demand` flag is set to `true`. \r\n\r\nAdditionally, it enables the transmission of the delivery note code and date, and related documents in PDF format.\r\n\r\nYou can also use this API to group multiple deliveries into a single shipment, provided that all deliveries share the same destination, billing details, and shipping conditions.\r\n"
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/shipment_creation"
+            examples: {}
+    get:
+      summary: Get shipments list
+      operationId: get-shippments
+      description: Return a list of shipments not yet acquired by Host
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          $ref: "#/components/responses/error"
+      tags:
+        - Shipments
+    parameters: []
+  /shipments/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      summary: Get shipment details
+      responses:
+        "200":
+          description: Shipment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/shipment_details"
+              examples:
+                example-1:
+                  value:
+                    code: "000001"
+                    date: "2021-06-24"
+                    time: 14:15:22Z
+                    courier_code: DHLEXP
+                    deliveries:
+                      - delivery_code: DEL000001
+                        tracking_code: AWB000001
+                        tracking_link: https://example.com/123456
+                        tracking_id: 123456789
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-shipments-shipment_code
+      description: "Return detailed information about a shipment and mark it as acquired by host system "
+      tags:
+        - Shipments
+      parameters:
+        - $ref: "#/components/parameters/owner"
+  /adjustments:
+    get:
+      summary: Get adjustments list
+      tags:
+        - Inventory
+      operationId: get-adjiustments
+      description: Return a list of adjustments not yet acquired by Host
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          description: Bad Request
+    parameters: []
+  /adjustments/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      summary: Get adjustment details
+      tags:
+        - Inventory
+      responses:
+        "200":
+          description: Adjustment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/adjustment"
+              examples:
+                Example 1:
+                  value:
+                    code: "800123456"
+                    reason_code: LACK
+                    sign: +
+                    date: "2019-08-24"
+                    time: 14:15:22Z
+                    items:
+                      - item:
+                          code: A000010003
+                          variant: "01"
+                        stock_type: string
+                        quantity: 12
+                        lot_number: string
+                        serial_number: string
+                        expiration_date: "2019-08-24"
+                        expedition_date: "2019-08-24"
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-adjustments-id
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      description: Return adjustment details
+  /stocks:
+    get:
+      summary: Get warehouse stock
+      tags:
+        - Inventory
+      responses:
+        "200":
+          description: List of items with stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                    example: "2021-06-26"
+                  time:
+                    type: string
+                    format: time
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/item_stock"
+              examples:
+                example-1:
+                  value:
+                    date: "2021-06-26"
+                    time: 14:15:22Z
+                    items:
+                      - item:
+                          code: A000010003
+                          variant: "01"
+                        stock_type: AVAIL
+                        quantity: 12
+                      - item:
+                          code: A000010005
+                          variant: "01"
+                        stock_type: FLAWED
+                        quantity: 2
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-stock
+      description: Return list of items that currently have stock in the warehouse
+      parameters:
+        - $ref: "#/components/parameters/owner"
+    parameters: []
+  /stocks/{item_code}:
+    parameters:
+      - schema:
+          type: string
+        name: item_code
+        in: path
+        required: true
+        description: Item code of product to query
+    get:
+      summary: Get item stock
+      tags:
+        - Inventory
+      responses:
+        "200":
+          description: Item stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                    example: "2021-06-23"
+                  time:
+                    type: string
+                    format: time
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/item_stock"
+              examples:
+                example-1:
+                  value:
+                    date: "2021-06-23"
+                    time: 14:15:22Z
+                    item:
+                      item:
+                        code: A000010003
+                        variant: "01"
+                      stock_type: AVAIL
+                      quantity: 12
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-stocks-id
+      description: Return current stock of a single item
+      parameters:
+        - $ref: "#/components/parameters/owner"
+  /delivery_notes/prepared:
+    parameters: []
+    get:
+      summary: Get prepared delivery notes list
+      responses:
+        "200":
+          $ref: "#/components/responses/object_list"
+        "400":
+          $ref: "#/components/responses/error"
+      operationId: get-delivery-notes-prepared
+      description: Return a list of prepared delivery notes not yet acquired by Host
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      x-stoplight:
+        id: u8kt9tm497eh1
+      tags:
+        - Delivery Notes
+  /delivery_notes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 55134833
+        description: Unique identification number of Magware object
+    get:
+      summary: Get delivery note details
+      operationId: get-delivery-notes-id
+      description: Return detailed information about a delivery note and mark it as acquired by host system
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          description: Delivery note details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/delivery_note_details"
+              examples:
+                Prepared delivery:
+                  value:
+                    code: "800123456"
+                    preparation_date: "2019-08-24T14:15:22Z"
+                    cancelled: false
+                    courier_code: DHLEXP
+                    delivery_note:
+                      code: DEL00000001
+                      date: "2021-06-24"
+                    weight: 12
+                    volume: 0.45
+                    channel: WS
+                    packages:
+                      - code: XU12345
+                        alternative_code: "11112222333344445555"
+                        weight: 12
+                        volume: 0.45
+                        package_type: T1
+                        items:
+                          - row_number: 1
+                            item:
+                              code: A000010003
+                              variant: "01"
+                            quantity: 1
+                            reference: aaabbbcc
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+            multipart/form-data:
+              schema:
+                type: object
+                properties: {}
+            text/html:
+              schema:
+                type: object
+                properties: {}
+        "400":
+          $ref: "#/components/responses/error"
+      x-stoplight:
+        id: zlaabrqz3iqdv
+      tags:
+        - Delivery Notes
+  /version:
+    get:
+      summary: Version
+      tags:
+        - Utility
+      operationId: get-version
+      description: Usefull for simple testing response from web service
+      parameters:
+        - $ref: "#/components/parameters/owner"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ""
+                type: object
+                properties:
+                  product:
+                    type: string
+                    minLength: 1
+                  version:
+                    type: string
+                    minLength: 1
+                required:
+                  - product
+                  - version
+                x-examples:
+                  example-1:
+                    product: Magware 2021
+                    version: 21.0.0.391
+              examples:
+                example-1:
+                  value:
+                    product: Magware 2021
+                    version: 21.0.0.391
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: |
-        Autenticazione tramite **JWT Bearer Token** rilasciato dall'endpoint
-        di autenticazione (TODO: definire path).
   schemas:
-    Error:
+    item:
+      description: Model for items
       type: object
+      x-examples:
+        clothing:
+          value:
+            code: 1234567890AB
+            description: A red pretty t-shirt
+            um: PCS
+            note: string
+            warehouse_category:
+              code: "001"
+              description: Clothing
+            owner_category:
+              code: "001"
+              description: T-shirt
+            variants:
+              - code: "10"
+                description: XXS
+                quantity: 1
+                barcodes:
+                  - "1234567890123"
+                volume: 0.12
+                weight: 1.23
+                shippable: false
+            lot_control: false
+            serial_number_control: false
+            expiration_date_control: false
+            expedition_date_control: true
+            expedition_days: 0
+            obsolete: false
+        food&beverage:
+          value:
+            code: 545664789AB
+            description: Red wine
+            um: PCS
+            note: Some notes
+            warehouse_category:
+              code: "002"
+              description: Food & beverage
+            owner_category:
+              code: "056"
+              description: Wine
+            variants:
+              - code: "-"
+                description: "-"
+                quantity: 1
+                barcodes:
+                  - "9874561320"
+                volume: 0.012
+                weight: 1.05
+                shippable: false
+            lot_control: true
+            serial_number_control: false
+            expiration_date_control: true
+            expedition_date_control: true
+            expedition_days: 365
+            obsolete: false
+        clothing multi-variant:
+          value:
+            code: 1234567890AB
+            description: A red pretty t-shirt
+            um: PCS
+            note: string
+            warehouse_category:
+              code: "001"
+              description: Clothing
+            owner_category:
+              code: "001"
+              description: T-shirt
+            variants:
+              - code: "10"
+                description: XXS
+                quantity: 1
+                barcodes:
+                  - "1234567890123"
+                volume: 0.12
+                weight: 1.23
+                shippable: false
+              - code: "20"
+                description: XS
+                quantity: 1
+                barcodes:
+                  - "1234567890124"
+                volume: 0.12
+                weight: 1.23
+                shippable: false
+              - code: "30"
+                description: S
+                quantity: 1
+                barcodes:
+                  - "1234567890125"
+                volume: 0.12
+                weight: 1.23
+                shippable: false
+              - code: "40"
+                description: M
+                quantity: 1
+                barcodes:
+                  - "1234567890126"
+                volume: 0.12
+                weight: 1.23
+                shippable: false
+            lot_control: false
+            serial_number_control: false
+            expiration_date_control: false
+            expedition_date_control: true
+            expedition_days: 0
+            obsolete: false
+      title: Item model
+      x-internal: false
       required:
         - code
-        - message
+        - description
+        - um
+        - variants
       properties:
         code:
           type: string
-          description: Codice errore applicativo Magware.
-          example: VALIDATION_FAILED
-        message:
+          description: Code (SKU) of the item. Must be unique for a owner
+          maxLength: 200
+          example: 1234567890AB
+        description:
           type: string
-          description: Messaggio leggibile dall'umano.
-          example: Il campo `sku` è obbligatorio.
-        details:
+          description: Default description of item
+          maxLength: 255
+        um:
+          type: string
+          description: Unit of measure of item (tipically selling unit)
+          maxLength: 5
+          example: PCS
+        note:
+          type: string
+          maxLength: 255
+        warehouse_category:
           type: object
-          description: Dettagli aggiuntivi specifici dell'errore.
-          additionalProperties: true
+          description: Item category defined by warehouse. It can be shared with items of other owners
+          properties:
+            code:
+              type: string
+              maxLength: 20
+              example: "001"
+            description:
+              type: string
+              maxLength: 255
+              example: Clothing
+        owner_category:
+          type: object
+          description: Item category defined by the owner. It's a specific categorization define by the owner of the item
+          properties:
+            code:
+              type: string
+              maxLength: 50
+              example: "001"
+            description:
+              type: string
+              maxLength: 255
+              example: T-shirt
+        variants:
+          type: array
+          description: >-
+            Variants represent different physical configurations of an item. For example, variants can be used to
+            indicate different packaging of a food product or different sizes of an item of clothing
+          items:
+            type: object
+            minProperties: 1
+            required:
+              - code
+              - description
+            properties:
+              code:
+                type: string
+                maxLength: 50
+                example: "10"
+                description: Variant code. Must be unique in the item
+              description:
+                type: string
+                maxLength: 255
+                example: XXS
+                description: Variant description
+              quantity:
+                description: >-
+                  Indicate the phisical quantity in UoM of the item of the variant. Usually it is 1. If greater than 1
+                  it indicates a variant that contains a multiple of the sales unit (example 12 pieces pack).If less
+                  than 1 it indicates products managed in decimal units and the necessary precision (for example a
+                  fabric with quantity variant = 0.001 and UoM = m2 indicates that the fabric is managed in m2 with an
+                  accuracy of one cm2)
+                example: 1
+                format: decimal
+                type: number
+                minimum: 0.001
+                default: 1
+              barcodes:
+                type: array
+                uniqueItems: true
+                description: Array of barcodes that uniquely identify the item and the variant. Must be unique for the owner
+                items:
+                  type: string
+                  maxLength: 50
+                  example: "1234567890123"
+              volume:
+                type: number
+                format: decimal
+                description: Variant/package volume in m3. If specified must be greater than 0
+                example: 0.01
+                default: 0.01
+                minimum: 0.000001
+              weight:
+                type: number
+                format: decimal
+                description: Gross weight of the variant/package in Kg. If specified must be greater than 0
+                example: 0.123456
+                default: 0.1
+                minimum: 0.000001
+              shippable:
+                type: boolean
+                description: "Indicate that the item package is shippable without need of an external package or re-packaging "
+                default: false
+              default:
+                type: boolean
+                default: false
+                description: Indicate that this variant is the default one for the item
+              quantity_per_package:
+                type: integer
+                x-stoplight:
+                  id: pulh3mi4fv9ip
+                default: 1
+                example: 12
+                description: Default quantity per package, expressed in number of whole variants per package.
+                minimum: 1
+        lot_control:
+          type: boolean
+          default: false
+          description: Indicate that lot control and tracking is needed for the item
+        serial_number_control:
+          type: boolean
+          default: false
+          description: Indicate that serial number control and tracking is needed for the item
+        expiration_date_control:
+          type: boolean
+          default: false
+          description: Indicate that expiration date control and tracking is needed for the item
+        expedition_date_control:
+          type: boolean
+          description: Indicate that expedition date control and tracking is needed for the item
+          default: false
+        expedition_days:
+          type: integer
+          description: Number of days for expedition date calculation from expiration date
+        obsolete:
+          type: boolean
+          description: Indicate that the item is obsolete and no more managed in the future
+          default: false
+        variable_weight:
+          type: boolean
+          description: Item with variable weights, for example meat, fish and cheese
+          default: false
+        variable_volume:
+          type: boolean
+          description: Item with variable volume
+          default: false
+        can_be_added_to_deliveries:
+          type: boolean
+          x-stoplight:
+            id: sy3prnz5ems0j
+          description: "Indicates whether the item can be included as additional, unplanned goods in the deliveries. This field allows the system to flag items that are not originally scheduled for the delivery but can still be added as extras if needed.\r\n\r\n- `true`: The item can be added as an extra to the delivery.\r\n- `false`: The item cannot be added as an extra to the delivery."
+          default: false
+        supplier:
+          type: object
+          description: Supplier item information
+          required:
+            - code
+            - name
+          properties:
+            code:
+              type: string
+              description: Supplier identification code
+            name:
+              type: string
+              description: Supplier name
+            item:
+              type: object
+              description: "Supplier item code "
+              required:
+                - code
+                - decription
+              properties:
+                code:
+                  type: string
+                  description: "Supplier item code "
+                decription:
+                  type: string
+                  description: Supplier item description
+        custom_attributes:
+          $ref: "#/components/schemas/custom_attributes"
+    asn_creation:
+      title: ASN creation model
+      type: object
+      description: Model for creation of ASN
+      x-internal: false
+      x-examples:
+        Example 1:
+          code: ASN123456
+          date: "2021-06-01"
+          arrival_date: "2021-06-10"
+          stock_type: AVAIL
+          supplier:
+            code: F0001
+            name: Supplier srl
+          delivery_note:
+            code: D123456AB
+            date: "2021-06-09"
+          movement_type:
+            code: P001
+            description: Purchase from supplier
+          contents:
+            - row_number: 1
+              item:
+                code: A000010003
+                variant: "01"
+              quantity: 5
+              reference: "5000123401"
+              custom_attributes:
+                - name: a_custom_string
+                  value: lorem ipsum doloret
+          attributes:
+            - name: a_custom_string
+              value: lorem ipsum doloret
+      required:
+        - code
+        - supplier
+        - movement_type
+        - contents
+      properties:
+        code:
+          type: string
+          description: ASN identification code, assigned by ERP
+          maxLength: 100
+          example: ASN123456
+        date:
+          type: string
+          format: date
+          example: "2021-06-01"
+        arrival_date:
+          type: string
+          format: date
+          example: "2021-06-10"
+        stock_type:
+          type: string
+          maxLength: 50
+          description: Logical warehouse
+          example: AVAIL
+        supplier:
+          description: Supplier information. If not exists it will be created
+          oneOf:
+            - type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  maxLength: 50
+                  description: Supplier code
+                  example: F0001
+                name:
+                  type: string
+                  maxLength: 100
+                  description: Supplier name
+                  example: Supplier srl
+            - type: string
+        delivery_note:
+          type: object
+          description: Delivery note/packing list identification
+          required:
+            - code
+            - date
+          properties:
+            code:
+              type: string
+              maxLength: 100
+              example: D123456AB
+            date:
+              type: string
+              format: date
+              example: "2021-06-09"
+        movement_type:
+          $ref: "#/components/schemas/movement_type"
+        contents:
+          description: |-
+            Contents of the ASN.
+            Can be either a list of items or a list of packages that contains multiple items
+          type: array
+          items:
+            type: object
+            required:
+              - row_number
+              - item
+              - quantity
+            properties:
+              row_number:
+                type: integer
+                description: Row number, unique for an ASN
+                minimum: 1
+                example: 1
+              item:
+                $ref: "#/components/schemas/item_reference"
+              quantity:
+                type: number
+                format: decimal
+                description: Quantity expected to be received
+                example: 5
+              reference:
+                type: string
+                maxLength: 255
+                description: Reference information returned to Host
+                example: "5000123401"
+              lot_number:
+                type: string
+                x-stoplight:
+                  id: d619r4y9oczpy
+              serial_number:
+                type: string
+                x-stoplight:
+                  id: ts3w7r4kqxc4u
+              expiration_date:
+                type: string
+                x-stoplight:
+                  id: ge7ycs5x7apxx
+                format: date
+              expedition_date:
+                type: string
+                x-stoplight:
+                  id: nv3x2emi78rm6
+                format: date
+              custom_attributes:
+                $ref: "#/components/schemas/custom_attributes"
+        custom_attributes:
+          $ref: "#/components/schemas/custom_attributes"
+    asn_received_details:
+      title: ASN received model
+      type: object
+      description: ASN received detail model
+      x-internal: false
+      x-examples:
+        Example 1:
+          asn_code: string
+          supplier: string
+          delivery_note:
+            code: string
+            date: "2019-08-24"
+          movement_type:
+            code: P001
+            description: Purchase from supplier
+          arrival_date: "2019-08-24"
+          stock_date: "2019-08-24"
+          items:
+            - row_number: 1
+              item:
+                code: A000010003
+                variant: "01"
+              expected_quantity: 0
+              received_quantity: 0
+              stock_type: string
+              reference: string
+              lot_number: string
+              serial_number: string
+              expiration_date: "2019-08-24"
+              expedition_date: "2019-08-24"
+      required:
+        - asn_code
+        - supplier
+        - arrival_date
+        - stock_date
+      properties:
+        asn_code:
+          type: string
+          description: ASN identification code, assigned by ERP
+          maxLength: 100
+        supplier:
+          type: string
+          maxLength: 50
+          description: Supplier code. Must be unique
+        delivery_note:
+          type: object
+          description: Delivery note/packing list identification
+          properties:
+            code:
+              type: string
+              maxLength: 100
+            date:
+              type: string
+              format: date
+        movement_type:
+          $ref: "#/components/schemas/movement_type"
+        arrival_date:
+          type: string
+          format: date
+        stock_date:
+          type: string
+          format: date
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - row_number
+              - item
+              - expected_quantity
+              - received_quantity
+            properties:
+              row_number:
+                type: integer
+                description: Row number, unique for an ASN
+                minimum: 1
+              item:
+                $ref: "#/components/schemas/item_reference"
+              expected_quantity:
+                type: number
+                format: decimal
+              received_quantity:
+                type: number
+                format: decimal
+              stock_type:
+                type: string
+                maxLength: 50
+              reference:
+                type: string
+                maxLength: 255
+              lot_number:
+                type: string
+                maxLength: 15
+                description: Lot number, if enabled for the item
+              serial_number:
+                type: string
+                maxLength: 25
+                description: Serial number, if enabled for the item
+              expiration_date:
+                type: string
+                format: date
+                description: Expiration date, if enabled for the item
+              expedition_date:
+                type: string
+                format: date
+                description: Expedition date, if enabled for the item
+              weight:
+                type: number
+                x-stoplight:
+                  id: d5o6i2vdnwvm1
+                description: Total item weight
+    address:
+      title: Address model
+      type: object
+      x-internal: false
+      description: Address detail model
+      x-examples: {}
+      required:
+        - address1
+        - city
+        - zip
+        - country
+      properties:
+        address1:
+          type: string
+          maxLength: 100
+          example: Via Roma 18
+          description: "Name of the street and house number "
+        address2:
+          type: string
+          example: c/o Restore SrL
+        city:
+          type: string
+          maxLength: 50
+          example: MILANO
+        zip:
+          type: string
+          maxLength: 20
+          example: "20100"
+          description: ZIP code, depending on country
+        province:
+          type: string
+          example: MI
+          maxLength: 50
+          description: Province or state
+        country:
+          type: string
+          description: 2 digit ISO code of the contry (ISO 3166-1 alpha-2)
+          example: IT
+          maxLength: 2
+          minLength: 2
+        phone:
+          type: string
+          description: "Optional phone number. \r\nNot mandatory for all deliveries, \r\nbut may be required if using express couriers \r\nthat mandate recipient contact information \r\nfor delivery notifications or coordination.\r\n"
+          example: "+3902123456789"
+          maxLength: 50
+        email:
+          type: string
+          description: "Optional email address. \r\nNot mandatory for all deliveries, \r\nbut may be required if using express couriers \r\nthat mandate recipient contact information \r\nfor delivery notifications or coordination.\r\n"
+          example: mario.rossi@mariorossi.it
+          maxLength: 255
+        vat:
+          type: string
+          x-stoplight:
+            id: ehjipqsheim7c
+          example: "1234567890"
+        tax_id:
+          type: string
+          x-stoplight:
+            id: 9xsvmmfboa3xx
+          example: AAABBB70A20I999Z
+    delivery_creation:
+      title: Delivery order creation model
+      type: object
+      description: Model for creation of delivery order
+      x-examples:
+        Example 1:
+          code: "800123456"
+          date: "2019-08-24"
+          movement_type:
+            code: P001
+            description: Purchase from supplier
+          destination:
+            code: string
+            name: string
+            description: string
+            address:
+              address1: Via Roma 18
+              address2: c/o Restore SrL
+              city: MILANO
+              zip: "20100"
+              province: MI
+              country: IT
+              phone: "+3902123456789"
+              email: mario.rossi@mariorossi.it
+              vat: "1234567890"
+              tax_id: AAABBB70A20I999Z
+            first_name: Mario
+            last_name: Rossi
+            middle_name: Andrea
+            formal_salutation: Egr. Sig.
+            informal_salutation: Caro
+          courier_code: DHLEXP
+          high_priority: true
+          shipment_date: "2019-08-24"
+          reference: "123456789000"
+          items:
+            - row_number: 1
+              item:
+                code: A000010003
+                variant: "01"
+              quantity: 1
+              stock_type: AVAIL
+              reference: string
+              lot_number: string
+              serial_number: string
+              expiration_date: "2019-08-24"
+              expedition_date: "2019-08-24"
+              row_type: standard
+              do_not_pick: false
+              do_not_print: false
+              parent_row: 0
+              custom_attributes:
+                - name: a_custom_string
+                  value: lorem ipsum doloret
+          print_delivery: false
+          ship_on_demand: false
+          allow_extra_items: false
+          freight_term: Freight prepaid, Porto Franco, etc
+          warehouse_annotations: string
+          delivery_annotations: string
+          cash_on_delivery:
+            currency: EUR
+            value: 123.45
+            type: string
+          billing:
+            code: string
+            name: string
+            description: string
+            address:
+              address1: Via Roma 18
+              address2: c/o Restore SrL
+              city: MILANO
+              zip: "20100"
+              province: MI
+              country: IT
+              phone: "+3902123456789"
+              email: mario.rossi@mariorossi.it
+              vat: "1234567890"
+              tax_id: AAABBB70A20I999Z
+          international_shipment:
+            currency: USD
+            value: 12345.2
+            incoterm: EXW
+          custom_attributes:
+            - name: a_custom_string
+              value: lorem ipsum doloret
+      x-internal: false
+      required:
+        - code
+        - date
+        - destination
+        - priority
+        - partial_allowed
+      properties:
+        code:
+          type: string
+          maxLength: 100
+          example: "800123456"
+          description: Delivery unique code, assigned by Host system
+        date:
+          type: string
+          format: date
+          description: Delivery creation date
+        movement_type:
+          $ref: "#/components/schemas/movement_type"
+        destination:
+          type: object
+          required:
+            - code
+            - name
+          properties:
+            code:
+              type: string
+              maxLength: 50
+            name:
+              type: string
+              maxLength: 100
+              description: Destination name
+            description:
+              type: string
+              description: Destination description
+            address:
+              $ref: "#/components/schemas/address"
+            first_name:
+              type: string
+              maxLength: 500
+              example: Mario
+            last_name:
+              type: string
+              maxLength: 500
+              example: Rossi
+            middle_name:
+              type: string
+              maxLength: 500
+              example: Andrea
+            formal_salutation:
+              type: string
+              maxLength: 100
+              default: Egr. Sig.
+            informal_salutation:
+              type: string
+              maxLength: 100
+              default: Caro
+        courier_code:
+          type: string
+          maxLength: 15
+          example: DHLEXP
+        high_priority:
+          type: boolean
+          description: "High priority delivery. Deprecated, use instead `priority` value. \r\nA `true` value set automatically `priority` value to 1000\r\n"
+          deprecated: true
+        priority:
+          type: integer
+          x-stoplight:
+            id: p65bx1uomlzev
+          default: 0
+          description: "Urgency level for processing a delivery. \r\nIt determines the order in which deliveries \r\nshould be fulfilled, with higher priority \r\nvalues indicating more urgent processing.\r\n"
+        partial_allowed:
+          type: boolean
+          x-stoplight:
+            id: 7d4kltvxn8e2j
+          description: "Indicates whether a delivery can be fulfilled \r\nwith a quantity lower than the requested amount. \r\nIf `true`, the system allows partial fulfillment; \r\nif `false`, the delivery must be completed in full.\r\n"
+          default: true
+        shipment_date:
+          type: string
+          format: date
+          description: Expected shipment date
+        reference:
+          type: string
+          maxLength: 255
+          description: Reference information for the delivery, returned to Host
+          example: "123456789000"
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - row_number
+              - item
+              - quantity
+            properties:
+              row_number:
+                type: integer
+                example: 1
+                description: Sequential row number. Must be unique for the delivery
+              item:
+                $ref: "#/components/schemas/item_reference"
+              quantity:
+                type: number
+                format: decimal
+                example: 1
+                description: Requested quantity
+              stock_type:
+                type: string
+                maxLength: 50
+                example: AVAIL
+                description: Stock from wich must fulfilled the delivery row
+              reference:
+                type: string
+                description: Reference information for the row, returned to Host
+                maxLength: 50
+              lot_number:
+                type: string
+                maxLength: 15
+                description: Lot number requested for the item
+              serial_number:
+                type: string
+                maxLength: 25
+                description: Serial number requested for the item
+              expiration_date:
+                type: string
+                format: date
+                description: Expiration date requested for the item
+              expedition_date:
+                type: string
+                format: date
+                description: Expedition date requested for the item
+              do_not_pick:
+                type: boolean
+                default: false
+                description: Indicate that the item must not be picked and delivered
+              package_type:
+                type: string
+                example: BOX01
+                description: Indicates the package type that must be used to pack the item
+                x-stoplight:
+                  id: slonmnuta98yl
+              do_not_print:
+                type: boolean
+                default: false
+                description: Indicate that the row must not be printed on the delivery note or other documents
+              parent_row:
+                type:
+                  - integer
+                  - "null"
+                description: >-
+                  In case of item is a child of another item, this must indicate the parent `row_number`. If item is a
+                  parent of another item, this must be set to zero. For normal row it can be `null` or not present
+              custom_attributes:
+                $ref: "#/components/schemas/custom_attributes"
+        print_delivery:
+          type: boolean
+          description: Indicate that warahouse must print and apply the delivery notes
+          default: false
+        ship_on_demand:
+          type: boolean
+          default: false
+          description: Warehouse must wait explicit confirmation to ship the delivery
+        allow_extra_items:
+          type: boolean
+          x-stoplight:
+            id: g4gvcc6kyo4x2
+          description: "A boolean flag that indicates whether additional items can be added to the delivery beyond the originally requested quantity.\r\n- If set to true, the system allows the delivery to include quantities exceeding the customer's initial request.\r\n- If set to false, the delivery must strictly adhere to the requested quantity."
+          default: false
+        freight_term:
+          type: string
+          x-stoplight:
+            id: l40jrpnuze52k
+          maxLength: 255
+          example: Freight prepaid, Porto Franco, etc
+        warehouse_annotations:
+          type: string
+          description: Notes specific to the warehouse (text information)
+          maxLength: 255
+        delivery_annotations:
+          type: string
+          maxLength: 255
+        cash_on_delivery:
+          type: object
+          description: Must be present only if Cash On Delivery is requested!
+          required:
+            - currency
+            - value
+          properties:
+            currency:
+              type: string
+              description: '3 digit ISO 4217 Cash On Delivery currency (default: "EUR")'
+              example: EUR
+              default: EUR
+            value:
+              type: number
+              description: Cash On Delivery total amount
+              default: 123.45
+            type:
+              type: string
+              description: Cash on delivery type, depend on courier
+        billing:
+          type: object
+          description: Billing information
+          required:
+            - code
+            - name
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            address:
+              $ref: "#/components/schemas/address"
+        international_shipment:
+          type: object
+          description: International shipment information, required only for international destination!
+          required:
+            - currency
+            - value
+          properties:
+            currency:
+              type: string
+              description: 3 digit ISO 4217 currency code of the shipment (e.g. EUR, USN, JPY, GBP, ecc)
+              maxLength: 3
+              example: USD
+            value:
+              type: number
+              description: Total value of the delivery.
+              format: decimal
+              example: 12345.2
+            incoterm:
+              type: string
+              description: >-
+                Shipment incoterm: DAP, DDP or EXW. For cross borders shipments the default value would be DAP in case
+                it's not specified in the request differently
+              example: EXW
+        custom_attributes:
+          $ref: "#/components/schemas/custom_attributes"
+        documents:
+          type: array
+          x-stoplight:
+            id: g9vfg3ujxe5ze
+          items:
+            $ref: "#/components/schemas/documents"
+    delivery_prepared_details:
+      title: Delivery order prepared model
+      type: object
+      description: Prepared deliver order details model
+      x-examples:
+        Example 1:
+          code: "800123456"
+          preparation_date: "2019-08-24T14:15:22Z"
+          courier_code: string
+          cancelled: false
+          delivery_note:
+            code: string
+            date: "2019-08-24"
+          weight: 0
+          volume: 0
+          packages:
+            - code: string
+              alternative_code: string
+              weight: 0
+              volume: 0
+              package_type: string
+              items:
+                - row_number: 1
+                  item:
+                    code: A000010003
+                    variant: "01"
+                  quantity: 1
+                  reference: string
+                  lot_number: string
+                  serial_number: string
+                  expiration_date: "2019-08-24"
+                  expedition_date: "2019-08-24"
+          channel: WS
+      x-internal: false
+      required:
+        - code
+        - preparation_date
+        - courier_code
+        - delivery_note
+        - weight
+        - volume
+        - packages
+      properties:
+        code:
+          type: string
+          maxLength: 100
+          example: "800123456"
+        preparation_date:
+          type: string
+          format: date-time
+          description: Preparation or cancellation date
+        courier_code:
+          type: string
+          x-stoplight:
+            id: b600j9ipxkl08
+          description: Courier expected for the shipments
+        cancelled:
+          type: boolean
+          description: Indicates that the delivery was cancelled by the warehouse (i.e. not fulfilled at all)
+          default: false
+          deprecated: true
+        delivery_note:
+          type: object
+          required:
+            - code
+            - date
+          properties:
+            code:
+              type: string
+              maxLength: 100
+            date:
+              type: string
+              format: date
+        weight:
+          type: number
+          description: Total delivery weight
+          format: decimal
+        volume:
+          type: number
+          description: Total delivery volume
+          format: decimal
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/package"
+        channel:
+          type: string
+          description: Transmission channel
+          default: WS
+          enum:
+            - WS
+            - FTP
+        tracking:
+          type: object
+          x-stoplight:
+            id: gwagt9chteh6v
+          description: "Tracking information by the courier (if available). "
+          required:
+            - code
+          properties:
+            code:
+              type: string
+              x-stoplight:
+                id: jz6rbzacojwyh
+              description: Tracking code, Ex AWB or Piece ID
+            link:
+              type: string
+              x-stoplight:
+                id: nmjkcvulfxeip
+              description: Tracking link, if available
+    delivery_note_details:
+      title: Delivery note model
+      x-stoplight:
+        id: g2lfb2xa0wa6y
+      type: object
+      description: Delivery note details model
+      x-examples:
+        Example 1:
+          code: "800123456"
+          preparation_date: "2019-08-24T14:15:22Z"
+          courier_code: string
+          cancelled: false
+          delivery_note:
+            code: string
+            date: "2019-08-24"
+          weight: 0
+          volume: 0
+          packages:
+            - code: string
+              alternative_code: string
+              weight: 0
+              volume: 0
+              package_type: string
+              items:
+                - row_number: 1
+                  item:
+                    code: A000010003
+                    variant: "01"
+                  quantity: 1
+                  reference: string
+                  lot_number: string
+                  serial_number: string
+                  expiration_date: "2019-08-24"
+                  expedition_date: "2019-08-24"
+          channel: WS
+      x-internal: false
+      required:
+        - code
+        - date
+        - courier_code
+        - weight
+        - volume
+        - packages
+      properties:
+        code:
+          type: string
+          maxLength: 100
+          example: "800123456"
+        date:
+          type: string
+          format: date
+          description: Delivery note date
+          x-stoplight:
+            id: zsdy42k21ndfw
+        courier_code:
+          type: string
+          description: Courier expected for the shipments
+        weight:
+          type: number
+          description: Total delivery weight
+          format: decimal
+        volume:
+          type: number
+          description: Total delivery volume
+          format: decimal
+        destination:
+          type: object
+          x-stoplight:
+            id: ywul9mfqzzf3d
+          required:
+            - name
+          properties:
+            code:
+              type: string
+              x-stoplight:
+                id: myc7mkkcdo2rz
+            name:
+              type: string
+              x-stoplight:
+                id: ctlf7m8ln0833
+            description:
+              type: string
+              x-stoplight:
+                id: 9kb27gp7zk9jb
+            address:
+              $ref: "#/components/schemas/address"
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/package"
+        tracking:
+          type: object
+          description: "Tracking information by the courier (if available). "
+          required:
+            - code
+          properties:
+            code:
+              type: string
+              description: Tracking code, Ex AWB or Piece ID
+            link:
+              type: string
+              description: Tracking link, if available
+    delivery_cancelled_details:
+      title: Delivery cancelled model
+      type: object
+      description: Cancelled deliver order details model
+      x-examples: {}
+      x-internal: false
+      properties:
+        code:
+          type: string
+          maxLength: 100
+          example: "800123456"
+        cancellation_date:
+          type: string
+          format: date-time
+          description: Preparation or cancellation date
+        channel:
+          type: string
+          description: Transmission channel
+          default: WS
+          enum:
+            - WS
+            - FTP
+      required:
+        - code
+        - cancellation_date
+    shipment_details:
+      title: Shipment details model
+      type: object
+      x-internal: false
+      description: Shipment details model
+      x-examples: {}
+      properties:
+        code:
+          type: string
+          description: Shipment code, generated by Magware
+        date:
+          type: string
+          format: date
+          description: Date when shipment leaves the warehouse
+        time:
+          type: string
+          format: time
+          description: Time when shipment leaves the warehouse
+        courier_code:
+          type: string
+          description: Courier of the manifest
+        deliveries:
+          type: array
+          items:
+            type: object
+            properties:
+              delivery_code:
+                type: string
+                description: Delivery code as transmitted by host
+              tracking_code:
+                type: string
+                description: Tracking code generated by the courier (if available). Ex AWB or Piece ID
+              tracking_link:
+                type: string
+                description: Tracking link generated by the courier
+              tracking_id:
+                type: integer
+                description: Internal Id of tracking system (ex. Gsped ID)
+            required:
+              - delivery_code
+      required:
+        - code
+        - date
+        - time
+        - courier_code
+        - deliveries
+    item_stock:
+      title: Stock details model
+      type: object
+      x-internal: false
+      description: Item stock details
+      required:
+        - item
+        - quantity
+      properties:
+        item:
+          $ref: "#/components/schemas/item_reference"
+        stock_type:
+          type: string
+        quantity:
+          type: number
+          format: decimal
+          example: 12
+        lot_number:
+          type: string
+          maxLength: 15
+          description: Lot number, if enabled for the item
+        serial_number:
+          type: string
+          maxLength: 25
+          description: Serial number, if enabled for the item
+        expiration_date:
+          type: string
+          format: date
+          description: Expiration date, if enabled for the item
+        expedition_date:
+          type: string
+          format: date
+          description: Expedition date, if enabled for the item
+        weight:
+          type: number
+          x-stoplight:
+            id: 3fbtnm31eaxvm
+          description: Total item weight
+    adjustment:
+      title: Adjustment model
+      type: object
+      description: Changing in the inventory of the warehouse
+      x-internal: false
+      x-examples: {}
+      properties:
+        code:
+          type: string
+          maxLength: 15
+          example: "800123456"
+        reason_code:
+          type: string
+          example: LACK
+          maxLength: 5
+        sign:
+          type: string
+          enum:
+            - +
+            - "-"
+        date:
+          type: string
+          maxLength: 15
+          format: date
+        time:
+          type: string
+          format: time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/item_stock"
+      required:
+        - code
+        - reason_code
+        - sign
+        - date
+        - time
+    movement_type:
+      title: Movement type model
+      type: object
+      x-internal: false
+      description: Types of movement
+      properties:
+        code:
+          type: string
+          maxLength: 50
+          example: P001
+        description:
+          type: string
+          maxLength: 255
+          example: Purchase from supplier
+    package:
+      title: package
+      type: object
+      x-internal: false
+      properties:
+        code:
+          type: string
+        alternative_code:
+          type: string
+        weight:
+          type: number
+          format: decimal
+        volume:
+          type: number
+          format: decimal
+        package_type:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/package_item"
+      required:
+        - code
+        - weight
+        - volume
+        - package_type
+        - items
+    package_item:
+      title: package_item
+      type: object
+      x-internal: false
+      x-examples: {}
+      required:
+        - row_number
+        - item
+        - quantity
+      properties:
+        row_number:
+          type: integer
+          example: 1
+        item:
+          $ref: "#/components/schemas/item_reference"
+        quantity:
+          type: number
+          example: 1
+          description: Item quantity in the package
+          format: decimal
+        reference:
+          type: string
+        lot_number:
+          type: string
+          maxLength: 15
+          description: Lot number, if enabled for the item
+        serial_number:
+          type: string
+          maxLength: 25
+          description: Serial number, if enabled for the item
+        expiration_date:
+          type: string
+          format: date
+          description: Expiration date, if enabled for the item
+        expedition_date:
+          type: string
+          format: date
+          description: Expedition date, if enabled for the item
+        weight:
+          type: number
+          x-stoplight:
+            id: erf4snsmzhlci
+          description: Total item weight
+    item_reference:
+      title: item_reference
+      x-examples: {}
+      type: object
+      x-internal: false
+      properties:
+        code:
+          type: string
+          maxLength: 200
+          description: Item code
+          example: A000010003
+        variant:
+          type: string
+          maxLength: 50
+          description: Item variant
+          example: "01"
+      required:
+        - code
+    custom_attributes:
+      title: custom_attributes
+      x-stoplight:
+        id: p0cvcyzcsan42
+      type: array
+      description: Array of custom attributes
+      x-examples: {}
+      items:
+        type: object
+        required:
+          - name
+          - value
+        properties:
+          name:
+            type: string
+            description: Custom attribute name
+            example: a_custom_string
+          value:
+            type: string
+            description: Custom attribute value. Can be a string, an integer, a boolean or a decimal number
+            example: lorem ipsum doloret
+    shipment_creation:
+      title: shipment_creation
+      x-stoplight:
+        id: na2uo3vofpg0i
+      type: object
+      x-examples: {}
+      required:
+        - code
+        - date
+        - deliveries
+      properties:
+        code:
+          type: string
+          x-stoplight:
+            id: uwd23cros98y0
+          description: "Shipment code/number, generated by host system.\r\nCan be, for example, delivery note number"
+        date:
+          type: string
+          x-stoplight:
+            id: gsnxbb907103f
+          format: date
+          description: "Shipment date, generated by host system.\r\nCan be, for example, delivery note date"
+        deliveries:
+          type: array
+          x-stoplight:
+            id: jo0374lxbrqpv
+          description: "Arrays of deliveries to be included in the shipment.\r\n\r\nThe deliveries must be in a prepared state, have the ship_on_demand flag set to true, and share the same destination, billing details, and characteristics."
+          items:
+            x-stoplight:
+              id: bjbd28wgp7zia
+            type: string
+            example: "00012345"
+        documents:
+          type: array
+          x-stoplight:
+            id: far90ycgjd9fd
+          description: "Arrays of documents in PDF format generated for the shipment.\r\n\r\nThese may include a delivery note, waybill, packing list, invoice, or a combination of these."
+          items:
+            $ref: "#/components/schemas/documents"
+        courier_code:
+          type: string
+          x-stoplight:
+            id: vz72zolozcqy9
+          description: "Optional courier code. \r\nCan be used to override the currently assigned courier to the deliveries\r\n"
+          example: DHLEXP
+        destination:
+          type: object
+          x-stoplight:
+            id: hgla8nzwj6za1
+          description: "Optional destination, overriding the destinations specified in deliveries.\r\nIf not provided, the shipment defaults to the destination of the first delivery in the `deliveries` array."
+          required:
+            - code
+            - name
+            - address
+          properties:
+            code:
+              type: string
+              x-stoplight:
+                id: b4en7xl6ifzep
+              example: C12345
+            name:
+              type: string
+              x-stoplight:
+                id: 8iixw78upang2
+              example: Mario Rossi
+            address:
+              $ref: "#/components/schemas/address"
+            custom_attributes:
+              $ref: "#/components/schemas/custom_attributes"
+        cash_on_delivery:
+          type: object
+          x-stoplight:
+            id: pl52of7lmwate
+          description: Optional cash on delivery (COD) value
+          required:
+            - currency
+            - value
+          properties:
+            currency:
+              type: string
+              x-stoplight:
+                id: yqabs98u0lf2k
+              default: EUR
+              description: '3 digit ISO 4217 Cash On Delivery currency (default: "EUR")'
+            value:
+              type: string
+              x-stoplight:
+                id: wsinpsja7yirs
+              description: Cash On Delivery total amount
+              example: "12.55"
+            type:
+              type: string
+              x-stoplight:
+                id: ho35dgoyx5qso
+              description: Cash on delivery type, depend on courier
+        custom_attributes:
+          $ref: "#/components/schemas/custom_attributes"
+    documents:
+      title: documents
+      x-stoplight:
+        id: rwbvgmgd3pjxq
+      type: object
+      x-examples:
+        Example 1:
+          code: INV12345
+          date: "2019-08-24"
+          type: Invoice
+          print: true
+          content: Y29tcGxleCBkYXRhIGluIFhNTCBvciBKU09OLg==
+      description: |-
+        Arrays of documents in PDF format.
+
+        These may include a delivery note, waybill, packing list, invoice, or a combination of these.
+      required:
+        - content
+      properties:
+        code:
+          type: string
+          x-stoplight:
+            id: n7pwjvojf63mk
+          description: Code or number of the document
+        date:
+          type: string
+          x-stoplight:
+            id: jb2hun73kv1z6
+          format: date
+          description: Date of the document
+        type:
+          type: string
+          x-stoplight:
+            id: 0t5kul9zk2kfr
+          description: Type of the document. Example "Delivery notes" or "Invoice"
+        print:
+          type: boolean
+          x-stoplight:
+            id: kkepijxhpf80a
+          description: Indicate that the document must be printed.
+        content:
+          type: string
+          x-stoplight:
+            id: wbkjthskthws3
+          description: PDF document, encoded in base64 format
+          example: Y29tcGxleCBkYXRhIGluIFhNTCBvciBKU09OLg==
+  securitySchemes:
+    APIKey:
+      name: APIKey
+      type: apiKey
+      in: header
+      description: Assigned by Magware team
   responses:
-    BadRequest:
-      description: Richiesta malformata o validazione fallita.
+    success:
+      description: Shipment successfully created
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
-    Unauthorized:
-      description: Token mancante o non valido.
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - success
+              description:
+                type: string
+            required:
+              - status
+          examples:
+            success:
+              value:
+                status: success
+    error:
+      description: Error processing request
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
-    NotFound:
-      description: Risorsa non trovata.
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+                enum:
+                  - error
+              description:
+                type: string
+            required:
+              - status
+              - description
+          examples:
+            error:
+              value:
+                status: error
+                description: Error creating object
+    object_list:
+      description: List of Magware objects
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            type: array
+            items:
+              type: integer
+              format: int32
+          examples:
+            example:
+              value:
+                - 12131237
+                - 43534534
+                - 77539764
+      headers: {}
+  parameters:
+    owner:
+      name: owner
+      in: header
+      required: true
+      schema:
+        type: string
+        maxLength: 15
+        example: RST
+        minLength: 1
+      description: Owner code, assigned by Magware
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 55134833
+      description: Unique identification number of Magware object
+  examples: {}
+tags:
+  - name: ASN
+    description: ASN
+  - name: Deliveries
+    description: Deliveries
+  - name: Delivery Notes
+    description: Delivery Notes
+  - name: Inventory
+    description: Inventory
+  - name: Items
+    description: Items
+  - name: Models
+    description: Models
+  - name: Shipments
+    description: Shipments
+  - name: Utility
+    description: Utility
+servers:
+  - url: https://sandbox.magware.it:9999
+    description: Sandbox
 security:
-  - bearerAuth: []
+  - APIKey: []

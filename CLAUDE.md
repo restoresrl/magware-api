@@ -92,7 +92,8 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 
 ## Roadmap
 
-- [ ] **Fase 0 — Import da Stoplight**. Esportare la spec attuale (`api.re-store.it/docs/magware-api`) come singolo file YAML e sostituire `openapi/magware.yaml`. Verificare che `npm run lint:api` passi pulito.
+- [ ] **Fase 0 — Import da Stoplight + migrazione OpenAPI 3.1**. Esportare la spec attuale (`api.re-store.it/docs/magware-api`) come bundled reference, convertirla da JSON a YAML, migrarla da OpenAPI 3.0.2 a 3.1.0 (cambi sintattici come `nullable` → `type: [..., "null"]`, `exclusiveMin/Max` da boolean a numero), sostituire `openapi/magware.yaml`. Verificare che `npm run lint:api` passi pulito. Scope tecnico/meccanico: nessuna decisione editoriale qui (vedi Fase 0bis).
+- [ ] **Fase 0bis — Decisioni editoriali sulla spec importata**. La spec importata da Stoplight ha caratteristiche da riconciliare con le decisioni del repo: `info.version: "21.11"` (calendar versioning interno Magware) → mappare su semver e fare il primo tag git `vX.Y.Z`; spec in inglese (mantenere o italianizzare?); description con emoji ed `i.imgur.com` (link rot esterno, branding altrui — sostituire con asset locali o rimuovere?); eventuali TODO emersi dal lint di Fase 0.
 - [ ] **Fase 1 — CI verde**. Push iniziale su GitHub, verificare che il workflow `lint.yml` passi.
 - [ ] **Fase 2 — Preview locale Scalar**. Aggiungere `preview/index.html` con CDN Scalar + script `npm run preview` che serve la cartella. Provare il rendering su tutta la spec.
 - [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Aggiungere a questo stesso repo un piccolo sito **Astro + `@scalar/api-reference`** (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers (deploy autonomo, repo auto-contenuto). Decisione presa il 2026-04-30 — vedi "Storia delle decisioni".
