@@ -15,7 +15,8 @@
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules",
     "format": "prettier --write \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore",
     "format:check": "prettier --check \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore",
-    "check": "npm run lint:api && npm run lint:md && npm run format:check"
+    "check": "npm run lint:api && npm run lint:md && npm run format:check",
+    "preview": "npx --yes serve . -l 3000 --no-clipboard"
   },
   "devDependencies": {
     "@stoplight/spectral-cli": "^6.11.1",
