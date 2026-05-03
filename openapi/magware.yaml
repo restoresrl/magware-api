@@ -239,7 +239,16 @@ paths:
         required: true
       operationId: put-items-item_code
       summary: Update an item
-      description: Updates an existing item
+      description: |-
+        Updates an existing item identified by `item_code`. The request body
+        is the full item representation (same schema used by POST).
+
+        Variants are upserted: if `variants[i].code` matches an existing
+        variant, that variant is updated; otherwise a new variant is
+        created. Once a variant exists, its `quantity` field is
+        **immutable** — sending a `variants[i].quantity` value different
+        from the persisted one returns `400 Bad Request` with description
+        `"Quantity for variant '<code>' for item '<item>' can't be updated"`.
       responses:
         "200":
           $ref: "#/components/responses/success"
@@ -338,17 +347,30 @@ paths:
           $ref: "#/components/responses/internal_server_error"
       operationId: post-items-exists
       description: |-
-        Checks whether one or more items/variants exists in Magware.
-        Accepts a list of item/variant code and returns their existence status.
-        It is intended to validate item presence before performing
-        further operations (e.g., inventory updates, order processing, etc.).
+        Checks whether one or more item/variant pairs exist in Magware.
+        Accepts a list of `item_reference` objects and returns their
+        existence status (one entry per input, in the same order).
+
+        **Note**: although `variant` is technically optional in the
+        `item_reference` schema, this endpoint requires it — the backend
+        joins on both `code` and `variant`, so an entry without `variant`
+        will always return `exists: false`.
+
+        Intended to validate item presence before performing further
+        operations (e.g. inventory updates, order processing).
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: array
+              description: |-
+                Array of item/variant pairs to check. Up to 10000 entries
+                per call (a larger array returns `400 Bad Request`).
               items:
                 $ref: "#/components/schemas/item_reference"
+              minItems: 1
+              maxItems: 10000
             examples:
               Example 1:
                 value:
@@ -839,7 +861,14 @@ paths:
         "500":
           $ref: "#/components/responses/internal_server_error"
       operationId: get-stocks-item_code
-      description: Return current stock of a single item
+      description: |-
+        Return current stock of a single item identified by `item_code`.
+
+        **Note**: this endpoint does not emit `404` if the item does not
+        exist for the given `owner` — it always returns `200` with an
+        empty `items: []` array. Use `HEAD /items/{item_code}` (or
+        `POST /items/exists`) if you need to distinguish "item not found"
+        from "item found but with no stock".
   /delivery_notes/prepared:
     get:
       summary: Get prepared delivery notes list
@@ -1195,7 +1224,13 @@ components:
           default: false
         expedition_days:
           type: integer
-          description: Number of days for expedition date calculation from expiration date
+          deprecated: true
+          description: |-
+            Number of days for expedition date calculation from expiration date.
+
+            **Not yet implemented; reserved for future use.** The backend
+            currently ignores this field on POST/PUT and does not return it
+            on GET. Do not rely on its value.
         obsolete:
           type: boolean
           description: Indicate that the item is obsolete and no more managed in the future
@@ -1251,7 +1286,6 @@ components:
       x-examples:
         Example 1:
           code: ASN123456
-          date: "2021-06-01"
           arrival_date: "2021-06-10"
           stock_type: AVAIL
           supplier:
@@ -1280,6 +1314,8 @@ components:
         - code
         - supplier
         - movement_type
+        - delivery_note
+        - arrival_date
         - contents
       properties:
         code:
@@ -1287,10 +1323,6 @@ components:
           description: ASN identification code, assigned by ERP
           maxLength: 100
           example: ASN123456
-        date:
-          type: string
-          format: date
-          example: "2021-06-01"
         arrival_date:
           type: string
           format: date
@@ -1439,6 +1471,13 @@ components:
         stock_date:
           type: string
           format: date
+        channel:
+          type: string
+          description: |-
+            Transmission channel through which the ASN entered Magware
+            (e.g. `WS` for web service, `FTP` for file-based ingestion).
+            Echoed back as recorded by the backend; values are not
+            constrained to a fixed enum.
         items:
           type: array
           items:
@@ -1544,12 +1583,6 @@ components:
             for delivery notifications or coordination.
           example: mario.rossi@mariorossi.it
           maxLength: 255
-        vat:
-          type: string
-          example: "1234567890"
-        tax_id:
-          type: string
-          example: AAABBB70A20I999Z
     delivery_creation:
       title: Delivery order creation model
       type: object
@@ -1574,8 +1607,6 @@ components:
               country: IT
               phone: "+3902123456789"
               email: mario.rossi@mariorossi.it
-              vat: "1234567890"
-              tax_id: AAABBB70A20I999Z
             first_name: Mario
             last_name: Rossi
             middle_name: Andrea
@@ -1597,7 +1628,6 @@ components:
               serial_number: string
               expiration_date: "2019-08-24"
               expedition_date: "2019-08-24"
-              row_type: standard
               do_not_pick: false
               do_not_print: false
               parent_row: 0
@@ -1627,8 +1657,6 @@ components:
               country: IT
               phone: "+3902123456789"
               email: mario.rossi@mariorossi.it
-              vat: "1234567890"
-              tax_id: AAABBB70A20I999Z
           international_shipment:
             currency: USD
             value: 12345.2
@@ -1639,9 +1667,9 @@ components:
       required:
         - code
         - date
+        - movement_type
         - destination
-        - priority
-        - partial_allowed
+        - items
       properties:
         code:
           type: string
@@ -1692,6 +1720,13 @@ components:
               type: string
               maxLength: 100
               default: Caro
+            title:
+              type: string
+              maxLength: 100
+              description: |-
+                Honorific or title of the recipient (e.g. `Dott.`, `Dr.`,
+                `Prof.`). Persisted alongside the destination contact data
+                and may be printed on courier documents.
         courier_code:
           type: string
           maxLength: 15
@@ -1840,7 +1875,7 @@ components:
               description: Cash on delivery type, depend on courier
         billing:
           type: object
-          description: Billing information
+          description: Billing information.
           required:
             - code
             - name
@@ -1853,6 +1888,26 @@ components:
               type: string
             address:
               $ref: "#/components/schemas/address"
+            first_name:
+              type: string
+              maxLength: 500
+              example: Mario
+            last_name:
+              type: string
+              maxLength: 500
+              example: Rossi
+            middle_name:
+              type: string
+              maxLength: 500
+              example: Andrea
+            formal_salutation:
+              type: string
+              maxLength: 100
+              default: Egr. Sig.
+            informal_salutation:
+              type: string
+              maxLength: 100
+              default: Caro
         international_shipment:
           type: object
           description: International shipment information, required only for international destination!
@@ -2176,7 +2231,6 @@ components:
       properties:
         code:
           type: string
-          maxLength: 15
           example: "800123456"
         reason_code:
           type: string
@@ -2189,7 +2243,6 @@ components:
             - "-"
         date:
           type: string
-          maxLength: 15
           format: date
         time:
           type: string
