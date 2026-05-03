@@ -111,7 +111,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/bulk_item_result"
               examples:
-                bulk-mixed:
+                bulk_mixed:
                   summary: Bulk result with one success and one error
                   value:
                     - position: 0
