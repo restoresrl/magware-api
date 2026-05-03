@@ -195,8 +195,6 @@ paths:
                       - code: "-"
                         description: "-"
                         quantity: 1
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - Items
   /items/{item_code}:
@@ -215,8 +213,6 @@ paths:
       operationId: put-items-item_code
       summary: Update an item
       description: Updates an existing item
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           $ref: "#/components/responses/success"
@@ -247,8 +243,6 @@ paths:
       tags:
         - Items
       description: Returns item details
-      parameters:
-        - $ref: "#/components/parameters/owner"
     head:
       summary: Check if one item exists
       operationId: head-items-item_code
@@ -257,8 +251,6 @@ paths:
           description: OK
         "404":
           description: Not Found
-      parameters:
-        - $ref: "#/components/parameters/owner"
       description: Check if an item exists
       tags:
         - Items
@@ -338,8 +330,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/asn_creation"
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - ASN
   /asn/received:
@@ -347,8 +337,6 @@ paths:
       summary: Get received ASN list
       operationId: get-asn-received
       description: Return a list of received ASNs, not yet acquired by Host system
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           $ref: "#/components/responses/object_list"
@@ -414,8 +402,6 @@ paths:
                         received_quantity: 7
                         stock_type: AVAIL
                         reference: "5000123402"
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - ASN
   /deliveries:
@@ -433,8 +419,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/delivery_creation"
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
   /deliveries/prepared:
@@ -447,8 +431,6 @@ paths:
           $ref: "#/components/responses/error"
       operationId: get-deliveries-prepared
       description: Return a list of prepared deliveries not yet acquired by Host
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
   /deliveries/prepared/{id}:
@@ -464,8 +446,6 @@ paths:
       summary: Get prepared delivery details
       operationId: get-deliveries-prepared-id
       description: Return detailed information about a prepared delivery order and mark it as acquired by host system
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           description: Prepared delivery details
@@ -513,8 +493,6 @@ paths:
           $ref: "#/components/responses/error"
       operationId: get-deliveries-cancelled
       description: Return a list of cancelled (not fulfilled) deliveries not yet acquired by Host
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
   /deliveries/cancelled/{id}:
@@ -530,8 +508,6 @@ paths:
       summary: Get cancelled delivery details
       operationId: get-deliveries-cancelled-id
       description: Return information about a cancelled (not fulfilled) delivery order and mark it as acquired by host system
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           description: Cancelled delivery details
@@ -567,8 +543,6 @@ paths:
         Additionally, it enables the transmission of the delivery note code and date, and related documents in PDF format.
 
         You can also use this API to group multiple deliveries into a single shipment, provided that all deliveries share the same destination, billing details, and shipping conditions.
-      parameters:
-        - $ref: "#/components/parameters/owner"
       requestBody:
         content:
           application/json:
@@ -578,8 +552,6 @@ paths:
       summary: Get shipments list
       operationId: get-shipments
       description: Return a list of shipments not yet acquired by Host
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           $ref: "#/components/responses/object_list"
@@ -617,8 +589,6 @@ paths:
       description: "Return detailed information about a shipment and mark it as acquired by host system "
       tags:
         - Shipments
-      parameters:
-        - $ref: "#/components/parameters/owner"
   /adjustments:
     get:
       summary: Get adjustments list
@@ -626,8 +596,6 @@ paths:
         - Inventory
       operationId: get-adjustments
       description: Return a list of adjustments not yet acquired by Host
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           $ref: "#/components/responses/object_list"
@@ -668,8 +636,6 @@ paths:
         "400":
           $ref: "#/components/responses/error"
       operationId: get-adjustments-id
-      parameters:
-        - $ref: "#/components/parameters/owner"
       description: Return adjustment details
   /stocks:
     get:
@@ -715,8 +681,6 @@ paths:
           $ref: "#/components/responses/error"
       operationId: get-stocks
       description: Return list of items that currently have stock in the warehouse
-      parameters:
-        - $ref: "#/components/parameters/owner"
   /stocks/{item_code}:
     parameters:
       - schema:
@@ -763,8 +727,6 @@ paths:
           $ref: "#/components/responses/error"
       operationId: get-stocks-item_code
       description: Return current stock of a single item
-      parameters:
-        - $ref: "#/components/parameters/owner"
   /delivery_notes/prepared:
     get:
       summary: Get prepared delivery notes list
@@ -775,8 +737,6 @@ paths:
           $ref: "#/components/responses/error"
       operationId: get-delivery-notes-prepared
       description: Return a list of prepared delivery notes not yet acquired by Host
-      parameters:
-        - $ref: "#/components/parameters/owner"
       tags:
         - Delivery Notes
   /delivery_notes/{id}:
@@ -792,8 +752,6 @@ paths:
       summary: Get delivery note details
       operationId: get-delivery-notes-id
       description: Return detailed information about a delivery note and mark it as acquired by host system
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           description: Delivery note details
@@ -838,8 +796,6 @@ paths:
         - Utility
       operationId: get-version
       description: Useful for simple testing response from web service
-      parameters:
-        - $ref: "#/components/parameters/owner"
       responses:
         "200":
           description: OK
@@ -2396,10 +2352,19 @@ components:
           description: Confirmation message when `status` is `success`, error description when `status` is `error`.
   securitySchemes:
     APIKey:
-      name: APIKey
       type: apiKey
       in: header
-      description: Assigned by Magware team
+      name: APIKey
+      description: API key issued by Restore in onboarding. Identifies the integrator.
+    Owner:
+      type: apiKey
+      in: header
+      name: owner
+      description: |-
+        Tenant code (max 15 chars), issued by Restore in onboarding alongside
+        the `APIKey`. Identifies the Magware tenant the request operates on.
+        An API key is bound 1:1 to its `owner` — they must always be sent
+        together and cannot be mixed across tenants.
   responses:
     success:
       description: Shipment successfully created
@@ -2459,16 +2424,6 @@ components:
                 - 77539764
       headers: {}
   parameters:
-    owner:
-      name: owner
-      in: header
-      required: true
-      schema:
-        type: string
-        maxLength: 15
-        example: RST
-        minLength: 1
-      description: Owner code, assigned by Magware
     id:
       name: id
       in: path
@@ -2509,3 +2464,4 @@ servers:
     description: Sandbox
 security:
   - APIKey: []
+    Owner: []
