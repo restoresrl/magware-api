@@ -125,7 +125,6 @@ paths:
                   expedition_date_control: true
                   expedition_days: 0
                   obsolete: false
-        description: ""
       parameters:
         - $ref: "#/components/parameters/owner"
       tags:
@@ -143,7 +142,7 @@ paths:
             schema:
               $ref: "#/components/schemas/item"
         required: true
-      operationId: updateitem
+      operationId: put-items-item_code
       summary: Update an item
       description: Updates an existing item
       parameters:
@@ -180,7 +179,6 @@ paths:
       description: Returns item details
       parameters:
         - $ref: "#/components/parameters/owner"
-      x-internal: false
     head:
       summary: Check if one item exists
       operationId: head-items-item_code
@@ -207,16 +205,12 @@ paths:
               schema:
                 type: array
                 items:
-                  x-stoplight:
-                    id: gzxdj8ajzk1xg
                   type: object
                   properties:
                     item:
                       $ref: "#/components/schemas/item_reference"
                     exists:
                       type: boolean
-                      x-stoplight:
-                        id: 8hse0a2nyv3as
                       description: true if item/variant exists in Magware
               examples:
                 Example 1:
@@ -238,9 +232,11 @@ paths:
         "500":
           description: Internal Server Error
       operationId: post-items-exists
-      x-stoplight:
-        id: pksnoht4p5ol8
-      description: "Checks whether one or more items/variants exists in Magware.  \r\nAccepts a list of item/variant code and returns their existence status. \r\nIt is intended to validate item presence before performing \r\nfurther operations (e.g., inventory updates, order processing, etc.)."
+      description: |-
+        Checks whether one or more items/variants exists in Magware.
+        Accepts a list of item/variant code and returns their existence status.
+        It is intended to validate item presence before performing
+        further operations (e.g., inventory updates, order processing, etc.).
       requestBody:
         content:
           application/json:
@@ -272,12 +268,10 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/asn_creation"
-            examples: {}
       parameters:
         - $ref: "#/components/parameters/owner"
       tags:
         - ASN
-    parameters: []
   /asn/received:
     get:
       summary: Get received ASN list
@@ -292,7 +286,6 @@ paths:
           $ref: "#/components/responses/error"
       tags:
         - ASN
-    parameters: []
   /asn/received/{id}:
     parameters:
       - name: id
@@ -358,7 +351,7 @@ paths:
   /deliveries:
     post:
       summary: Create a new delivery order
-      operationId: post-orders
+      operationId: post-deliveries
       responses:
         "201":
           $ref: "#/components/responses/success"
@@ -370,12 +363,10 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/delivery_creation"
-            examples: {}
       parameters:
         - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
-    parameters: []
   /deliveries/prepared:
     get:
       summary: Get prepared delivery list
@@ -390,7 +381,6 @@ paths:
         - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
-    parameters: []
   /deliveries/prepared/{id}:
     parameters:
       - name: id
@@ -439,18 +429,6 @@ paths:
                               variant: "01"
                             quantity: 1
                             reference: aaabbbcc
-            application/xml:
-              schema:
-                type: object
-                properties: {}
-            multipart/form-data:
-              schema:
-                type: object
-                properties: {}
-            text/html:
-              schema:
-                type: object
-                properties: {}
         "400":
           $ref: "#/components/responses/error"
       tags:
@@ -469,7 +447,6 @@ paths:
         - $ref: "#/components/parameters/owner"
       tags:
         - Deliveries
-    parameters: []
   /deliveries/cancelled/{id}:
     parameters:
       - name: id
@@ -498,18 +475,6 @@ paths:
                     code: "800123456"
                     cancellation_date: "2019-08-24T14:15:22Z"
                     channel: WS
-            application/xml:
-              schema:
-                type: object
-                properties: {}
-            multipart/form-data:
-              schema:
-                type: object
-                properties: {}
-            text/html:
-              schema:
-                type: object
-                properties: {}
         "400":
           $ref: "#/components/responses/error"
       tags:
@@ -525,9 +490,13 @@ paths:
         "400":
           $ref: "#/components/responses/error"
       operationId: post-shipments
-      x-stoplight:
-        id: t2twrx28mwg9u
-      description: "Create a shipment for one or more deliveries to the same destination.\r\nThis API allows you to unlock the shipment of a delivery when the `ship_on_demand` flag is set to `true`. \r\n\r\nAdditionally, it enables the transmission of the delivery note code and date, and related documents in PDF format.\r\n\r\nYou can also use this API to group multiple deliveries into a single shipment, provided that all deliveries share the same destination, billing details, and shipping conditions.\r\n"
+      description: |-
+        Create a shipment for one or more deliveries to the same destination.
+        This API allows you to unlock the shipment of a delivery when the `ship_on_demand` flag is set to `true`.
+
+        Additionally, it enables the transmission of the delivery note code and date, and related documents in PDF format.
+
+        You can also use this API to group multiple deliveries into a single shipment, provided that all deliveries share the same destination, billing details, and shipping conditions.
       parameters:
         - $ref: "#/components/parameters/owner"
       requestBody:
@@ -535,10 +504,9 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/shipment_creation"
-            examples: {}
     get:
       summary: Get shipments list
-      operationId: get-shippments
+      operationId: get-shipments
       description: Return a list of shipments not yet acquired by Host
       parameters:
         - $ref: "#/components/parameters/owner"
@@ -549,7 +517,6 @@ paths:
           $ref: "#/components/responses/error"
       tags:
         - Shipments
-    parameters: []
   /shipments/{id}:
     parameters:
       - $ref: "#/components/parameters/id"
@@ -576,7 +543,7 @@ paths:
                         tracking_id: 123456789
         "400":
           $ref: "#/components/responses/error"
-      operationId: get-shipments-shipment_code
+      operationId: get-shipments-id
       description: "Return detailed information about a shipment and mark it as acquired by host system "
       tags:
         - Shipments
@@ -587,7 +554,7 @@ paths:
       summary: Get adjustments list
       tags:
         - Inventory
-      operationId: get-adjiustments
+      operationId: get-adjustments
       description: Return a list of adjustments not yet acquired by Host
       parameters:
         - $ref: "#/components/parameters/owner"
@@ -596,7 +563,6 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           description: Bad Request
-    parameters: []
   /adjustments/{id}:
     parameters:
       - $ref: "#/components/parameters/id"
@@ -677,11 +643,10 @@ paths:
                         quantity: 2
         "400":
           $ref: "#/components/responses/error"
-      operationId: get-stock
+      operationId: get-stocks
       description: Return list of items that currently have stock in the warehouse
       parameters:
         - $ref: "#/components/parameters/owner"
-    parameters: []
   /stocks/{item_code}:
     parameters:
       - schema:
@@ -726,12 +691,11 @@ paths:
                       quantity: 12
         "400":
           $ref: "#/components/responses/error"
-      operationId: get-stocks-id
+      operationId: get-stocks-item_code
       description: Return current stock of a single item
       parameters:
         - $ref: "#/components/parameters/owner"
   /delivery_notes/prepared:
-    parameters: []
     get:
       summary: Get prepared delivery notes list
       responses:
@@ -743,8 +707,6 @@ paths:
       description: Return a list of prepared delivery notes not yet acquired by Host
       parameters:
         - $ref: "#/components/parameters/owner"
-      x-stoplight:
-        id: u8kt9tm497eh1
       tags:
         - Delivery Notes
   /delivery_notes/{id}:
@@ -795,22 +757,8 @@ paths:
                               variant: "01"
                             quantity: 1
                             reference: aaabbbcc
-            application/xml:
-              schema:
-                type: object
-                properties: {}
-            multipart/form-data:
-              schema:
-                type: object
-                properties: {}
-            text/html:
-              schema:
-                type: object
-                properties: {}
         "400":
           $ref: "#/components/responses/error"
-      x-stoplight:
-        id: zlaabrqz3iqdv
       tags:
         - Delivery Notes
   /version:
@@ -819,7 +767,7 @@ paths:
       tags:
         - Utility
       operationId: get-version
-      description: Usefull for simple testing response from web service
+      description: Useful for simple testing response from web service
       parameters:
         - $ref: "#/components/parameters/owner"
       responses:
@@ -828,7 +776,6 @@ paths:
           content:
             application/json:
               schema:
-                description: ""
                 type: object
                 properties:
                   product:
@@ -961,7 +908,6 @@ components:
             expedition_days: 0
             obsolete: false
       title: Item model
-      x-internal: false
       required:
         - code
         - description
@@ -979,7 +925,7 @@ components:
           maxLength: 255
         um:
           type: string
-          description: Unit of measure of item (tipically selling unit)
+          description: Unit of measure of item (typically selling unit)
           maxLength: 5
           example: PCS
         note:
@@ -1033,7 +979,7 @@ components:
                 description: Variant description
               quantity:
                 description: >-
-                  Indicate the phisical quantity in UoM of the item of the variant. Usually it is 1. If greater than 1
+                  Indicate the physical quantity in UoM of the item of the variant. Usually it is 1. If greater than 1
                   it indicates a variant that contains a multiple of the sales unit (example 12 pieces pack).If less
                   than 1 it indicates products managed in decimal units and the necessary precision (for example a
                   fabric with quantity variant = 0.001 and UoM = m2 indicates that the fabric is managed in m2 with an
@@ -1075,8 +1021,6 @@ components:
                 description: Indicate that this variant is the default one for the item
               quantity_per_package:
                 type: integer
-                x-stoplight:
-                  id: pulh3mi4fv9ip
                 default: 1
                 example: 12
                 description: Default quantity per package, expressed in number of whole variants per package.
@@ -1114,9 +1058,11 @@ components:
           default: false
         can_be_added_to_deliveries:
           type: boolean
-          x-stoplight:
-            id: sy3prnz5ems0j
-          description: "Indicates whether the item can be included as additional, unplanned goods in the deliveries. This field allows the system to flag items that are not originally scheduled for the delivery but can still be added as extras if needed.\r\n\r\n- `true`: The item can be added as an extra to the delivery.\r\n- `false`: The item cannot be added as an extra to the delivery."
+          description: |-
+            Indicates whether the item can be included as additional, unplanned goods in the deliveries. This field allows the system to flag items that are not originally scheduled for the delivery but can still be added as extras if needed.
+
+            - `true`: The item can be added as an extra to the delivery.
+            - `false`: The item cannot be added as an extra to the delivery.
           default: false
         supplier:
           type: object
@@ -1136,12 +1082,12 @@ components:
               description: "Supplier item code "
               required:
                 - code
-                - decription
+                - description
               properties:
                 code:
                   type: string
                   description: "Supplier item code "
-                decription:
+                description:
                   type: string
                   description: Supplier item description
         custom_attributes:
@@ -1150,7 +1096,6 @@ components:
       title: ASN creation model
       type: object
       description: Model for creation of ASN
-      x-internal: false
       x-examples:
         Example 1:
           code: ASN123456
@@ -1269,21 +1214,13 @@ components:
                 example: "5000123401"
               lot_number:
                 type: string
-                x-stoplight:
-                  id: d619r4y9oczpy
               serial_number:
                 type: string
-                x-stoplight:
-                  id: ts3w7r4kqxc4u
               expiration_date:
                 type: string
-                x-stoplight:
-                  id: ge7ycs5x7apxx
                 format: date
               expedition_date:
                 type: string
-                x-stoplight:
-                  id: nv3x2emi78rm6
                 format: date
               custom_attributes:
                 $ref: "#/components/schemas/custom_attributes"
@@ -1293,7 +1230,6 @@ components:
       title: ASN received model
       type: object
       description: ASN received detail model
-      x-internal: false
       x-examples:
         Example 1:
           asn_code: string
@@ -1397,15 +1333,11 @@ components:
                 description: Expedition date, if enabled for the item
               weight:
                 type: number
-                x-stoplight:
-                  id: d5o6i2vdnwvm1
                 description: Total item weight
     address:
       title: Address model
       type: object
-      x-internal: false
       description: Address detail model
-      x-examples: {}
       required:
         - address1
         - city
@@ -1436,29 +1368,35 @@ components:
           description: Province or state
         country:
           type: string
-          description: 2 digit ISO code of the contry (ISO 3166-1 alpha-2)
+          description: 2 digit ISO code of the country (ISO 3166-1 alpha-2)
           example: IT
           maxLength: 2
           minLength: 2
         phone:
           type: string
-          description: "Optional phone number. \r\nNot mandatory for all deliveries, \r\nbut may be required if using express couriers \r\nthat mandate recipient contact information \r\nfor delivery notifications or coordination.\r\n"
+          description: |-
+            Optional phone number.
+            Not mandatory for all deliveries,
+            but may be required if using express couriers
+            that mandate recipient contact information
+            for delivery notifications or coordination.
           example: "+3902123456789"
           maxLength: 50
         email:
           type: string
-          description: "Optional email address. \r\nNot mandatory for all deliveries, \r\nbut may be required if using express couriers \r\nthat mandate recipient contact information \r\nfor delivery notifications or coordination.\r\n"
+          description: |-
+            Optional email address.
+            Not mandatory for all deliveries,
+            but may be required if using express couriers
+            that mandate recipient contact information
+            for delivery notifications or coordination.
           example: mario.rossi@mariorossi.it
           maxLength: 255
         vat:
           type: string
-          x-stoplight:
-            id: ehjipqsheim7c
           example: "1234567890"
         tax_id:
           type: string
-          x-stoplight:
-            id: 9xsvmmfboa3xx
           example: AAABBB70A20I999Z
     delivery_creation:
       title: Delivery order creation model
@@ -1546,7 +1484,6 @@ components:
           custom_attributes:
             - name: a_custom_string
               value: lorem ipsum doloret
-      x-internal: false
       required:
         - code
         - date
@@ -1609,19 +1546,25 @@ components:
           example: DHLEXP
         high_priority:
           type: boolean
-          description: "High priority delivery. Deprecated, use instead `priority` value. \r\nA `true` value set automatically `priority` value to 1000\r\n"
+          description: |-
+            High priority delivery. Deprecated, use instead `priority` value.
+            A `true` value set automatically `priority` value to 1000
           deprecated: true
         priority:
           type: integer
-          x-stoplight:
-            id: p65bx1uomlzev
           default: 0
-          description: "Urgency level for processing a delivery. \r\nIt determines the order in which deliveries \r\nshould be fulfilled, with higher priority \r\nvalues indicating more urgent processing.\r\n"
+          description: |-
+            Urgency level for processing a delivery.
+            It determines the order in which deliveries
+            should be fulfilled, with higher priority
+            values indicating more urgent processing.
         partial_allowed:
           type: boolean
-          x-stoplight:
-            id: 7d4kltvxn8e2j
-          description: "Indicates whether a delivery can be fulfilled \r\nwith a quantity lower than the requested amount. \r\nIf `true`, the system allows partial fulfillment; \r\nif `false`, the delivery must be completed in full.\r\n"
+          description: |-
+            Indicates whether a delivery can be fulfilled
+            with a quantity lower than the requested amount.
+            If `true`, the system allows partial fulfillment;
+            if `false`, the delivery must be completed in full.
           default: true
         shipment_date:
           type: string
@@ -1656,7 +1599,7 @@ components:
                 type: string
                 maxLength: 50
                 example: AVAIL
-                description: Stock from wich must fulfilled the delivery row
+                description: Stock from which the delivery row must be fulfilled
               reference:
                 type: string
                 description: Reference information for the row, returned to Host
@@ -1685,8 +1628,6 @@ components:
                 type: string
                 example: BOX01
                 description: Indicates the package type that must be used to pack the item
-                x-stoplight:
-                  id: slonmnuta98yl
               do_not_print:
                 type: boolean
                 default: false
@@ -1702,7 +1643,7 @@ components:
                 $ref: "#/components/schemas/custom_attributes"
         print_delivery:
           type: boolean
-          description: Indicate that warahouse must print and apply the delivery notes
+          description: Indicate that warehouse must print and apply the delivery notes
           default: false
         ship_on_demand:
           type: boolean
@@ -1710,14 +1651,13 @@ components:
           description: Warehouse must wait explicit confirmation to ship the delivery
         allow_extra_items:
           type: boolean
-          x-stoplight:
-            id: g4gvcc6kyo4x2
-          description: "A boolean flag that indicates whether additional items can be added to the delivery beyond the originally requested quantity.\r\n- If set to true, the system allows the delivery to include quantities exceeding the customer's initial request.\r\n- If set to false, the delivery must strictly adhere to the requested quantity."
+          description: |-
+            A boolean flag that indicates whether additional items can be added to the delivery beyond the originally requested quantity.
+            - If set to true, the system allows the delivery to include quantities exceeding the customer's initial request.
+            - If set to false, the delivery must strictly adhere to the requested quantity.
           default: false
         freight_term:
           type: string
-          x-stoplight:
-            id: l40jrpnuze52k
           maxLength: 255
           example: Freight prepaid, Porto Franco, etc
         warehouse_annotations:
@@ -1788,8 +1728,6 @@ components:
           $ref: "#/components/schemas/custom_attributes"
         documents:
           type: array
-          x-stoplight:
-            id: g9vfg3ujxe5ze
           items:
             $ref: "#/components/schemas/documents"
     delivery_prepared_details:
@@ -1825,7 +1763,6 @@ components:
                   expiration_date: "2019-08-24"
                   expedition_date: "2019-08-24"
           channel: WS
-      x-internal: false
       required:
         - code
         - preparation_date
@@ -1845,8 +1782,6 @@ components:
           description: Preparation or cancellation date
         courier_code:
           type: string
-          x-stoplight:
-            id: b600j9ipxkl08
           description: Courier expected for the shipments
         cancelled:
           type: boolean
@@ -1886,26 +1821,18 @@ components:
             - FTP
         tracking:
           type: object
-          x-stoplight:
-            id: gwagt9chteh6v
           description: "Tracking information by the courier (if available). "
           required:
             - code
           properties:
             code:
               type: string
-              x-stoplight:
-                id: jz6rbzacojwyh
               description: Tracking code, Ex AWB or Piece ID
             link:
               type: string
-              x-stoplight:
-                id: nmjkcvulfxeip
               description: Tracking link, if available
     delivery_note_details:
       title: Delivery note model
-      x-stoplight:
-        id: g2lfb2xa0wa6y
       type: object
       description: Delivery note details model
       x-examples:
@@ -1937,7 +1864,6 @@ components:
                   expiration_date: "2019-08-24"
                   expedition_date: "2019-08-24"
           channel: WS
-      x-internal: false
       required:
         - code
         - courier_code
@@ -1962,23 +1888,15 @@ components:
           format: decimal
         destination:
           type: object
-          x-stoplight:
-            id: ywul9mfqzzf3d
           required:
             - name
           properties:
             code:
               type: string
-              x-stoplight:
-                id: myc7mkkcdo2rz
             name:
               type: string
-              x-stoplight:
-                id: ctlf7m8ln0833
             description:
               type: string
-              x-stoplight:
-                id: 9kb27gp7zk9jb
             address:
               $ref: "#/components/schemas/address"
         packages:
@@ -2001,8 +1919,6 @@ components:
       title: Delivery cancelled model
       type: object
       description: Cancelled deliver order details model
-      x-examples: {}
-      x-internal: false
       properties:
         code:
           type: string
@@ -2025,9 +1941,7 @@ components:
     shipment_details:
       title: Shipment details model
       type: object
-      x-internal: false
       description: Shipment details model
-      x-examples: {}
       properties:
         code:
           type: string
@@ -2071,7 +1985,6 @@ components:
     item_stock:
       title: Stock details model
       type: object
-      x-internal: false
       description: Item stock details
       required:
         - item
@@ -2103,15 +2016,11 @@ components:
           description: Expedition date, if enabled for the item
         weight:
           type: number
-          x-stoplight:
-            id: 3fbtnm31eaxvm
           description: Total item weight
     adjustment:
       title: Adjustment model
       type: object
       description: Changing in the inventory of the warehouse
-      x-internal: false
-      x-examples: {}
       properties:
         code:
           type: string
@@ -2146,7 +2055,6 @@ components:
     movement_type:
       title: Movement type model
       type: object
-      x-internal: false
       description: Types of movement
       properties:
         code:
@@ -2160,7 +2068,6 @@ components:
     package:
       title: package
       type: object
-      x-internal: false
       properties:
         code:
           type: string
@@ -2187,8 +2094,6 @@ components:
     package_item:
       title: package_item
       type: object
-      x-internal: false
-      x-examples: {}
       required:
         - row_number
         - item
@@ -2224,14 +2129,10 @@ components:
           description: Expedition date, if enabled for the item
         weight:
           type: number
-          x-stoplight:
-            id: erf4snsmzhlci
           description: Total item weight
     item_reference:
       title: item_reference
-      x-examples: {}
       type: object
-      x-internal: false
       properties:
         code:
           type: string
@@ -2247,11 +2148,8 @@ components:
         - code
     custom_attributes:
       title: custom_attributes
-      x-stoplight:
-        id: p0cvcyzcsan42
       type: array
       description: Array of custom attributes
-      x-examples: {}
       items:
         type: object
         required:
@@ -2268,10 +2166,7 @@ components:
             example: lorem ipsum doloret
     shipment_creation:
       title: shipment_creation
-      x-stoplight:
-        id: na2uo3vofpg0i
       type: object
-      x-examples: {}
       required:
         - code
         - date
@@ -2279,43 +2174,43 @@ components:
       properties:
         code:
           type: string
-          x-stoplight:
-            id: uwd23cros98y0
-          description: "Shipment code/number, generated by host system.\r\nCan be, for example, delivery note number"
+          description: |-
+            Shipment code/number, generated by host system.
+            Can be, for example, delivery note number
         date:
           type: string
-          x-stoplight:
-            id: gsnxbb907103f
           format: date
-          description: "Shipment date, generated by host system.\r\nCan be, for example, delivery note date"
+          description: |-
+            Shipment date, generated by host system.
+            Can be, for example, delivery note date
         deliveries:
           type: array
-          x-stoplight:
-            id: jo0374lxbrqpv
-          description: "Arrays of deliveries to be included in the shipment.\r\n\r\nThe deliveries must be in a prepared state, have the ship_on_demand flag set to true, and share the same destination, billing details, and characteristics."
+          description: |-
+            Arrays of deliveries to be included in the shipment.
+
+            The deliveries must be in a prepared state, have the ship_on_demand flag set to true, and share the same destination, billing details, and characteristics.
           items:
-            x-stoplight:
-              id: bjbd28wgp7zia
             type: string
             example: "00012345"
         documents:
           type: array
-          x-stoplight:
-            id: far90ycgjd9fd
-          description: "Arrays of documents in PDF format generated for the shipment.\r\n\r\nThese may include a delivery note, waybill, packing list, invoice, or a combination of these."
+          description: |-
+            Arrays of documents in PDF format generated for the shipment.
+
+            These may include a delivery note, waybill, packing list, invoice, or a combination of these.
           items:
             $ref: "#/components/schemas/documents"
         courier_code:
           type: string
-          x-stoplight:
-            id: vz72zolozcqy9
-          description: "Optional courier code. \r\nCan be used to override the currently assigned courier to the deliveries\r\n"
+          description: |-
+            Optional courier code.
+            Can be used to override the currently assigned courier to the deliveries
           example: DHLEXP
         destination:
           type: object
-          x-stoplight:
-            id: hgla8nzwj6za1
-          description: "Optional destination, overriding the destinations specified in deliveries.\r\nIf not provided, the shipment defaults to the destination of the first delivery in the `deliveries` array."
+          description: |-
+            Optional destination, overriding the destinations specified in deliveries.
+            If not provided, the shipment defaults to the destination of the first delivery in the `deliveries` array.
           required:
             - code
             - name
@@ -2323,13 +2218,9 @@ components:
           properties:
             code:
               type: string
-              x-stoplight:
-                id: b4en7xl6ifzep
               example: C12345
             name:
               type: string
-              x-stoplight:
-                id: 8iixw78upang2
               example: Mario Rossi
             address:
               $ref: "#/components/schemas/address"
@@ -2337,8 +2228,6 @@ components:
               $ref: "#/components/schemas/custom_attributes"
         cash_on_delivery:
           type: object
-          x-stoplight:
-            id: pl52of7lmwate
           description: Optional cash on delivery (COD) value
           required:
             - currency
@@ -2346,27 +2235,19 @@ components:
           properties:
             currency:
               type: string
-              x-stoplight:
-                id: yqabs98u0lf2k
               default: EUR
               description: '3 digit ISO 4217 Cash On Delivery currency (default: "EUR")'
             value:
               type: string
-              x-stoplight:
-                id: wsinpsja7yirs
               description: Cash On Delivery total amount
               example: "12.55"
             type:
               type: string
-              x-stoplight:
-                id: ho35dgoyx5qso
               description: Cash on delivery type, depend on courier
         custom_attributes:
           $ref: "#/components/schemas/custom_attributes"
     documents:
       title: documents
-      x-stoplight:
-        id: rwbvgmgd3pjxq
       type: object
       x-examples:
         Example 1:
@@ -2384,29 +2265,19 @@ components:
       properties:
         code:
           type: string
-          x-stoplight:
-            id: n7pwjvojf63mk
           description: Code or number of the document
         date:
           type: string
-          x-stoplight:
-            id: jb2hun73kv1z6
           format: date
           description: Date of the document
         type:
           type: string
-          x-stoplight:
-            id: 0t5kul9zk2kfr
           description: Type of the document. Example "Delivery notes" or "Invoice"
         print:
           type: boolean
-          x-stoplight:
-            id: kkepijxhpf80a
           description: Indicate that the document must be printed.
         content:
           type: string
-          x-stoplight:
-            id: wbkjthskthws3
           description: PDF document, encoded in base64 format
           example: Y29tcGxleCBkYXRhIGluIFhNTCBvciBKU09OLg==
   securitySchemes:
@@ -2492,7 +2363,6 @@ components:
         type: integer
         example: 55134833
       description: Unique identification number of Magware object
-  examples: {}
 tags:
   - name: Items
     description: >-

@@ -29,15 +29,24 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 - Riordinati i tag globali rispetto all'ordine alfabetico ereditato da Stoplight. Iterazione: prima passaggio a un ordine logico-per-flusso `ASN → Items → Deliveries → Delivery Notes → Shipments → Inventory → Utility`; poi affinamento mettendo `Items` prima di `ASN` (master data prima del flusso operativo inbound). Sequenza finale: `Items → ASN → Deliveries → Delivery Notes → Shipments → Inventory → Utility`. Su Scalar i tag diventano la sidebar di navigazione, quindi l'ordine influenza l'esperienza dell'integratore.
 - Riscritta `info.description`: rimossa immagine `i.imgur.com` (link rot esterno + branding altrui), rimosse emoji decorative (🎯 🏗️ 📊 🔄 ✅), rimossa sezione `Core Operational Flow` con ASCII diagram (informazioni già presenti nei singoli endpoint), rimossa sezione `Pattern Benefits` duplicata (bug Stoplight, era ripetuta due volte), rimossa table `Polling vs Push` (concetto già coperto nel paragrafo precedente). Mantenuto e snellito il contenuto distintivo: Overview, Authentication, polling pattern "List → Details", Webhook alternative, reporting issues. Riduzione: ~310 → ~76 righe.
 
+### Removed
+
+- Tag globale `Models`: era dichiarato in `tags:` ma non usato da nessuna operation.
+- Rimossi tutti i blocchi `x-stoplight: { id: ... }` (53 occorrenze) — retaggio Stoplight, identificatori opachi senza valore semantico per gli integratori.
+- Rimossi tutti gli `x-internal: false` (16 occorrenze) — retaggio Stoplight, in OpenAPI standard non ha effetto.
+- Rimossi `x-examples: {}` vuoti (8) e `parameters: []` vuoti a livello path (9) e `examples: {}` vuoti su request body (3) e a livello components — solo rumore.
+- Rimossi blocchi response `application/xml`, `multipart/form-data`, `text/html` con `schema: { type: object, properties: {} }` su `/deliveries/prepared/{id}`, `/deliveries/cancelled/{id}`, `/delivery_notes/{id}` (9 blocchi totali) — content-type fittizi senza contenuto reale, ereditati da Stoplight.
+- Rimossi `description: ""` esplicitamente vuoti (2 occorrenze).
+
 ### Fixed
 
 - `info.license.url`: aggiunto schema `https://` mancante (era `www.re-store.it`, ora `https://www.re-store.it`).
 - `paths./delivery_notes/{id}.get.operationId`: era duplicato (`get-deliveries-prepared-id`, lo stesso usato da `/deliveries/prepared/{id}`); rinominato in `get-delivery-notes-id` per coerenza col path.
 - Schema `delivery_note_details`: rimossa la property `date` (e la sua dichiarazione come `required`) al root — non esiste nel backend reale, l'oggetto reale ha `preparation_date` (al root) e `delivery_note.date` (annidato). Risolta così l'inconsistenza che bloccava il lint Spectral su `oas3-valid-media-example` per l'esempio `Prepared delivery`. Rimosso di conseguenza l'override temporaneo in `.spectral.yaml`.
-
-### Removed
-
-- Tag globale `Models`: era dichiarato in `tags:` ma non usato da nessuna operation.
+- Typo `decription` → `description` nello schema `item.supplier.item` (sia property name sia in `required`). **Da verificare**: il backend Magware potrebbe avere il typo originale; se sì, il fix qui causerebbe un breaking accidentale e va riallineato in Track 7 (coerenza spec ↔ backend).
+- Typo prosa: `Usefull` → `Useful` (`/version`), `tipically` → `typically` (`item.um`), `phisical` → `physical` (`item.variants[].quantity`), `contry` → `country` (`address.country`), `wich` → `which` + riformulato (`delivery_creation.items[].stock_type`), `warahouse` → `warehouse` (`delivery_creation.print_delivery`).
+- Typo / incoerenze in `operationId`: `updateitem` → `put-items-item_code`, `post-orders` → `post-deliveries`, `get-shippments` → `get-shipments`, `get-shipments-shipment_code` → `get-shipments-id`, `get-adjiustments` → `get-adjustments`, `get-stock` → `get-stocks`, `get-stocks-id` → `get-stocks-item_code` (allineato al nome del path-param). I client SDK generati dalla spec saranno impattati dai nuovi nomi: trattare come breaking per chi rigenera dal contratto.
+- Convertite 15 `description` da stringa quoted single-line con `\r\n` letterali a YAML literal block scalar (`|-`). Stesso testo, leggibile sia da chi consulta lo YAML sia da chi lo edita.
 
 ### Known issues
 
