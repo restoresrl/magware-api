@@ -37,6 +37,10 @@ dist/
 .parcel-cache/
 preview/magware.yaml
 
+# --- Magware backend references (proprietary, do not commit) ---
+magware-refs/*
+!magware-refs/.gitkeep
+
 # --- Tooling cache ---
 .eslintcache
 .stylelintcache

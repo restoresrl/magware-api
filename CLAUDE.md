@@ -83,6 +83,10 @@ Due comandi custom in `.claude/commands/` per allinearsi rapidamente all'inizio 
 - **`/avvia-fase [Fase N]`** — apre una nuova fase della Roadmap. Riallineamento (CLAUDE.md auto, `git log`/`status`, rilettura Roadmap, segnalazione decisioni aperte), peek leggero alla spec quando esiste, brief 5-10 righe su cosa farò + cosa serve da te + mini-Q&A su decisioni puntuali. Aspetta OK prima di toccare file. Se l'argomento è omesso, propone la prossima Fase non chiusa.
 - **`/riprendi [note opzionali]`** — riprende lavoro a metà di una fase già in corso. Riallineamento più rapido (`git log`/`status`/`branch`, lettura file modificati di recente), brief 3-5 righe su dove eravamo + cosa sto per fare + dubbi bloccanti, poi prosegue senza Q&A ampie.
 
+### Materiale di riferimento del backend (`magware-refs/`)
+
+Cartella locale (gitignored) in cui Carlo deposita estratti di sorgente del backend Magware o materiale interno utile per verificare la coerenza spec ↔ implementazione (Track 7 della Fase 2bis): codice PowerBuilder, schemi DB, sample payload reali, log, ecc. È **codice proprietario di Restore** e non deve finire nel repo pubblico — `.gitignore` esclude tutto il contenuto eccetto `.gitkeep`. Quando Carlo segnala un file qui, leggilo direttamente e usalo come fonte autorevole per dirimere dubbi che la sola spec non risolve (es. "il backend si aspetta `description` o `decription`?").
+
 ---
 
 ## Comandi utili
