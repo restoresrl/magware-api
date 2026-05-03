@@ -84,26 +84,79 @@ info:
 paths:
   /items:
     post:
-      summary: Create a new item
+      summary: Create one or more items
       operationId: post-items
+      description: |-
+        Create an item to be managed by the warehouse.
+
+        The request body can be either a **single item object** or an **array
+        of item objects** (up to 100) for bulk creation. The two forms produce
+        different response shapes:
+
+        - Single item → `201 Created` with `success` envelope.
+        - Bulk array → `200 OK` with a per-item result array, where each entry
+          reports `success` or `error` independently. The HTTP status is `200`
+          even if some items in the array failed; check each element's
+          `status` field.
       responses:
+        "200":
+          description: |-
+            Bulk creation result. Returned when the request body is an array
+            of items. Each element of the response array reports the outcome
+            for the corresponding input item.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/bulk_item_result"
+              examples:
+                bulk-mixed:
+                  summary: Bulk result with one success and one error
+                  value:
+                    - position: 0
+                      item_code: "1234567890AB"
+                      status: success
+                      description: "Item '1234567890AB' created"
+                    - position: 1
+                      item_code: "999999999"
+                      status: error
+                      description: "Item '999999999' already exists"
         "201":
-          $ref: "#/components/responses/success"
+          description: |-
+            Single item creation result. Returned when the request body is a
+            single item object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/success"
+              examples:
+                example:
+                  value:
+                    status: success
+                    description: "Item '1234567890AB' created"
         "400":
           $ref: "#/components/responses/error"
-      description: Create an item to be managed by the warehouse
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/item"
+              oneOf:
+                - $ref: "#/components/schemas/item"
+                - type: array
+                  description: Bulk creation. Up to 100 items in a single call.
+                  items:
+                    $ref: "#/components/schemas/item"
+                  minItems: 1
+                  maxItems: 100
             examples:
-              example-1:
+              single:
+                summary: Single item
                 value:
                   code: 1234567890AB
-                  description: string
+                  description: A red pretty t-shirt
                   um: PCS
-                  note: string
                   warehouse_category:
                     code: "001"
                     description: Clothing
@@ -125,6 +178,23 @@ paths:
                   expedition_date_control: true
                   expedition_days: 0
                   obsolete: false
+              bulk:
+                summary: Bulk creation (array of items)
+                value:
+                  - code: 1234567890AB
+                    description: A red pretty t-shirt
+                    um: PCS
+                    variants:
+                      - code: "10"
+                        description: XXS
+                        quantity: 1
+                  - code: 545664789AB
+                    description: Red wine
+                    um: PCS
+                    variants:
+                      - code: "-"
+                        description: "-"
+                        quantity: 1
       parameters:
         - $ref: "#/components/parameters/owner"
       tags:
@@ -910,7 +980,6 @@ components:
       title: Item model
       required:
         - code
-        - description
         - um
         - variants
       properties:
@@ -2280,6 +2349,51 @@ components:
           type: string
           description: PDF document, encoded in base64 format
           example: Y29tcGxleCBkYXRhIGluIFhNTCBvciBKU09OLg==
+    success:
+      title: Success envelope
+      type: object
+      description: Standard envelope for a successful single-resource operation.
+      required:
+        - status
+        - description
+      properties:
+        status:
+          type: string
+          enum:
+            - success
+          description: Always `success` for HTTP 2xx responses.
+        description:
+          type: string
+          description: Human-readable confirmation message.
+    bulk_item_result:
+      title: Bulk item result
+      type: object
+      description: |-
+        Outcome of a single item inside a bulk creation request. The bulk
+        endpoint returns one entry per input item; the HTTP status of the
+        whole call is `200` even if some entries report `error`.
+      required:
+        - position
+        - item_code
+        - status
+        - description
+      properties:
+        position:
+          type: integer
+          minimum: 0
+          description: Zero-based index of the item in the input array.
+        item_code:
+          type: string
+          description: Echo of the input item `code` (useful when `position` is not enough to identify the item in client-side logs).
+        status:
+          type: string
+          enum:
+            - success
+            - error
+          description: Outcome for this specific item.
+        description:
+          type: string
+          description: Confirmation message when `status` is `success`, error description when `status` is `error`.
   securitySchemes:
     APIKey:
       name: APIKey
