@@ -19,12 +19,41 @@ info:
 
     ## Authentication
 
-    Every request requires two headers:
+    Every request requires two headers, both issued by Restore in onboarding:
 
-    - `APIKey` — API key issued by Restore
-    - `owner` — multi-tenant identifier (the customer code)
+    - `APIKey` — identifies the integrator
+    - `owner` — identifies the Magware tenant the request operates on (max
+      15 characters)
 
-    Both are mandatory; missing or invalid values return `401 Unauthorized`.
+    The two are bound 1:1 (an `APIKey` is valid only on its `owner`) and
+    are declared together as a combined security scheme — most API tools
+    (Scalar, Postman, generated SDKs) expose them in a single "Authorize"
+    panel rather than as per-request parameters.
+
+    Missing or invalid values return `401 Unauthorized` with the standard
+    error envelope.
+
+    ## Errors
+
+    All error responses share a minimal envelope:
+
+    ```json
+    { "status": "error", "description": "Item '1234567890AB' already exists" }
+    ```
+
+    There is no machine-readable `error_code` — branch on the HTTP status
+    code and use `description` for diagnostic/log purposes only. The HTTP
+    statuses returned by the API are:
+
+    - `400 Bad Request` — payload validation failed or business rule
+      violated (e.g. duplicate code, missing required field).
+    - `401 Unauthorized` — missing or invalid `APIKey`/`owner`.
+    - `404 Not Found` — the resource id does not exist (or has already
+      been acquired by a previous detail call, see polling pattern below).
+    - `500 Internal Server Error` — unexpected runtime error.
+
+    `409 Conflict` and `422 Unprocessable Entity` are **not** used by the
+    API — duplicates and validation errors are signalled as `400`.
 
     ## Polling pattern: "List → Details"
 
@@ -90,27 +119,34 @@ paths:
         Create an item to be managed by the warehouse.
 
         The request body can be either a **single item object** or an **array
-        of item objects** (up to 100) for bulk creation. The two forms produce
-        different response shapes:
+        of item objects** (up to 100) for bulk creation. Both forms return
+        HTTP `200`, but the response body shape differs:
 
-        - Single item → `201 Created` with `success` envelope.
-        - Bulk array → `200 OK` with a per-item result array, where each entry
-          reports `success` or `error` independently. The HTTP status is `200`
-          even if some items in the array failed; check each element's
-          `status` field.
+        - Single item → `success` envelope (`{status, description}`).
+        - Bulk array → array of per-item results, where each entry reports
+          `success` or `error` independently. The HTTP status is `200` even
+          if some items in the array failed; check each element's `status`
+          field.
       responses:
         "200":
           description: |-
-            Bulk creation result. Returned when the request body is an array
-            of items. Each element of the response array reports the outcome
-            for the corresponding input item.
+            Creation result. The body shape depends on the request body
+            shape: a single envelope for a single-item request, an array
+            of per-item results for a bulk request.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/bulk_item_result"
+                oneOf:
+                  - $ref: "#/components/schemas/success"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/bulk_item_result"
               examples:
+                single:
+                  summary: Single item created
+                  value:
+                    status: success
+                    description: "Item '1234567890AB' created"
                 bulk_mixed:
                   summary: Bulk result with one success and one error
                   value:
@@ -122,21 +158,12 @@ paths:
                       item_code: "999999999"
                       status: error
                       description: "Item '999999999' already exists"
-        "201":
-          description: |-
-            Single item creation result. Returned when the request body is a
-            single item object.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/success"
-              examples:
-                example:
-                  value:
-                    status: success
-                    description: "Item '1234567890AB' created"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       requestBody:
         required: true
         content:
@@ -218,6 +245,12 @@ paths:
           $ref: "#/components/responses/success"
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Items
     parameters:
@@ -239,7 +272,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/item"
         "404":
-          description: Not Found
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Items
       description: Returns item details
@@ -251,6 +288,10 @@ paths:
           description: OK
         "404":
           description: Not Found
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       description: Check if an item exists
       tags:
         - Items
@@ -291,8 +332,10 @@ paths:
                       exists: false
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
         "500":
-          description: Internal Server Error
+          $ref: "#/components/responses/internal_server_error"
       operationId: post-items-exists
       description: |-
         Checks whether one or more items/variants exists in Magware.
@@ -324,6 +367,10 @@ paths:
           $ref: "#/components/responses/success"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       description: Create a new Advanced Shipping Notice that must be received by the warehouse
       requestBody:
         content:
@@ -342,6 +389,10 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - ASN
   /asn/received/{id}:
@@ -402,6 +453,12 @@ paths:
                         received_quantity: 7
                         stock_type: AVAIL
                         reference: "5000123402"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - ASN
   /deliveries:
@@ -413,6 +470,10 @@ paths:
           $ref: "#/components/responses/success"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       description: Create a delivery order that must be fulfilled by the warehouse
       requestBody:
         content:
@@ -429,6 +490,10 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-deliveries-prepared
       description: Return a list of prepared deliveries not yet acquired by Host
       tags:
@@ -481,6 +546,12 @@ paths:
                             reference: aaabbbcc
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Deliveries
   /deliveries/cancelled:
@@ -491,6 +562,10 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-deliveries-cancelled
       description: Return a list of cancelled (not fulfilled) deliveries not yet acquired by Host
       tags:
@@ -523,6 +598,12 @@ paths:
                     channel: WS
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Deliveries
   /shipments:
@@ -535,6 +616,10 @@ paths:
           $ref: "#/components/responses/success"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: post-shipments
       description: |-
         Create a shipment for one or more deliveries to the same destination.
@@ -557,6 +642,10 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Shipments
   /shipments/{id}:
@@ -585,6 +674,12 @@ paths:
                         tracking_id: 123456789
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-shipments-id
       description: "Return detailed information about a shipment and mark it as acquired by host system "
       tags:
@@ -600,7 +695,11 @@ paths:
         "200":
           $ref: "#/components/responses/object_list"
         "400":
-          description: Bad Request
+          $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
   /adjustments/{id}:
     parameters:
       - $ref: "#/components/parameters/id"
@@ -635,6 +734,12 @@ paths:
                         expedition_date: "2019-08-24"
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-adjustments-id
       description: Return adjustment details
   /stocks:
@@ -679,6 +784,10 @@ paths:
                         quantity: 2
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-stocks
       description: Return list of items that currently have stock in the warehouse
   /stocks/{item_code}:
@@ -725,6 +834,10 @@ paths:
                       quantity: 12
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-stocks-item_code
       description: Return current stock of a single item
   /delivery_notes/prepared:
@@ -735,6 +848,10 @@ paths:
           $ref: "#/components/responses/object_list"
         "400":
           $ref: "#/components/responses/error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       operationId: get-delivery-notes-prepared
       description: Return a list of prepared delivery notes not yet acquired by Host
       tags:
@@ -787,6 +904,12 @@ paths:
                             reference: aaabbbcc
         "400":
           $ref: "#/components/responses/error"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
       tags:
         - Delivery Notes
   /version:
@@ -822,6 +945,10 @@ paths:
                   value:
                     product: Magware 2021
                     version: 21.0.0.391
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/internal_server_error"
 components:
   schemas:
     item:
@@ -2321,6 +2448,27 @@ components:
         description:
           type: string
           description: Human-readable confirmation message.
+    error_response:
+      title: Error envelope
+      type: object
+      description: |-
+        Standard envelope returned for any 4xx/5xx response (with one
+        documented exception: see the 404 known issue in Magware backend).
+        The envelope is intentionally minimal — there is no machine-readable
+        `error_code`. Integrators should rely on the HTTP status to branch
+        logic and use `description` for diagnostic/log purposes only.
+      required:
+        - status
+        - description
+      properties:
+        status:
+          type: string
+          enum:
+            - error
+          description: Always `error` for HTTP 4xx/5xx responses.
+        description:
+          type: string
+          description: Human-readable error description (English, suitable for logs and dev-facing UIs, not for end-users).
     bulk_item_result:
       title: Bulk item result
       type: object
@@ -2367,46 +2515,92 @@ components:
         together and cannot be mixed across tenants.
   responses:
     success:
-      description: Shipment successfully created
+      description: |-
+        Resource successfully created or updated. Body is the standard
+        success envelope.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              status:
-                type: string
-                enum:
-                  - success
-              description:
-                type: string
-            required:
-              - status
+            $ref: "#/components/schemas/success"
           examples:
-            success:
+            example:
               value:
                 status: success
+                description: "Resource created"
     error:
-      description: Error processing request
+      description: |-
+        Bad request — payload validation failed, business rule violated, or
+        the requested operation is not implemented for this resource. Body
+        is the standard error envelope.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: error
-                enum:
-                  - error
-              description:
-                type: string
-            required:
-              - status
-              - description
+            $ref: "#/components/schemas/error_response"
           examples:
-            error:
+            empty_payload:
+              summary: Empty request body
               value:
                 status: error
-                description: Error creating object
+                description: "Empty payload"
+            validation:
+              summary: Business validation
+              value:
+                status: error
+                description: "Item '1234567890AB' already exists"
+    unauthorized:
+      description: |-
+        Authentication failed: missing or invalid `APIKey` header, missing
+        or invalid `owner` header, or the `APIKey` does not match the one
+        configured for the given `owner`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error_response"
+          examples:
+            missing_apikey:
+              summary: Missing or invalid APIKey
+              value:
+                status: error
+                description: "Invalid 'APIKey' header"
+            missing_owner:
+              summary: Missing or invalid owner
+              value:
+                status: error
+                description: "Invalid 'owner' header"
+            wrong_apikey:
+              summary: APIKey not authorized for the given owner
+              value:
+                status: error
+                description: "Unauthorized APIKey for owner 'RST'"
+    not_found:
+      description: |-
+        The requested resource does not exist for the given `owner` (e.g.
+        an item code, ASN id, delivery id, shipment id, or adjustment id
+        that has never been created or has already been acquired by a
+        previous detail call).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error_response"
+          examples:
+            not_found:
+              value:
+                status: error
+                description: "Item with code '1234567890AB' not found for owner 'RST'"
+    internal_server_error:
+      description: |-
+        Unexpected server error (uncaught runtime exception). The
+        `description` field includes the raw error message for diagnostic
+        purposes; integrators should not parse it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error_response"
+          examples:
+            example:
+              value:
+                status: error
+                description: "Internal error, unable to process the request. <details>"
     object_list:
       description: List of Magware objects
       content:
