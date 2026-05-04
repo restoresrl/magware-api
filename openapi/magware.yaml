@@ -800,11 +800,17 @@ paths:
                           variant: "01"
                         stock_type: AVAIL
                         quantity: 12
+                        reserved_quantity: 3
+                        variant_quantity: 15
+                        variant_reserved_quantity: 3
                       - item:
                           code: A000010005
                           variant: "01"
                         stock_type: FLAWED
                         quantity: 2
+                        reserved_quantity: 0
+                        variant_quantity: 2
+                        variant_reserved_quantity: 0
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -856,6 +862,9 @@ paths:
                         variant: "01"
                       stock_type: AVAIL
                       quantity: 12
+                      reserved_quantity: 3
+                      variant_quantity: 15
+                      variant_reserved_quantity: 3
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -2233,6 +2242,19 @@ components:
           type: number
           format: decimal
           example: 12
+        reserved_quantity:
+          type: number
+          format: decimal
+          description: Quantity reserved (pre-allocated) for pending orders
+          example: 0
+        variant_quantity:
+          type: integer
+          description: Total quantity for this item variant across all lots and stock types
+          example: 15
+        variant_reserved_quantity:
+          type: integer
+          description: Total reserved quantity for this item variant across all lots and stock types
+          example: 3
         lot_number:
           type: string
           maxLength: 100

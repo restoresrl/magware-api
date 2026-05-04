@@ -16,6 +16,9 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Added
 
+- `item_stock` schema: aggiunti campi `variant_quantity` (integer, opzionale) e `variant_reserved_quantity` (integer, opzionale) — emessi sempre da `GET /stocks` e `GET /stocks/{item_code}` via `json.setint` su colonne `min_tot` e `min_pre` (aggregati per variante su tutti i lotti e stock type). Opzionali per coerenza con `reserved_quantity` (schema condiviso con `adjustment.items`). Sorgente: `n_get_stocks.sru`.
+- `item_stock` schema: aggiunto campo `reserved_quantity` (number, decimal, opzionale) — emesso sempre da `GET /stocks` e `GET /stocks/{item_code}` via `json.setdecimal` su colonna `qta_pre` (sorgente `n_get_stocks.sru`). Campo opzionale (non `required`) perché lo schema è condiviso con `adjustment.items`, dove il backend degli adjustment non emette questo campo. Esempi nei due endpoint `/stocks` aggiornati con valori realistici.
+
 - Importata la spec attuale di Magware API da Stoplight (bundled reference, 20 endpoint, 8 tag, 18 schema). Sostituito integralmente lo skeleton placeholder che era in `openapi/magware.yaml`.
 - Aggiunto il tag globale `Delivery Notes` (era usato da 2 operation ma mancava nella dichiarazione `tags:` globale).
 - Aggiunte description significative a tutti i 7 tag (prima erano placeholder identici al nome).
