@@ -267,6 +267,7 @@ paths:
         description: A unique identifier for a `item`, URL encoded.
         schema:
           type: string
+          maxLength: 200
           example: 123456789AB
         in: path
         required: true
@@ -816,6 +817,7 @@ paths:
     parameters:
       - schema:
           type: string
+          maxLength: 200
         name: item_code
         in: path
         required: true
@@ -1259,9 +1261,11 @@ components:
           properties:
             code:
               type: string
+              maxLength: 50
               description: Supplier identification code
             name:
               type: string
+              maxLength: 100
               description: Supplier name
             item:
               type: object
@@ -1272,9 +1276,11 @@ components:
               properties:
                 code:
                   type: string
+                  maxLength: 255
                   description: "Supplier item code "
                 description:
                   type: string
+                  maxLength: 500
                   description: Supplier item description
         custom_attributes:
           $ref: "#/components/schemas/custom_attributes"
@@ -1397,14 +1403,20 @@ components:
                 example: "5000123401"
               lot_number:
                 type: string
+                maxLength: 100
+                description: Lot number, if enabled for the item
               serial_number:
                 type: string
+                maxLength: 25
+                description: Serial number, if enabled for the item
               expiration_date:
                 type: string
                 format: date
+                description: Expiration date, if enabled for the item
               expedition_date:
                 type: string
                 format: date
+                description: Expedition date, if enabled for the item
               custom_attributes:
                 $ref: "#/components/schemas/custom_attributes"
         custom_attributes:
@@ -1472,6 +1484,7 @@ components:
           format: date
         channel:
           type: string
+          maxLength: 50
           description: |-
             Transmission channel through which the ASN entered Magware
             (e.g. `WS` for web service, `FTP` for file-based ingestion).
@@ -1541,6 +1554,7 @@ components:
           description: "Name of the street and house number "
         address2:
           type: string
+          maxLength: 100
           example: c/o Restore SrL
         city:
           type: string
@@ -1696,6 +1710,7 @@ components:
               description: Destination name
             description:
               type: string
+              maxLength: 255
               description: Destination description
             address:
               $ref: "#/components/schemas/address"
@@ -1810,6 +1825,7 @@ components:
                 description: Indicates that the item must not be picked and delivered
               package_type:
                 type: string
+                maxLength: 100
                 example: BOX01
                 description: Indicates the package type that must be used to pack the item
               do_not_print:
@@ -1860,6 +1876,8 @@ components:
           properties:
             currency:
               type: string
+              maxLength: 3
+              minLength: 3
               description: 3-digit ISO 4217 Cash On Delivery currency. Conventional value is "EUR".
               example: EUR
             value:
@@ -1867,6 +1885,7 @@ components:
               description: Cash On Delivery total amount
             type:
               type: string
+              maxLength: 4000
               description: Cash on delivery type, depend on courier
         billing:
           type: object
@@ -1877,10 +1896,13 @@ components:
           properties:
             code:
               type: string
+              maxLength: 50
             name:
               type: string
+              maxLength: 100
             description:
               type: string
+              maxLength: 255
             address:
               $ref: "#/components/schemas/address"
             first_name:
@@ -1920,6 +1942,7 @@ components:
               example: 12345.2
             incoterm:
               type: string
+              maxLength: 3
               description: >-
                 Shipment incoterm: DAP, DDP or EXW. For cross borders shipments the default value would be DAP in case
                 it's not specified in the request differently
@@ -1982,6 +2005,7 @@ components:
           description: Preparation or cancellation date
         courier_code:
           type: string
+          maxLength: 15
           description: Courier expected for the shipments
         cancelled:
           type: boolean
@@ -2019,15 +2043,17 @@ components:
             - FTP
         tracking:
           type: object
-          description: "Tracking information by the courier (if available). "
+          description: Tracking information by the courier (if available)
           required:
             - code
           properties:
             code:
               type: string
+              maxLength: 250
               description: Tracking code, Ex AWB or Piece ID
             link:
               type: string
+              maxLength: 250
               description: Tracking link, if available
     delivery_note_details:
       title: Delivery note model
@@ -2075,6 +2101,7 @@ components:
           example: "800123456"
         courier_code:
           type: string
+          maxLength: 15
           description: Courier expected for the shipments
         weight:
           type: number
@@ -2091,10 +2118,13 @@ components:
           properties:
             code:
               type: string
+              maxLength: 50
             name:
               type: string
+              maxLength: 100
             description:
               type: string
+              maxLength: 255
             address:
               $ref: "#/components/schemas/address"
         packages:
@@ -2103,15 +2133,17 @@ components:
             $ref: "#/components/schemas/package"
         tracking:
           type: object
-          description: "Tracking information by the courier (if available). "
+          description: Tracking information by the courier (if available)
           required:
             - code
           properties:
             code:
               type: string
+              maxLength: 250
               description: Tracking code, Ex AWB or Piece ID
             link:
               type: string
+              maxLength: 250
               description: Tracking link, if available
     delivery_cancelled_details:
       title: Delivery cancelled model
@@ -2142,6 +2174,7 @@ components:
       properties:
         code:
           type: string
+          maxLength: 100
           description: Shipment code, generated by Magware
         date:
           type: string
@@ -2153,6 +2186,7 @@ components:
           description: Time when shipment leaves the warehouse
         courier_code:
           type: string
+          maxLength: 15
           description: Courier of the manifest
         deliveries:
           type: array
@@ -2161,12 +2195,15 @@ components:
             properties:
               delivery_code:
                 type: string
+                maxLength: 100
                 description: Delivery code as transmitted by host
               tracking_code:
                 type: string
+                maxLength: 250
                 description: Tracking code generated by the courier (if available). Ex AWB or Piece ID
               tracking_link:
                 type: string
+                maxLength: 250
                 description: Tracking link generated by the courier
               tracking_id:
                 type: integer
@@ -2191,6 +2228,7 @@ components:
           $ref: "#/components/schemas/item_reference"
         stock_type:
           type: string
+          maxLength: 50
         quantity:
           type: number
           format: decimal
@@ -2269,6 +2307,7 @@ components:
           type: string
         alternative_code:
           type: string
+          maxLength: 255
         weight:
           type: number
           format: decimal
@@ -2277,6 +2316,7 @@ components:
           format: decimal
         package_type:
           type: string
+          maxLength: 100
         items:
           type: array
           items:
@@ -2307,6 +2347,7 @@ components:
           format: decimal
         reference:
           type: string
+          maxLength: 50
         lot_number:
           type: string
           maxLength: 100
@@ -2370,6 +2411,7 @@ components:
       properties:
         code:
           type: string
+          maxLength: 250
           description: |-
             Shipment code/number, generated by host system.
             Can be, for example, delivery note number
@@ -2387,6 +2429,7 @@ components:
             The deliveries must be in a prepared state, have the ship_on_demand flag set to true, and share the same destination, billing details, and characteristics.
           items:
             type: string
+            maxLength: 100
             example: "00012345"
         documents:
           type: array
@@ -2398,6 +2441,7 @@ components:
             $ref: "#/components/schemas/documents"
         courier_code:
           type: string
+          maxLength: 15
           description: |-
             Optional courier code.
             Can be used to override the currently assigned courier to the deliveries
@@ -2414,9 +2458,11 @@ components:
           properties:
             code:
               type: string
+              maxLength: 50
               example: C12345
             name:
               type: string
+              maxLength: 100
               example: Mario Rossi
             address:
               $ref: "#/components/schemas/address"
@@ -2431,6 +2477,8 @@ components:
           properties:
             currency:
               type: string
+              maxLength: 3
+              minLength: 3
               description: 3-digit ISO 4217 Cash On Delivery currency. Conventional value is "EUR".
             value:
               type: string
@@ -2438,6 +2486,7 @@ components:
               example: "12.55"
             type:
               type: string
+              maxLength: 4000
               description: Cash on delivery type, depend on courier
         custom_attributes:
           $ref: "#/components/schemas/custom_attributes"
@@ -2531,6 +2580,7 @@ components:
           description: Zero-based index of the item in the input array.
         item_code:
           type: string
+          maxLength: 200
           description: Echo of the input item `code` (useful when `position` is not enough to identify the item in client-side logs).
         status:
           type: string
