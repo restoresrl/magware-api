@@ -1,0 +1,531 @@
+openapi: 3.1.0
+x-stoplight:
+  id: 54pyfywlpk0yd
+info:
+  title: Voicering Eurofrigo
+  version: '1.0'
+  summary: API per Voicering Eurofrigo
+  description: API per implementazione Voicering con W&D in Eurofrigo
+  contact:
+    name: Carlo Torrese
+    email: carlo.torrese@re-store.it
+    url: 'http://support.re-store.it'
+  license:
+    url: 'http://support.re-store.it'
+    name: Proprietary
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /getOrder:
+    get:
+      summary: getOrder
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: 'OK, in body ordine da prelevare'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mandante:
+                    type: string
+                    x-stoplight:
+                      id: 8byu8befbfoh6
+                    description: Codice mandate ordine da prelevare
+                  ordine:
+                    type: string
+                    x-stoplight:
+                      id: mdh9er8agepcw
+                    description: Codice ordine da prelevare
+                  cella:
+                    type: string
+                    x-stoplight:
+                      id: 0yxh57jmtut14
+                    description: Cella di prelievo
+                  righeTotali:
+                    type: integer
+                    x-stoplight:
+                      id: vntlubpg6q6x5
+                    description: Numero righe ordine totali
+                  righePrel:
+                    type: integer
+                    x-stoplight:
+                      id: q549q9mmlr58d
+                    description: Numero righe ancora da prelevare
+                  qtaTotale:
+                    type: integer
+                    x-stoplight:
+                      id: a3gvldrt2qchs
+                    description: Quantità totale da prelevare
+                  qtaPrel:
+                    type: integer
+                    x-stoplight:
+                      id: 6jgkibls68zib
+                    description: Quantita ancora da prelevare
+                required:
+                  - mandante
+                  - ordine
+                  - cella
+                  - righeTotali
+                  - righePrel
+                  - qtaTotale
+                  - qtaPrel
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: get-getOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utente:
+                  type: string
+                  x-stoplight:
+                    id: 78n3lyz7fo7h2
+                  description: Codice utente che richiede l'ordine. Deve essere uaguale a quello presente su W&D
+                ordine:
+                  type: string
+                  x-stoplight:
+                    id: g4abll4g8tj3p
+                  description: Codice ordine
+                cella:
+                  type: string
+                  x-stoplight:
+                    id: m9hazomaq6iv6
+                  description: Codice cella
+                mandante:
+                  type: string
+                  x-stoplight:
+                    id: 2d60m6xjccva3
+                  description: Codice mandante
+              required:
+                - utente
+            examples:
+              Example 1:
+                value:
+                  utente: string
+                  ordine: string
+                  cella: string
+                  mandante: string
+        description: ''
+      description: |-
+        Ritorna un ordine da eseguire in base a dati in body.  
+        utente + ordine + cella se usano stampa, altrimenti solo uetnte, oppure utente + cella, oppure utente + cella + mandante
+        Nota: per ora sparano barcode ordine + cella, sviluppo successivo con schedulazione su W&D
+  /getPickingRow:
+    get:
+      summary: getPickingRow
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    x-stoplight:
+                      id: mrxj482rirsd9
+                    description: ID della riga da prelevare (chiave per W&D)
+                  mandante:
+                    type: string
+                    x-stoplight:
+                      id: vlhe7ikh83a90
+                    description: Codice mandante
+                  ordine:
+                    type: string
+                    x-stoplight:
+                      id: tv1sy8l2zptnv
+                    description: Ordine in prelievo
+                  cella:
+                    type: string
+                    x-stoplight:
+                      id: bkoqolv5dzx55
+                    description: Cella prelievo
+                  pallet:
+                    type: string
+                    x-stoplight:
+                      id: d8zkz5va3neur
+                    description: 'Codice del pallet in prelievo, generato da W&D'
+                  raggruppamento:
+                    type: string
+                    x-stoplight:
+                      id: vq0umkb5cwbc8
+                    description: 'Codice raggruppamento prelievo, generato da W&D'
+                  codiceArticolo:
+                    type: string
+                    x-stoplight:
+                      id: 6e5rzok6flaye
+                    description: Codice articolo da prelevare
+                  descrizioneArticolo:
+                    type: string
+                    x-stoplight:
+                      id: 49nb88l3fanw5
+                    description: Descrizione articolo da prelevare
+                  barcode:
+                    type: string
+                    x-stoplight:
+                      id: 522xt59rd01aj
+                    description: 'EAN articolo, se disponibile'
+                  lotto:
+                    type: string
+                    x-stoplight:
+                      id: zl4aoyvzmmb7e
+                    description: 'Lotto da prelevare, se disponibile'
+                  dataScadenza:
+                    type: string
+                    x-stoplight:
+                      id: bv0q6tgrzhheh
+                    description: 'Data scadenza prodotto in prelievo, se disponibile'
+                  stato:
+                    type: string
+                    x-stoplight:
+                      id: 81utuwmh1orw6
+                    description: '????'
+                  proprieta:
+                    type: string
+                    x-stoplight:
+                      id: eyywu7916stlp
+                    description: '????'
+                  qta:
+                    type: integer
+                    x-stoplight:
+                      id: n1h29gvnchlug
+                    description: Quantità da prelevare
+                  qtaLocazione:
+                    type: integer
+                    x-stoplight:
+                      id: 1n5b4g8w7tiib
+                    description: 'Quantità in locazione, compresa quella da prelevare'
+                  settore:
+                    type: string
+                    x-stoplight:
+                      id: fczf7uo098rnp
+                  scaffale:
+                    type: string
+                    x-stoplight:
+                      id: qbl587bk29xw8
+                  fila:
+                    type: integer
+                    x-stoplight:
+                      id: w62ism6vr1pk9
+                  piano:
+                    type: integer
+                    x-stoplight:
+                      id: nsmt5191l9wgq
+                  locazione:
+                    type: string
+                    x-stoplight:
+                      id: 4392flvuudgj2
+                    description: Barcode della locazione
+                  abbassamento:
+                    type: boolean
+                    x-stoplight:
+                      id: 6lvqfrs1ultka
+                    description: Flag abbassamento in corso
+                  multiArticolo:
+                    type: boolean
+                    x-stoplight:
+                      id: c58dly583n0a7
+                    description: Flag locazione multi articolo
+                  multiLotto:
+                    type: boolean
+                    x-stoplight:
+                      id: bsbbb8lvu2gh2
+                    description: Flag locazione multi lotto
+                  multiScadenza:
+                    type: boolean
+                    x-stoplight:
+                      id: kflipv8juidss
+                    description: Flag locazione multi data scadenza
+                required:
+                  - id
+                  - mandante
+                  - ordine
+                  - cella
+                  - pallet
+                  - raggruppamento
+                  - codiceArticolo
+                  - descrizioneArticolo
+                  - qta
+                  - qtaLocazione
+                  - settore
+                  - scaffale
+                  - fila
+                  - piano
+                  - locazione
+                  - abbassamento
+                  - multiArticolo
+                  - multiLotto
+                  - multiScadenza
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: get-getPickingRow
+      description: Ritorna a Voicering prossima riga da prelevare per l'ordine in body
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  utente: string
+                  ordine: string
+                  cella: string
+                  mandante: string
+              properties:
+                utente:
+                  type: string
+                  description: Codice utente
+                mandante:
+                  type: string
+                  description: Codice mandante
+                ordine:
+                  type: string
+                  description: Codice ordine
+                cella:
+                  type: string
+                  description: Codice cella
+              required:
+                - utente
+                - mandante
+                - ordine
+                - cella
+            examples:
+              Example 1:
+                value:
+                  utente: carlo
+                  mandante: XYZ
+                  ordine: '123456'
+                  cella: A
+  /confirmPickingRow:
+    put:
+      summary: confirmPickingRow
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: 'OK, riga prelievo accettata'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  esito:
+                    type: string
+                    x-stoplight:
+                      id: 1pm9mxo37o07z
+                    enum:
+                      - ancora
+                      - completo
+                    description: 'ancora=ancora righe da prelevare, completo=ordine completato'
+                required:
+                  - esito
+              examples:
+                Example 1:
+                  value:
+                    esito: ancora
+                Example 2:
+                  value:
+                    esito: completo
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: put-confirmPickingRow
+      description: Conferma il prelivo di una riga a W&D
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utente:
+                  type: string
+                  x-stoplight:
+                    id: 1zbkwzn0w35gy
+                  description: Codice utente
+                id:
+                  type: string
+                  x-stoplight:
+                    id: ygtf8kzgna7g6
+                  description: ID della riga prelevata (chiave univoca di W&D)
+                esito:
+                  type: string
+                  x-stoplight:
+                    id: 5otj8yg5bzsda
+                  enum:
+                    - OK
+                    - PARZIALE
+                    - MANCANTE
+                    - SALTATA
+                  description: |-
+                    Esito dell'operazione  
+                    OK=prelevato tutto, PARZIALE=quantità prelvata parziale, MANCANTE=quantità mancante non prelevata, SALTATA=riga saltata dall'operatore
+                qta:
+                  type: integer
+                  x-stoplight:
+                    id: xump55jrjj4j3
+                  description: 'Se esito=ok,parziale allora qta prelevatato, se esito=manca,salta allora qta mancante o saltata'
+                pallet:
+                  type: string
+                  x-stoplight:
+                    id: gdhef9vg53sxs
+                  description: codice del pallet
+                causale:
+                  type: string
+                  x-stoplight:
+                    id: fjy8mjrdmquuq
+                  description: 'Causale mancanza, solo se esito=MANCANTE)'
+                  enum:
+                    - DANNEGGIATO
+                    - MANCANTE
+              required:
+                - utente
+                - id
+                - esito
+                - qta
+                - pallet
+  /closePallet:
+    put:
+      summary: closePallet
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: 'OK, chiusura pallet accettata ed etichette mandate in stampata'
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: put-closePallet
+      description: Comunica a W&D che deve essere chiuso il pallet per l'ordine
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utente:
+                  type: string
+                  x-stoplight:
+                    id: 1zbkwzn0w35gy
+                  description: Codice utente
+                pallet:
+                  type: string
+                  x-stoplight:
+                    id: 1tcvwmv4g0c8k
+                  description: Codice del pallet da chiudere
+                area:
+                  type: string
+                  x-stoplight:
+                    id: lwjnoqtctq6ku
+                  description: Area di stampa
+              required:
+                - pallet
+                - area
+  /stockPallet:
+    put:
+      summary: stockPallet
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: 'OK, pallet stoccato in locazione'
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: put-stockPallet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utente:
+                  type: string
+                  x-stoplight:
+                    id: 1zbkwzn0w35gy
+                  description: Codice utente
+                pallet:
+                  type: string
+                  x-stoplight:
+                    id: 9lms574mktenk
+                  description: Coodice del pallet da stoccare
+                locazione:
+                  type: string
+                  x-stoplight:
+                    id: vyw3fmamd8h20
+                  description: Barcode locazione di stoccaggio
+              required:
+                - pallet
+                - locazione
+      description: Comunica stoccaggio pallet in body
+  /suspendOrder:
+    put:
+      summary: suspendOrder
+      tags:
+        - Prelievo
+      responses:
+        '200':
+          description: 'OK, ordine sospeso'
+        '400':
+          $ref: '#/components/responses/errore'
+      operationId: put-suspendOrder
+      description: |-
+        Sospende l'ordine in argomento.
+        L'ordine può essere sospeso solo dopo la chiusura di un pallet o se mai iniziato
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  utente: carlo
+                  mandante: XYZ
+                  ordine: '123456'
+                  cella: A
+              properties:
+                utente:
+                  type: string
+                  description: Codice utente
+                mandante:
+                  type: string
+                  description: Codice mandante
+                ordine:
+                  type: string
+                  description: Codice ordine
+                cella:
+                  type: string
+                  description: Codice cella
+              required:
+                - utente
+                - mandante
+                - ordine
+                - cella
+components:
+  schemas: {}
+  responses:
+    errore:
+      description: Messaggio errore da leggere all'operatore
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errore:
+                type: string
+                x-stoplight:
+                  id: y8lknv56hnlnv
+                description: Messaggio errore da leggere all'operatore
+            required:
+              - errore
+          examples:
+            Example 1:
+              value:
+                errore: Utente non riconsciuto
+tags:
+  - name: Prelievo
+    description: Prelievo Eurofrigo

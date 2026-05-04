@@ -1,0 +1,3335 @@
+{
+    "openapi": "3.0.2",
+    "x-stoplight": {
+        "id": "58g7g2qv6b6lu"
+    },
+    "info": {
+        "version": "1.0.0",
+        "title": "IoT Connector Local REST APIs",
+        "contact": {
+            "url": "http://zebra.com/support"
+        },
+        "x-logo": {
+            "url": "./Zebra_Logo_K.png"
+        },
+        "description": "\n"
+    },
+    "paths": {
+        "/cloud/version": {
+            "parameters": [],
+            "get": {
+                "summary": "Retrieves reader component version information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/readerversion.v1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Device Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_version",
+                "description": "Retrieves reader component version information including Boot Loader, OS, Reader Application, and Radio Firmware versions",
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/network": {
+            "parameters": [],
+            "get": {
+                "summary": "Retrieves reader network configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/readernetwork.v1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_network",
+                "description": "Retrieves reader network information including IP address, subnet mask, gateway and DNS",
+                "tags": [
+                    "Management"
+                ]
+            },
+            "put": {
+                "summary": "Updates reader network configuration",
+                "operationId": "set_network",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Updates the reader network configuration settings",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/networkconfig.v1"
+                            }
+                        }
+                    },
+                    "description": ""
+                },
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/status": {
+            "parameters": [],
+            "get": {
+                "summary": "Retrieves reader operational statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/readerstats.v1"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/readerupgradestatus.v1"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/readerupgradestatus.v1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_status",
+                "description": "Retrieves reader operational statistics for read points",
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/reboot": {
+            "parameters": [],
+            "put": {
+                "summary": "Restarts reader",
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "headers": {
+                            "Location": {
+                                "description": "A URL that will provide a status of the restart",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "https://mock-api.zebra.com/v2/rfid-read-to-cloud/status"
+                                }
+                            }
+                        },
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string",
+                                    "default": "Reboot Pending",
+                                    "description": "Restart Pending",
+                                    "example": "Reboot Pending"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "reboot",
+                "description": "Restarts the reader with the device ID provided",
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/gpo": {
+            "put": {
+                "summary": "Updates GPO port state",
+                "operationId": "set_gpo",
+                "description": "Updates the GPO state on the specified port of the reader",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "port",
+                        "description": "The GPO port ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "state",
+                        "description": "The GPO state signal to send",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "object",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful",
+                                    "properties": {
+                                        "port": {
+                                            "type": "number",
+                                            "enum": [
+                                                1,
+                                                2,
+                                                3,
+                                                4
+                                            ],
+                                            "example": 1,
+                                            "description": "GPO Port number"
+                                        },
+                                        "state": {
+                                            "type": "boolean",
+                                            "description": "desired GPO state\n\ntrue: HIGH\n\nfalse: LOW"
+                                        }
+                                    },
+                                    "required": [
+                                        "port",
+                                        "state"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Management"
+                ]
+            },
+            "parameters": []
+        },
+        "/cloud/app-led": {
+            "put": {
+                "summary": "Updates application LED state",
+                "operationId": "set_appled",
+                "description": "Updates the application LED state on the reader to the state specified",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "color",
+                        "description": "The color of the LED (red, amber, green)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "red",
+                                "amber",
+                                "green"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "seconds",
+                        "description": "The duration in seconds for the LED state to be in effect",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "flash",
+                        "description": "A value indicating whether to flash the LED",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Management"
+                ]
+            },
+            "parameters": [],
+            "get": {
+                "summary": "Retrieves application LED state",
+                "operationId": "get_appled",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string",
+                                    "enum": [
+                                        "DEFAULT",
+                                        "NON_DEFAULT"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Retrieves a value indicating the current state of the application LED",
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/region": {
+            "parameters": [],
+            "get": {
+                "summary": "Retrieves reader region information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/regionconfig.v1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_region",
+                "description": "Retrieves reader region (country) information",
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/start": {
+            "parameters": [],
+            "put": {
+                "summary": "Starts reading tags",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "start",
+                "description": "Starts the reader reading tags",
+                "tags": [
+                    "Control"
+                ]
+            }
+        },
+        "/cloud/stop": {
+            "parameters": [],
+            "put": {
+                "summary": "Stops reading tags",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "stop",
+                "description": "Stops the reader reading tags",
+                "tags": [
+                    "Control"
+                ]
+            }
+        },
+        "/cloud/mode": {
+            "get": {
+                "summary": "Retrieves operating mode",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/operatingMode.v1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_mode",
+                "description": "Retrieves current operating mode",
+                "tags": [
+                    "Control"
+                ]
+            },
+            "put": {
+                "summary": "Updates identification mode",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "set_mode",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/operatingMode.v1"
+                            }
+                        }
+                    },
+                    "description": "The new identification mode"
+                },
+                "description": "Changes the reader's operating mode",
+                "tags": [
+                    "Control"
+                ]
+            },
+            "parameters": []
+        },
+        "/cloud/os": {
+            "parameters": [],
+            "put": {
+                "summary": "Updates software on device",
+                "operationId": "set_os",
+                "description": "Update the OS software on the device",
+                "tags": [
+                    "Management"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/os_update.v1"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/cloud/config": {
+            "parameters": [],
+            "put": {
+                "summary": "Updates reader configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "set_config",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/readerConfig"
+                            }
+                        }
+                    },
+                    "description": "The new reader configuration XML file"
+                },
+                "description": "Updates the reader configuration",
+                "tags": [
+                    "Management"
+                ]
+            },
+            "get": {
+                "summary": "Retrieves reader configuration",
+                "operationId": "get_config",
+                "description": "Retrieves reader configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/readerConfig"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Management"
+                ]
+            }
+        },
+        "/cloud/logs": {
+            "get": {
+                "summary": "Log Configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/logLevel.v1"
+                                }
+                            }
+                        },
+                        "headers": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_logs",
+                "description": "Retrieves reader log configuration",
+                "tags": [
+                    "Management"
+                ]
+            },
+            "put": {
+                "summary": "Configures the logs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "description": "Command Successful",
+                                    "type": "string",
+                                    "default": "Command Successful",
+                                    "example": "Command Successful"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "set_logs",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/logLevel.v1"
+                            }
+                        }
+                    },
+                    "description": "The log level to configure"
+                },
+                "description": "Changes logging level",
+                "tags": [
+                    "Management"
+                ]
+            },
+            "parameters": []
+        },
+        "/cloud/logs/{logType}": {
+            "parameters": [
+                {
+                    "schema": {
+                        "type": "string",
+                        "enum": [
+                            "syslog",
+                            "radioPacketLog",
+                            "RgErrorLog",
+                            "RgWarningLog",
+                            "RcErrorLog",
+                            "RcWarningLog",
+                            "RcInfoLog"
+                        ]
+                    },
+                    "name": "logType",
+                    "in": "path",
+                    "description": "Type of Log to Retrieve",
+                    "required": true
+                }
+            ],
+            "get": {
+                "summary": "Retrieve Log",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/gzip": {
+                                "schema": {
+                                    "description": "Reader Logs Retrieved"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get_logs_syslog",
+                "tags": [
+                    "Management"
+                ],
+                "description": "Retrieves a reader log"
+            },
+            "delete": {
+                "summary": "Purge Log",
+                "operationId": "del_logs_syslog",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error.v1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "Purges a particular log",
+                "tags": [
+                    "Management"
+                ],
+                "parameters": []
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "operating_mode",
+            "x-displayName": "Configuration for the Operating Modes",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/operatingModes\" />\n"
+        },
+        {
+            "name": "gpio_led_config",
+            "x-displayName": "GPIO-LED configuration",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/gpioLedConfig\" />\n"
+        },
+        {
+            "name": "management_event_config",
+            "x-displayName": "Management Events Configuration",
+            "description": "<SchemaDefinition schemaRef=\"#/components/schemas/mgmtEventConfig\" />\n"
+        }
+    ],
+    "x-tagGroups": [
+        {
+            "name": "Management",
+            "tags": [
+                "Management"
+            ]
+        },
+        {
+            "name": "Control",
+            "tags": [
+                "Control"
+            ]
+        },
+        {
+            "name": "Models",
+            "tags": [
+                "operating_mode",
+                "gpio_led_config",
+                "management_event_config"
+            ]
+        }
+    ],
+    "components": {
+        "schemas": {
+            "operatingModes": {
+                "$ref": "#/components/schemas/operatingMode.v1",
+                "x-stoplight": {
+                    "id": "tvdpq20outiln"
+                }
+            },
+            "gpioLedConfig": {
+                "$ref": "#/components/schemas/GPIOLEDConfig.v1",
+                "x-stoplight": {
+                    "id": "1r7w3ayesor60"
+                }
+            },
+            "mgmtEventConfig": {
+                "$ref": "#/components/schemas/eventsConfig.v1",
+                "x-stoplight": {
+                    "id": "jfcw3f0ye7ttq"
+                }
+            },
+            "osversions.v1": {
+                "title": "osVersions",
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "example": "3.1.12"
+                    },
+                    "releaseDate": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2020-04-23"
+                    },
+                    "releaseNotesUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://www.zebra.com/content/dam/zebra_new_ia/en-us/software/operating-system/fx7500-series-operating-system/FXSeries_3_1_12_Release_Notes.pdf"
+                    }
+                },
+                "x-stoplight": {
+                    "id": "qkkghsccuh46k"
+                }
+            },
+            "readerversion.v1": {
+                "title": "readerVersion",
+                "type": "object",
+                "description": "Reader version information",
+                "properties": {
+                    "readerApplication": {
+                        "type": "string",
+                        "description": "Reader software version",
+                        "example": "2.7.19.0"
+                    },
+                    "radioApi": {
+                        "type": "string",
+                        "description": "API to the radio engine",
+                        "example": "2.2.8.2"
+                    },
+                    "radioFirmware": {
+                        "type": "string",
+                        "description": "Firmware running on the radio",
+                        "example": "2.1.14.0"
+                    },
+                    "radioControlApplication": {
+                        "type": "string",
+                        "description": "Reader radio control version",
+                        "example": "1.0.0"
+                    },
+                    "readerOS": {
+                        "type": "string",
+                        "description": "Reader operating system version",
+                        "example": "2.2.15.0"
+                    },
+                    "readerHardware": {
+                        "type": "string",
+                        "description": "Hardware version of the reader",
+                        "example": "0.0.5.0"
+                    },
+                    "readerBootLoader": {
+                        "type": "string",
+                        "description": "Reader boot loader version",
+                        "example": "2.1.2.0"
+                    },
+                    "readerFileSystem": {
+                        "type": "string",
+                        "description": "Reader root file system version",
+                        "example": "2.1.2.0"
+                    },
+                    "cloudAgentApplication": {
+                        "type": "string",
+                        "description": "Reader cloud agent version",
+                        "example": "1.0.0"
+                    },
+                    "availableOsUpgrades": {
+                        "type": "array",
+                        "description": "A List of available OS upgrades, (upgrade path only, no downgrade versions)",
+                        "example": "[ 3.1.12, 3.0.35 ]",
+                        "items": {
+                            "$ref": "#/components/schemas/osversions.v1"
+                        }
+                    },
+                    "fpga": {
+                        "type": "string",
+                        "example": "1.8.0.0",
+                        "description": "FPGA running on radio (only applicable to ATR7000)"
+                    },
+                    "model": {
+                        "type": "string",
+                        "enum": [
+                            "FX7500",
+                            "FX9600",
+                            "ATR7000"
+                        ],
+                        "description": "device model"
+                    },
+                    "serialNumber": {
+                        "type": "string",
+                        "example": "84248dee5721",
+                        "description": "Device serial number"
+                    }
+                },
+                "required": [
+                    "readerApplication",
+                    "radioApi",
+                    "radioFirmware",
+                    "radioControlApplication",
+                    "readerOS",
+                    "readerHardware",
+                    "readerBootLoader",
+                    "readerFileSystem",
+                    "cloudAgentApplication",
+                    "availableOsUpgrades",
+                    "model",
+                    "serialNumber"
+                ],
+                "x-stoplight": {
+                    "id": "l4jnfqc0j7v2l"
+                }
+            },
+            "error.v1": {
+                "title": "error",
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "description": "The error code",
+                        "example": 123
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "A brief description of the error",
+                        "example": "internal system error."
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "description": "A list of error parameters, if applicable",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "description": "Represents an API error.",
+                "x-stoplight": {
+                    "id": "3n9phpl6qp0vp"
+                }
+            },
+            "readernetwork.v1": {
+                "title": "readerNetwork",
+                "type": "object",
+                "description": "Reader network information",
+                "properties": {
+                    "hostName": {
+                        "type": "string",
+                        "description": "Host name of the reader",
+                        "example": "FX9600F0F4B5"
+                    },
+                    "ipAddress": {
+                        "type": "string",
+                        "description": "IP address of the reader",
+                        "example": "192.168.1.10"
+                    },
+                    "gatewayAddress": {
+                        "type": "string",
+                        "description": "IP address of the gateway",
+                        "example": "192.168.1.1"
+                    },
+                    "subnetMask": {
+                        "type": "string",
+                        "description": "Subnet mask for the network adapter",
+                        "example": "255.255.255.0"
+                    },
+                    "dnsAddress": {
+                        "type": "string",
+                        "description": "IP address of the DNS server",
+                        "example": "8.8.8.8"
+                    },
+                    "dhcp": {
+                        "type": "boolean",
+                        "description": "A value indicating DHCP configuration",
+                        "example": "true"
+                    },
+                    "macAddress": {
+                        "type": "string",
+                        "description": "MAC address of the reader",
+                        "example": "84:24:8D:F0:F4:B5"
+                    }
+                },
+                "required": [
+                    "hostName",
+                    "ipAddress",
+                    "gatewayAddress",
+                    "subnetMask",
+                    "dnsAddress",
+                    "dhcp",
+                    "macAddress"
+                ],
+                "x-stoplight": {
+                    "id": "glz7glmpfqog2"
+                }
+            },
+            "networkconfig.v1": {
+                "title": "networkConfig",
+                "type": "object",
+                "description": "Represents reader communication configuration parameters.",
+                "properties": {
+                    "macAddress": {
+                        "type": "string",
+                        "description": "MAC address of the reader (read only)",
+                        "example": "84:24:8D:F0:F4:B5",
+                        "readOnly": true
+                    },
+                    "dhcp": {
+                        "type": "boolean",
+                        "description": "A value indicating DHCP configuration",
+                        "example": "true"
+                    },
+                    "dnsAddress": {
+                        "type": "string",
+                        "description": "IP address of the DNS server",
+                        "example": "8.8.8.8"
+                    },
+                    "subnetMask": {
+                        "type": "string",
+                        "description": "Subnet mask for the network adapter",
+                        "example": "255.255.255.0"
+                    },
+                    "gatewayAddress": {
+                        "type": "string",
+                        "description": "IP address of the gateway",
+                        "example": "192.168.1.1"
+                    },
+                    "ipAddress": {
+                        "type": "string",
+                        "description": "IP address of the reader (read only if dhcp = true)",
+                        "example": "192.168.1.10"
+                    },
+                    "hostName": {
+                        "type": "string",
+                        "description": "Host name of the reader",
+                        "example": "FX9600F0F4B5",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "macAddress",
+                    "dhcp",
+                    "dnsAddress",
+                    "subnetMask",
+                    "gatewayAddress",
+                    "ipAddress",
+                    "hostName"
+                ],
+                "x-stoplight": {
+                    "id": "wia4muqjuw8l6"
+                }
+            },
+            "memorystats.v1": {
+                "title": "memoryStats",
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "description": "Total RAM in bytes",
+                        "example": "26098076"
+                    },
+                    "free": {
+                        "type": "integer",
+                        "description": "Free RAM in bytes",
+                        "example": "195612672"
+                    },
+                    "used": {
+                        "type": "integer",
+                        "description": "Used RAM in bytes",
+                        "example": "65368064"
+                    }
+                },
+                "description": "System memory statistics",
+                "x-stoplight": {
+                    "id": "eomow3zhpph6q"
+                }
+            },
+            "readerflashmemory.v1": {
+                "title": "readerFlashMemory",
+                "type": "object",
+                "description": "Non-volatile reader flash partitions and their usage information",
+                "properties": {
+                    "rootFileSystem": {
+                        "$ref": "#/components/schemas/memorystats.v1"
+                    },
+                    "platform": {
+                        "$ref": "#/components/schemas/memorystats.v1"
+                    },
+                    "readerConfig": {
+                        "$ref": "#/components/schemas/memorystats.v1"
+                    },
+                    "readerData": {
+                        "$ref": "#/components/schemas/memorystats.v1"
+                    }
+                },
+                "required": [
+                    "rootFileSystem",
+                    "platform",
+                    "readerConfig",
+                    "readerData"
+                ],
+                "x-stoplight": {
+                    "id": "5rm4t72hsbzjw"
+                }
+            },
+            "cpustats.v1": {
+                "title": "cpuStats",
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "integer",
+                        "description": "User processes CPU utilization percentage",
+                        "example": "42"
+                    },
+                    "system": {
+                        "type": "integer",
+                        "description": "System processes CPU utilization percentage",
+                        "example": "32"
+                    }
+                },
+                "description": "System CPU Statistics",
+                "x-stoplight": {
+                    "id": "q1fwzv06p76j2"
+                }
+            },
+            "ntpstats.v1": {
+                "title": "ntpstats",
+                "type": "object",
+                "description": "Represents NTP statistics.",
+                "properties": {
+                    "offset": {
+                        "type": "number",
+                        "description": "Local clock offset from NTP server clock in milliseconds.",
+                        "example": 120,
+                        "format": "float"
+                    },
+                    "reach": {
+                        "type": "integer",
+                        "description": "Status of successful synchronization attempts; a value of 377 indcates eight consecutive successful attempts.",
+                        "example": 377
+                    }
+                },
+                "required": [
+                    "offset",
+                    "reach"
+                ],
+                "x-stoplight": {
+                    "id": "bf24n79cxby52"
+                }
+            },
+            "readerstats.v1": {
+                "title": "readerStats",
+                "type": "object",
+                "description": "Reader statistics information",
+                "properties": {
+                    "uptime": {
+                        "type": "string",
+                        "description": "Duration the reader has been powered on",
+                        "format": "time",
+                        "example": "26 days 01:11:17"
+                    },
+                    "systemTime": {
+                        "type": "string",
+                        "description": "ISO 8601 formatted time on the reader",
+                        "format": "date-time",
+                        "example": "2020-01-08T15:36:53+00:00"
+                    },
+                    "ram": {
+                        "$ref": "#/components/schemas/memorystats.v1"
+                    },
+                    "flash": {
+                        "$ref": "#/components/schemas/readerflashmemory.v1"
+                    },
+                    "cpu": {
+                        "$ref": "#/components/schemas/cpustats.v1"
+                    },
+                    "radioConnection": {
+                        "type": "string",
+                        "enum": [
+                            "connected",
+                            "disconnected"
+                        ],
+                        "description": "The status of the radio connection",
+                        "example": "connected"
+                    },
+                    "antennas": {
+                        "type": "object",
+                        "description": "Status of the antennas connection",
+                        "properties": {
+                            "0": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 0 connection state (only applicable to ATR7000)"
+                            },
+                            "1": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 1 connection state"
+                            },
+                            "2": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 2 connection state"
+                            },
+                            "3": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 3 connection state"
+                            },
+                            "4": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 4 connection state"
+                            },
+                            "5": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 5 connection state"
+                            },
+                            "6": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 6 connection state"
+                            },
+                            "7": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 7 connection state"
+                            },
+                            "8": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 8 connection state"
+                            },
+                            "9": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 9 connection state (only applicable to ATR7000)"
+                            },
+                            "10": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 10 connection state (only applicable to ATR7000)"
+                            },
+                            "11": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 11 connection state (only applicable to ATR7000)"
+                            },
+                            "12": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 12 connection state (only applicable to ATR7000)"
+                            },
+                            "13": {
+                                "type": "string",
+                                "enum": [
+                                    "connected",
+                                    "disconnected"
+                                ],
+                                "description": "Antenna 13 connection state (only applicable to ATR7000)"
+                            }
+                        },
+                        "required": [
+                            "1",
+                            "2"
+                        ]
+                    },
+                    "temperature": {
+                        "type": "integer",
+                        "description": "Current Reader Temperature (in degrees centigrade)",
+                        "format": "int32",
+                        "example": 31
+                    },
+                    "radioActivitiy": {
+                        "type": "string",
+                        "description": "Status of the radio activity",
+                        "enum": [
+                            "active",
+                            "inactive"
+                        ]
+                    },
+                    "powerSource": {
+                        "type": "string",
+                        "enum": [
+                            "DC",
+                            "POE",
+                            "POE+"
+                        ],
+                        "description": "The source of power for the reader"
+                    },
+                    "powerNegotiation": {
+                        "type": "string",
+                        "description": "How the power supplied to the reader is negotiated\nOnly present if powerSource is POE or POE+",
+                        "enum": [
+                            "DISABLED",
+                            "IN_PROGRESS",
+                            "SUCCESS",
+                            "FAILURE",
+                            "NOT_APPLICABLE"
+                        ]
+                    },
+                    "ntp": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ntpstats.v1"
+                            },
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "NOT_CONFIGURED"
+                                ],
+                                "description": ""
+                            }
+                        ],
+                        "description": "NTP Configuration"
+                    }
+                },
+                "required": [
+                    "uptime",
+                    "systemTime",
+                    "ram",
+                    "flash",
+                    "cpu",
+                    "radioConnection",
+                    "temperature",
+                    "radioActivitiy",
+                    "powerSource",
+                    "powerNegotiation",
+                    "ntp"
+                ],
+                "x-stoplight": {
+                    "id": "tlv6dedqxmh33"
+                }
+            },
+            "readerupgradestatus.v1": {
+                "title": "readerUpgradeStatus",
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "rebooting"
+                        ]
+                    },
+                    "imageDownloadProgress": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Upgrade image download percentage"
+                    },
+                    "overallUpdateProgress": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Overall upgrade percentage"
+                    },
+                    "updateProgressDetails": {
+                        "type": "object",
+                        "properties": {
+                            "os": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "description": "OS upgrade progress percentage"
+                            },
+                            "rootFileSystem": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "description": "Root file system upgrade progress percentage"
+                            },
+                            "applications": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "description": "Applications upgrade progress percentage"
+                            },
+                            "radioFirmware": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "description": "Radio firmware upgrade progress percentage"
+                            },
+                            "platform": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "description": "Platform upgrade progress percentage"
+                            }
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "mpofyec1t79vn"
+                }
+            },
+            "regionconfig.v1": {
+                "title": "regionConfig",
+                "type": "object",
+                "description": "Represents the region and regulatory configuration.",
+                "properties": {
+                    "region": {
+                        "type": "string",
+                        "default": "UNDEFINED",
+                        "description": "The RF region of operation",
+                        "example": "US"
+                    },
+                    "regulatoryStandard": {
+                        "type": "string",
+                        "default": "UNDEFINED",
+                        "description": "The RF regulatory standard followed",
+                        "example": "FCC"
+                    },
+                    "lbtEnabled": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "A flag indicating whether listen before talk is enabled",
+                        "example": "false"
+                    },
+                    "channelData": {
+                        "type": "array",
+                        "description": "The list of channels enabled",
+                        "example": "{915250,915750,903250,926750,926250,904250,927250,920250,919250,909250,918750,917750,905250,904750,925250,921750,914750,906750,913750,922250,911250,911750,903750,908750,905750,912250,906250,917250,914250,907250,918250,916250,910250,910750,907750,924750,909750,919750,916750,913250,923750,908250,925750,912750,924250,921250,920750,922750,902750,923250}",
+                        "items": {
+                            "type": "string",
+                            "example": "{\"915250\",\"915750\"}"
+                        }
+                    }
+                },
+                "required": [
+                    "region",
+                    "lbtEnabled"
+                ],
+                "x-stoplight": {
+                    "id": "patq1wafzna9w"
+                }
+            },
+            "inventorysettings.v1": {
+                "title": "inventorySettings",
+                "type": "object",
+                "description": "Reader settings for inventory mode. If absent, the reader will report each tag on each antenna once per minute.",
+                "properties": {
+                    "interval": {
+                        "type": "object",
+                        "description": "The time interval (how often) to report each tag",
+                        "properties": {
+                            "unit": {
+                                "type": "string",
+                                "enum": [
+                                    "seconds",
+                                    "minutes",
+                                    "hours",
+                                    "days"
+                                ]
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "26bp2fptx69lf"
+                }
+            },
+            "portalsettings.v1": {
+                "title": "portalSettings",
+                "type": "object",
+                "description": "Reader settings for portal mode.",
+                "properties": {
+                    "startTrigger": {
+                        "type": "object",
+                        "description": "The GPI trigger to start reads on the portal",
+                        "properties": {
+                            "port": {
+                                "type": "integer",
+                                "description": "The GPI port to signal. If absent, port 1 is used."
+                            },
+                            "signal": {
+                                "type": "string",
+                                "enum": [
+                                    "HIGH",
+                                    "LOW"
+                                ],
+                                "description": "The signal value for the trigger. If absent, signal LOW is used"
+                            }
+                        }
+                    },
+                    "stopInterval": {
+                        "type": "integer",
+                        "description": "The interval at which to stop reads after the last unique tag is read (seconds). If absent, the reader will stop after not reading a unique tag in 3 seconds"
+                    }
+                },
+                "x-stoplight": {
+                    "id": "yss29ev11ulle"
+                }
+            },
+            "tagidfilter.v1": {
+                "title": "tagIdFilter",
+                "type": "object",
+                "description": "Represents filter on the tag id.\n\nIf absent, no filter is used.",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "example": "[a-zA-Z0-9]{2,}",
+                        "description": "The value to match.\n\n\nFor prefix and suffix filters. Only hex digits are allowed and there must be an even number of hex digits.\n\nWhen prefix filter is used, selects cannot be used. \n\nFor regex filter, C++ STL regex values should be used."
+                    },
+                    "match": {
+                        "type": "string",
+                        "description": "The segment or method of the id to match.",
+                        "enum": [
+                            "prefix",
+                            "suffix",
+                            "regex"
+                        ],
+                        "example": "regex"
+                    },
+                    "operation": {
+                        "type": "string",
+                        "default": "include",
+                        "enum": [
+                            "include",
+                            "exclude"
+                        ],
+                        "example": "include",
+                        "description": "The filter operation (include/exclude)."
+                    }
+                },
+                "required": [
+                    "value",
+                    "match",
+                    "operation"
+                ],
+                "x-stoplight": {
+                    "id": "qr7kkd012i9vu"
+                }
+            },
+            "gpi.v1": {
+                "title": "gpi",
+                "type": "object",
+                "properties": {
+                    "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2,
+                        "description": "GPI Port Number"
+                    },
+                    "signal": {
+                        "type": "string",
+                        "enum": [
+                            "HIGH",
+                            "LOW"
+                        ],
+                        "description": "Transition to this GPI will trigger event"
+                    },
+                    "debounceTime": {
+                        "type": "integer",
+                        "description": "Time (in milliseconds) until GPI must remain at signal level to trigger event",
+                        "default": 0
+                    }
+                },
+                "required": [
+                    "port",
+                    "signal"
+                ],
+                "x-stoplight": {
+                    "id": "w6jx6bat6qfi0"
+                }
+            },
+            "antennaStopCondition.v1": {
+                "title": "antennaStopCondition",
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "DURATION",
+                            "INVENTORY_COUNT",
+                            "GPI",
+                            "SINGLE_INVENTORY_LIMITED_DURATION"
+                        ],
+                        "description": "Type of Stop Condition"
+                    },
+                    "value": {
+                        "oneOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "$ref": "#/components/schemas/gpi.v1"
+                            }
+                        ],
+                        "description": "Value dependent on type"
+                    }
+                },
+                "required": [
+                    "type",
+                    "value"
+                ],
+                "x-stoplight": {
+                    "id": "dhq2zw45uty02"
+                }
+            },
+            "query.v1": {
+                "title": "query",
+                "type": "object",
+                "properties": {
+                    "tagPopulation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Expected number of tags "
+                    },
+                    "sel": {
+                        "type": "string",
+                        "enum": [
+                            "ALL",
+                            "SL",
+                            "NOT_SL"
+                        ],
+                        "description": "Sel field (see EPC Gen2 Spec)"
+                    },
+                    "session": {
+                        "type": "string",
+                        "description": "Session Field (see EPC Gen2 Spec)",
+                        "enum": [
+                            "S0",
+                            "S1",
+                            "S2",
+                            "S3"
+                        ]
+                    },
+                    "target": {
+                        "type": "string",
+                        "description": "Target Field (see EPC Gen2 Spec)",
+                        "enum": [
+                            "A",
+                            "B",
+                            "AB"
+                        ]
+                    }
+                },
+                "x-stoplight": {
+                    "id": "xysox8936xvol"
+                }
+            },
+            "select.v1": {
+                "title": "select",
+                "x-stoplight": {
+                    "id": "6bj7gnjz0623d"
+                },
+                "type": "object",
+                "properties": {
+                    "target": {
+                        "type": "string",
+                        "enum": [
+                            "SL",
+                            "S0",
+                            "S1",
+                            "S2",
+                            "S3"
+                        ],
+                        "description": "Target Field (see EPC Gen2 Spec)"
+                    },
+                    "action": {
+                        "type": "string",
+                        "enum": [
+                            "ASSERTSL_DEASSERTSL",
+                            "ASSERTSL_NOTHING",
+                            "NOTHING_DEASSERTSL",
+                            "NEGATESL_NOTHING",
+                            "DEASSERTSL_ASSERTSL",
+                            "DEASSERTSL_NOTHING",
+                            "NOTHING_ASSERTSL",
+                            "NOTHING_NEGATESL",
+                            "INVA_INVB",
+                            "INVA_NOTHING",
+                            "NOTHING_INVB",
+                            "FLIPAB_NOTHING",
+                            "INVB_INVA",
+                            "INVB_NOTHING",
+                            "NOTHING_INVA",
+                            "NOTHING_FLIPAB"
+                        ],
+                        "description": "Action Field (see EPC Gen2 Spec)"
+                    },
+                    "membank": {
+                        "type": "string",
+                        "enum": [
+                            "EPC",
+                            "TID",
+                            "USER",
+                            "RES"
+                        ],
+                        "description": "Membank Field (see EPC Gen2 Spec)"
+                    },
+                    "pointer": {
+                        "type": "integer",
+                        "description": "Pointer Field (see EPC Gen2 Spec)"
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "Length Field (see EPC Gen2 Spec)"
+                    },
+                    "mask": {
+                        "type": "string",
+                        "description": "Mask Field (see EPC Gen2 Spec). The value must be a hex string (only values 0-9 and a-f) and must have an even number of characters. "
+                    },
+                    "truncate": {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Truncate Field (see EPC Gen2 Spec) If absent, truncation is disabled. If non-zero, the value indicates the number of bits to expect in the tag response."
+                    }
+                },
+                "required": [
+                    "target",
+                    "action",
+                    "membank",
+                    "pointer",
+                    "length",
+                    "mask"
+                ]
+            },
+            "delayBetweenAntennaCycles.v1": {
+                "title": "delayBetweenAntennaCycles",
+                "x-stoplight": {
+                    "id": "1dkb7qt292k00"
+                },
+                "type": "object",
+                "description": "This introduces a delay between antenna cycles if no tags are read or if no unique tags are read. This allows the reader to share the spectrum if there are no tags to be read. \n\nIf absent, \non the ATR7000 and the FX9600, delayBetweenAntennas cycles is set to wait for 75 mS if no unique tags are read during a antenna cycle.  \non the FX7500, delayBetweenAntennas cycles is set to wait for 75 mS if no tags are read during a antenna cycle. ",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "DISABLED",
+                            "NO_TAGS",
+                            "NO_UNIQUE_TAGS"
+                        ],
+                        "description": "Condition under which to delay between antenna cycles"
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "description": "Delay between antennas cycles in milliseconds to wait. Will only wait if the type (no tags or no unique tags) is met. If the type is DISABLED, duration must to be set to 0. IF the type is no DISABLED< the value must be set to a non-zero value. "
+                    }
+                },
+                "required": [
+                    "type",
+                    "duration"
+                ]
+            },
+            "tagMetaData.v1": {
+                "title": "tagMetaData",
+                "type": "array",
+                "description": "Controls the metadata that is sent when a tag is reported\n\n  “ANTENNA” will report the antenna port upon which the tag was inventoried.\n\n  “RSSI” will report the rssi (in dbm) of the inventoried tag. If the tag is only reported occasionally (see reportFilter), this tag will be the peak rssi since the last reported read.\n\n   \"PHASE” will report the phase (in degrees) of the inventoried tag. This value will only be reported if each individual tag read is reported (in other words, if reportFilter duration is set to 0). Otherwise, it will not be reported.\n  \n  \"CHANNEL” will report the channel (in MHz) the reader was using when the tag was inventoried. This value will only be reported if each individual tag read is reported (in other words, if reportFilter duration is set to 0). Otherwise, it will not be reported.\n  \n  “SEEN_COUNT” will report the number of times the tag has been inventoried since the previous report. This value will always be 1 if each individual tag read is reported (in other words, if reportFilter duration is set to 0). \n  \n  \"PC\" will report the PC bits of the inventoried tag as a hex string. \n  \n  \"XPC\" will report the XPC bits of the inventoried tag, if present, as a hex string. \n  \n  \"CRC\" will report the CRC bits of the inventoried tag as a hex string.\n\n  \"EPC\" will report the entire contents of the EPC bank as a hex string. If only a portion of the memory bank is desired, this can be requested by appending a [] to the string and placing the words requested. For instance, if only the first word is desired, the value can be set as \"EPC[1]\". If the first word and the 3-5 word are desired, the value can be set to \"EPC[1,3-5]\".\n  \n  \"TID\" will report the entire contents of the TID bank as a hex string. If only a portion of the memory bank is desired, this can be requested by appending a [] to the string and placing the words requested. For instance, if only the first word is desired, the value can be set as \"TID[1]\". If the first word and the 3-5 word are desired, the value can be set to \"TID[1,3-5]\".\n\n  \"USER\" will report the entire contents of the USER bank as a hex string. If only a portion of the memory bank is desired, this can be requested by appending a [] to the string and placing the words requested. For instance, if only the first word is desired, the value can be set as \"TID[1]\". If the first word and the 3-5 word are desired, the value can be set to \"TID[1,3-5]\".\n    \nThe array may also contain an object. The object must contain a single name value pair with the name being set to “userDefined” and the value being any desired string. Each time the tag is reported, this object will be included.\n\n\nIf absent,\n“SIMPLE” mode does not report any additional meta data, “PORTAL” and “CONVEYOR” modes reports “ANTENNA”, and “INVENTORY” mode reports “ANTENNA”, “RSSI”, and “SEEN_COUNT”.\n",
+                "x-examples": {
+                    "example-1": [
+                        "PC",
+                        "ANTENNA",
+                        "RSSI"
+                    ]
+                },
+                "items": {
+                    "type": [
+                        "string",
+                        "object"
+                    ],
+                    "enum": [
+                        "RSSI",
+                        "PHASE",
+                        "SEEN_COUNT",
+                        "ANTENNA",
+                        "CHANNEL",
+                        "PC",
+                        "XPC",
+                        "CRC",
+                        "EPC",
+                        "TID",
+                        "USER"
+                    ],
+                    "properties": {
+                        "userDefined": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "fuhcw2fdjsta8"
+                }
+            },
+            "radioStartConditions.v1": {
+                "title": "radioStartConditions",
+                "type": "object",
+                "description": "Controls when, after a “start” is issued, the radio starts trying to inventory tags. \n\nIf absent, the radio will immediately begin inventorying tags upon a \"start\" command. ",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "GPI",
+                            "GPI_WITH_RESTART"
+                        ]
+                    },
+                    "gpis": {
+                        "type": "array",
+                        "description": "",
+                        "items": {
+                            "$ref": "#/components/schemas/gpi.v1"
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "s2tcrfjeezbnt"
+                }
+            },
+            "radioStopConditions.v1": {
+                "title": "radioStopConditions",
+                "type": "object",
+                "description": "Controls when an ongoing operation completes. \n\nIf absent, the radio will continue trying to inventory tags until a \"stop\" is issued.",
+                "properties": {
+                    "duration": {
+                        "type": "integer",
+                        "description": "Time to run until radio stops (in seconds)",
+                        "format": "int32"
+                    },
+                    "antennaCycles": {
+                        "type": "integer",
+                        "description": "The number of cycles through all enabled antennas before stopping the radio",
+                        "format": "int32"
+                    },
+                    "tagCount": {
+                        "type": "integer",
+                        "description": "The number of tags to inventory until the radio stops. Cannot be set at the same time as durationAfterNoMoreUniqueTags",
+                        "format": "int32"
+                    },
+                    "durationAfterNoMoreUniqueTags": {
+                        "type": "integer",
+                        "description": "Duration (in seconds) after not inventorying any more unique tags to stop the radio. Cannot be set at the same time as tagCount",
+                        "format": "int32"
+                    },
+                    "gpis": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/gpi.v1"
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "8vsn8ys6bhrh7"
+                }
+            },
+            "tagReportFilter.v1": {
+                "title": "reportFilter",
+                "type": "object",
+                "description": "Controls when and how often a tag is reported\n\nNOTE: This cannot be set while in \"INVENTORY\" mode. Setting the modeSpecificSetting for interval must be used in \"INVENTORY\" mode.\n\nIf absent, each mode uses a different default.\n\n\"SIMPLE\": report tag read once.\n\n\"PORTAL\" and \"CONVEYOR\": report each tag the first time it is read on each antenna.",
+                "properties": {
+                    "duration": {
+                        "type": "integer",
+                        "description": "Duration (in seconds) to wait to report a tag again once it has already been reported\nIt should be noted that the way the filter works is that as long as the tag is being read by the reader, it will not report unless the time since the previous report of this tag on this antenna meets the type and duration. ",
+                        "format": "int32"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "RADIO_WIDE",
+                            "PER_ANTENNA"
+                        ],
+                        "description": "Configures the timeout (in seconds) by antenna or for entire radio \n"
+                    }
+                },
+                "required": [
+                    "duration",
+                    "type"
+                ],
+                "x-examples": {
+                    "Report Unique Tags for Radio (\"SIMPLE\" Mode Default)": {
+                        "type": "RADIO_WIDE",
+                        "value": 4294967295
+                    },
+                    "Report Unique Tags for each antenna (\"PORTAL\" and \"CONVEYOR\" Modes Defaults)": {
+                        "type": "PER_ANTENNA",
+                        "value": 4294967295
+                    },
+                    "Report tags once every minute (equivalent to the default configuartion for \"INVENTORY\" Mode)": {
+                        "type": "PER_ANTENNA",
+                        "value": 60
+                    }
+                },
+                "x-stoplight": {
+                    "id": "3jlzifgi6hqth"
+                }
+            },
+            "rssiFilter.v1": {
+                "title": "rssiFilter",
+                "type": "object",
+                "description": "Tag with RSSI below threshold will not be inventoried by the radio\n\nIf absent, rssi filter is not used.\n\nNote: Currently ONLY supported by the FX9600.",
+                "x-examples": {},
+                "properties": {
+                    "threshold": {
+                        "type": "integer",
+                        "description": "Threshold (in dbm) below which the radio will ignore a tag response",
+                        "format": "int32",
+                        "minimum": -128,
+                        "maximum": -20
+                    }
+                },
+                "x-stoplight": {
+                    "id": "bxws7ppum9af0"
+                }
+            },
+            "operatingMode.v1": {
+                "title": "operatingMode",
+                "type": "object",
+                "description": "Represents the reader operating mode.",
+                "example": {
+                    "type": "INVENTORY",
+                    "antennas": [
+                        1,
+                        2,
+                        3
+                    ],
+                    "transmitPower": 30.1,
+                    "antennaStopCondition": [
+                        {
+                            "type": "DURATION",
+                            "value": 500
+                        },
+                        {
+                            "type": "INVENTORY_COUNT",
+                            "value": 1
+                        },
+                        {
+                            "type": "GPI",
+                            "value": {
+                                "port": 2,
+                                "signal": "HIGH"
+                            }
+                        }
+                    ],
+                    "tagMetaData": [
+                        "PC",
+                        "CRC",
+                        {
+                            "userDefined": "readerABC"
+                        }
+                    ],
+                    "rssiFilter": {
+                        "threshold": -72
+                    }
+                },
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "SIMPLE",
+                            "INVENTORY",
+                            "PORTAL",
+                            "CONVEYOR",
+                            "CUSTOM"
+                        ],
+                        "description": "The type of mode of operation ",
+                        "default": "SIMPLE"
+                    },
+                    "modeSpecificSettings": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/inventorysettings.v1"
+                            },
+                            {
+                                "$ref": "#/components/schemas/portalsettings.v1"
+                            }
+                        ]
+                    },
+                    "environment": {
+                        "type": "string",
+                        "enum": [
+                            "LOW_INTERFERENCE",
+                            "HIGH_INTERFERENCE",
+                            "VERY_HIGH_INTERFERENCE",
+                            "AUTO_DETECT",
+                            "DEMO"
+                        ],
+                        "description": "  The type of environment in which the reader operates. Along with the regulatory configuration of the reader, the environment parameter will set the default link profile parameters (i.e., Miller mode, BLF, Tari, etc.) and the receiver dynamic range (interference immunity).\n\n  LOW_INTERFERENCE:  The reader is operating in an environment when the likelihood of interference is very low or only occurs for very brief periods of time (defined as a single interrogator environment in the Gen2 and ISO standards).\n\n  HIGH_INTERFERENCE: The reader is operating in the presence of other readers (defined as a multi-interrogator or dense interrogator environment in the Gen2 and ISO standards).\n\n  VERY_HIGH_INTERFERENCE: The reader is operating in an environment where the number of readers is greater than the number of available channels, or when interfering readers are in very close proximity to each other.\n\n  AUTO_DETECT: This will cause the reader to try and assess the environment and adjust accordingly. \n\n  DEMO: Should be used when demonstrating the maximum performance (fastest read rate) of a reader. This assumes no other readers in the environement.\n\n  If absent, the environment is set to HIGH_INTERFERENCE",
+                        "default": "HIGH_INTERFERENCE"
+                    },
+                    "antennas": {
+                        "type": "array",
+                        "description": " An array of integers representing the antenna ports to use to read tags. For ATR, the integers represent beam numbers. \n\n If absent, all antennas ports are used; for the ATR, a set of 38 beams are used.",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "filter": {
+                        "$ref": "#/components/schemas/tagidfilter.v1"
+                    },
+                    "transmitPower": {
+                        "oneOf": [
+                            {
+                                "type": "number",
+                                "description": "Single value applies to all antennas"
+                            },
+                            {
+                                "type": "array",
+                                "description": "Each value applies to each antenna in the antennas array\nArray length must match antennas array length",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        ],
+                        "description": " Desired Transmit Power (in dbm).\n\n If absent, the value is set to 27 dbm; for the ATR, the value is set to 36 dbm EIRP."
+                    },
+                    "antennaStopCondition": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/antennaStopCondition.v1"
+                            },
+                            {
+                                "type": "array",
+                                "description": "Each value applies to each antenna in the antennas array\nArray length must match antennas array length",
+                                "items": {
+                                    "$ref": "#/components/schemas/antennaStopCondition.v1"
+                                }
+                            }
+                        ],
+                        "description": " Stop Condition for antennas. \n\n If absent, the antenna stop condition is set to run a single inventory round for no longer than 1/N seconds. Where N is the number of enabled antennas."
+                    },
+                    "query": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/query.v1"
+                            },
+                            {
+                                "type": "array",
+                                "description": "Each value applies to each antenna in the antennas array\nArray length must match antennas array length",
+                                "items": {
+                                    "$ref": "#/components/schemas/query.v1"
+                                }
+                            }
+                        ],
+                        "description": " Gen2 query parameters. See Gen2 spec for details.\n\n If absent, \"sel\" is set to ALL, session is set to 1, target is set to A, and tag population set to 1."
+                    },
+                    "selects": {
+                        "description": " Gen2 select parameters. See Gen2 spec for details.\n\n If absent, no select will be issued. Cannot be set when filter with prefix type is also set. \n\n If there is an array of select objects, all of the selects in the array will be applied to all antennas.\n \n If there is an array of array of select objects, each array of select objects will apply to each antenna. The array of arrays must have the same number of entries as the antennas array.",
+                        "oneOf": [
+                            {
+                                "items": {
+                                    "$ref": "#/components/schemas/select.v1"
+                                }
+                            },
+                            {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/select.v1"
+                                    }
+                                }
+                            }
+                        ],
+                        "type": "array"
+                    },
+                    "delayAfterSelects": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65,
+                        "description": "Duration in milliseconds to wait after issuing the final select before issuing a query. If absent, the minimum time will be used. "
+                    },
+                    "delayBetweenAntennaCycles": {
+                        "$ref": "#/components/schemas/delayBetweenAntennaCycles.v1"
+                    },
+                    "tagMetaData": {
+                        "$ref": "#/components/schemas/tagMetaData.v1"
+                    },
+                    "radioStartConditions": {
+                        "$ref": "#/components/schemas/radioStartConditions.v1"
+                    },
+                    "radioStopConditions": {
+                        "$ref": "#/components/schemas/radioStopConditions.v1"
+                    },
+                    "reportFilter": {
+                        "$ref": "#/components/schemas/tagReportFilter.v1"
+                    },
+                    "rssiFilter": {
+                        "$ref": "#/components/schemas/rssiFilter.v1"
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "x-stoplight": {
+                    "id": "pjdmwmf0mfm9i"
+                }
+            },
+            "os_update.v1": {
+                "title": "os_update",
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "URL where the OS image is served",
+                        "example": "http://169.254.149.144:8000/firmware"
+                    },
+                    "authenticationType": {
+                        "type": "string",
+                        "description": "Type of authentication required to get OS image",
+                        "enum": [
+                            "NONE",
+                            "BASIC"
+                        ]
+                    },
+                    "options": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "User name required to access OS image"
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "Password required to access OS image"
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "url",
+                    "authenticationType"
+                ],
+                "x-stoplight": {
+                    "id": "xmi9nxdy5zqrf"
+                }
+            },
+            "actionBlink.v1": {
+                "title": "Action Blink Configuration",
+                "type": "object",
+                "description": "action blink configuration for GPO or LED",
+                "properties": {
+                    "ON": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "SET GPO or LED to desired state for ON (milliseconds) duration"
+                    },
+                    "OFF": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Toggle GPO or LED for OFF(milliseconds) duration"
+                    },
+                    "DURATION": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Total duration in milliseconds to perform blink. 0 will blink GPO or LED forever"
+                    }
+                },
+                "required": [
+                    "ON",
+                    "OFF",
+                    "DURATION"
+                ],
+                "x-internal": true,
+                "x-stoplight": {
+                    "id": "7x118arpm59tg"
+                }
+            },
+            "conditionsArray.v1": {
+                "type": "array",
+                "title": "Conditions Array",
+                "description": "Predefined conditions\n\nIS_CLOUD_CONNECTED  : Condition will be true when reader is successfully connected to Cloud.\n\n~IS_CLOUD_CONNECTED : Condition will be true when reader lost Cloud connectivity.\n\nIS_RADIO_ONGOING    : Condition will be true when reader is currenty performing inventory or started inventory operation.\n\n~IS_RADIO_ONGOING   : Condition will be true when reader is not performing inventory or stoped inventory operation.",
+                "uniqueItems": true,
+                "minItems": 0,
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "IS_CLOUD_CONNECTED",
+                        "~IS_CLOUD_CONNECTED",
+                        "IS_RADIO_ONGOING",
+                        "~IS_RADIO_ONGOING"
+                    ]
+                },
+                "x-internal": true,
+                "x-stoplight": {
+                    "id": "mtlmsqc4itugl"
+                }
+            },
+            "actionConditions.v1": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/conditionsArray.v1"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "operator": {
+                                "type": "string",
+                                "enum": [
+                                    "and",
+                                    "or"
+                                ],
+                                "description": "operator tobe used for conditions validation"
+                            },
+                            "operands": {
+                                "$ref": "#/components/schemas/conditionsArray.v1"
+                            }
+                        }
+                    }
+                ],
+                "title": "Action Conditions",
+                "description": "Predefined conditions to trigger GPO or LED actions\n\nDefault \"and\" operator is used when array of conditions is provided.\n\noperator \"and\": Action is performed only when all the conditions provided is true.\noperator \"or\": Action is performed only when one of the conditions provided is true.",
+                "x-internal": true,
+                "x-stoplight": {
+                    "id": "wfz7zcmw91ovi"
+                }
+            },
+            "gpoAction.v1": {
+                "title": "GPO Action",
+                "type": "object",
+                "description": "Configuration to define operations on single GPO.\n\nGPO Action will be skipped if conditions provided is not satisfied.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "GPO"
+                        ],
+                        "description": "Action type"
+                    },
+                    "pin": {
+                        "type": "number",
+                        "example": 1,
+                        "description": "GPO pin number",
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    },
+                    "state": {
+                        "type": "string",
+                        "enum": [
+                            "HIGH",
+                            "LOW"
+                        ],
+                        "description": "Desired GPO pin state"
+                    },
+                    "postActionState": {
+                        "type": "string",
+                        "enum": [
+                            "HIGH",
+                            "LOW"
+                        ],
+                        "description": "Desired GPO pin state after action execution completed"
+                    },
+                    "blink": {
+                        "$ref": "#/components/schemas/actionBlink.v1"
+                    },
+                    "conditions": {
+                        "$ref": "#/components/schemas/actionConditions.v1"
+                    }
+                },
+                "required": [
+                    "type",
+                    "pin",
+                    "state"
+                ],
+                "x-stoplight": {
+                    "id": "13vs9v3lyqzgk"
+                }
+            },
+            "ledAction.v1": {
+                "title": "LED Action",
+                "type": "object",
+                "description": "Configuration to define operations on single LED.\n\nLED Action will be skipped if conditions provided is not satisfied.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Action type",
+                        "enum": [
+                            "LED"
+                        ]
+                    },
+                    "led": {
+                        "type": "number",
+                        "description": "LED number",
+                        "enum": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Desired LED color",
+                        "enum": [
+                            "RED",
+                            "AMBER",
+                            "GREEN"
+                        ]
+                    },
+                    "postActionColor": {
+                        "type": "string",
+                        "description": "Desired LED color after action expired",
+                        "enum": [
+                            "GREEN",
+                            "RED",
+                            "AMBER"
+                        ]
+                    },
+                    "blink": {
+                        "$ref": "#/components/schemas/actionBlink.v1"
+                    },
+                    "conditions": {
+                        "$ref": "#/components/schemas/actionConditions.v1"
+                    }
+                },
+                "required": [
+                    "type",
+                    "led",
+                    "color"
+                ],
+                "x-stoplight": {
+                    "id": "1s90u8qllu0hs"
+                }
+            },
+            "gpoledAction.v1": {
+                "title": "GPO-LED Action",
+                "type": "array",
+                "description": "Array of GPO or LED actions. Actions will be performed sequentially.",
+                "x-internal": true,
+                "items": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/components/schemas/gpoAction.v1"
+                        },
+                        {
+                            "$ref": "#/components/schemas/ledAction.v1"
+                        }
+                    ]
+                },
+                "x-stoplight": {
+                    "id": "u1vesf0amm8z0"
+                }
+            },
+            "GPIOLEDConfig.v1": {
+                "title": "GPIO-LED configuration",
+                "type": "object",
+                "description": "GPIO-LED module configuration\n\nConfigure GPO and LED behaviour based on Events generated\n\nSupported Events:\n1. GPI_1_L: event raised when GPI 1 changed from HIGH to LOW\n2. GPI_1_H: event raised when GPI 1 changed from LOW to HIGH\n3. GPI_2_L: event raised when GPI 2 changed from HIGH to LOW\n4. GPI_2_H: event raised when GPI 2 changed from LOW to HIGH\n5. CLOUD_DISCONNECT: event raised when reader is disconnected from cloud\n6. CLOUD_CONNECT: event raised when reader is connected to cloud\n7. TAG_READ: event raised when a tag is read\n8. RADIO_START: event raised when inventory operation started using START API\n9. RADIO_STOP: event raised when inventory operation stopped using STOP API",
+                "properties": {
+                    "GPODefaults": {
+                        "type": "object",
+                        "description": "GPO default configurations",
+                        "properties": {
+                            "1": {
+                                "type": "string",
+                                "enum": [
+                                    "HIGH",
+                                    "LOW"
+                                ],
+                                "description": "set default state for GPO pin 1"
+                            },
+                            "2": {
+                                "type": "string",
+                                "enum": [
+                                    "LOW",
+                                    "HIGH"
+                                ],
+                                "description": "set default state for GPO pin 2"
+                            },
+                            "3": {
+                                "type": "string",
+                                "enum": [
+                                    "HIGH",
+                                    "LOW"
+                                ],
+                                "description": "set default state for GPO pin 3"
+                            },
+                            "4": {
+                                "type": "string",
+                                "enum": [
+                                    "HIGH",
+                                    "LOW"
+                                ],
+                                "description": "set default state for GPO pin 4"
+                            }
+                        }
+                    },
+                    "LEDDefaults": {
+                        "type": "object",
+                        "description": "LED default configurations",
+                        "properties": {
+                            "1": {
+                                "type": "string",
+                                "enum": [
+                                    "GREEN",
+                                    "RED",
+                                    "AMBER"
+                                ],
+                                "description": "set default color for LED 2"
+                            },
+                            "2": {
+                                "type": "string",
+                                "enum": [
+                                    "GREEN",
+                                    "RED",
+                                    "AMBER"
+                                ],
+                                "description": "set default color for LED 3"
+                            },
+                            "3": {
+                                "type": "string",
+                                "enum": [
+                                    "RED",
+                                    "GREEN",
+                                    "AMBER"
+                                ],
+                                "description": "set default color for LED 4"
+                            }
+                        }
+                    },
+                    "GPI_1_H": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "GPI_1_L": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "GPI_2_H": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "GPI_2_L": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "CLOUD_DISCONNECT": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "CLOUD_CONNECT": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "TAG_READ": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "RADIO_START": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    },
+                    "RADIO_STOP": {
+                        "$ref": "#/components/schemas/gpoledAction.v1"
+                    }
+                },
+                "x-stoplight": {
+                    "id": "74qk2s4c49rte"
+                }
+            },
+            "retention": {
+                "title": "Tag Data Events Retention Configuration",
+                "type": "object",
+                "description": "Tag Data Events Retention Configuration on connection lost",
+                "properties": {
+                    "throttle": {
+                        "type": "integer",
+                        "default": 500,
+                        "description": "Rate (in events per second) to report data events when network is reconnected",
+                        "maximum": 500,
+                        "example": 200,
+                        "minimum": 1
+                    },
+                    "maxNumEvents": {
+                        "type": "integer",
+                        "default": 150000,
+                        "description": "Maximum number of events to retain",
+                        "maximum": 150000,
+                        "example": 150000,
+                        "minimum": 0
+                    },
+                    "maxEventRetentionTimeInMin": {
+                        "type": "number",
+                        "default": 0,
+                        "description": "Maximum event retention time (in minutes)\n\n0 or -1 indicate Events will be retained Forever.\n-1 is the default\n\nExample:\n10 indicate Events generated in last 10 minutes will be retained",
+                        "example": 10
+                    }
+                },
+                "x-stoplight": {
+                    "id": "snicjt6i5gp0e"
+                }
+            },
+            "batching": {
+                "title": "Tag Data Events batching configuration",
+                "type": "object",
+                "description": "Tag Data Events batching configuration",
+                "properties": {
+                    "reportingInterval": {
+                        "type": "number",
+                        "description": "Event Report interval in milliseconds. -1 disables this option",
+                        "example": 1000,
+                        "minimum": -1
+                    },
+                    "maxPayloadSizePerReport": {
+                        "type": "number",
+                        "description": "Maximum payload size in bytes. -1 disables",
+                        "default": 256000,
+                        "maximum": 256000,
+                        "minimum": -1
+                    }
+                },
+                "x-stoplight": {
+                    "id": "c7zxt327riz3c"
+                }
+            },
+            "eventsConfig.v1": {
+                "description": "Asynchronous management events configuration",
+                "type": "object",
+                "x-examples": {
+                    "example-1": {
+                        "errors": {
+                            "cpu": {
+                                "threshold": 90,
+                                "reportIntervalInSec": 1800
+                            },
+                            "flash": {
+                                "threshold": 90,
+                                "reportIntervalInSec": 1800
+                            },
+                            "ram": {
+                                "threshold": 90,
+                                "reportIntervalInSec": 1800
+                            },
+                            "reader_gateway": true,
+                            "antenna": false,
+                            "database": true,
+                            "radio": true,
+                            "radio_control": true
+                        },
+                        "warnings": {
+                            "cpu": {
+                                "threshold": 80,
+                                "reportIntervalInSec": 1800
+                            },
+                            "flash": {
+                                "threshold": 80,
+                                "reportIntervalInSec": 1800
+                            },
+                            "ram": {
+                                "threshold": 80,
+                                "reportIntervalInSec": 1800
+                            },
+                            "ntp": {
+                                "threshold": 0,
+                                "reportIntervalInSec": 1800
+                            },
+                            "database": true,
+                            "radio_api": true,
+                            "radio_control": true,
+                            "temperature": {
+                                "ambient": 75,
+                                "pa": 105
+                            }
+                        },
+                        "gpiEvents": true,
+                        "userappEvents": true,
+                        "heartbeat": {
+                            "fields": {
+                                "radio_control": [
+                                    "ANTENNAS",
+                                    "RADIO_ACTIVITY",
+                                    "RADIO_CONNECTION",
+                                    "CPU",
+                                    "RAM",
+                                    "UPTIME",
+                                    "NUM_ERRORS",
+                                    "NUM_WARNINGS",
+                                    "NUM_TAG_READS",
+                                    "NUM_TAG_READS_PER_ANTENNA",
+                                    "NUM_DATA_MESSAGES_TXED",
+                                    "NUM_RADIO_PACKETS_RXED"
+                                ],
+                                "reader_gateway": [
+                                    "NUM_DATA_MESSAGES_RXED",
+                                    "NUM_DATA_MESSAGES_TXED",
+                                    "NUM_DATA_MESSAGES_RETAINED",
+                                    "NUM_DATA_MESSAGES_DROPPED",
+                                    "NUM_MANAGEMENT_EVENTS_TXED",
+                                    "CPU",
+                                    "RAM",
+                                    "UPTIME",
+                                    "NUM_ERRORS",
+                                    "NUM_WARNINGS"
+                                ],
+                                "system": [
+                                    "CPU",
+                                    "FLASH",
+                                    "NTP",
+                                    "RAM",
+                                    "SYSTEMTIME",
+                                    "TEMPERATURE",
+                                    "UPTIME"
+                                ],
+                                "userapps": [
+                                    "STATUS",
+                                    "CPU",
+                                    "RAM",
+                                    "UPTIME",
+                                    "NUM_DATA_MESSAGES_RXED",
+                                    "NUM_DATA_MESSAGES_TXED",
+                                    "INCOMING_DATA_BUFFER_PERCENTAGE_REMAINING",
+                                    "OUTGOING_DATA_BUFFER_PERCENTAGE_REMAINING"
+                                ]
+                            },
+                            "interval": 60
+                        }
+                    }
+                },
+                "title": "Management Events Configuration",
+                "properties": {
+                    "errors": {
+                        "type": "object",
+                        "description": "Asynchronous Management Errors",
+                        "properties": {
+                            "cpu": {
+                                "type": "object",
+                                "description": "CPU Usage Error Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Error CPU usage limit",
+                                        "default": 90,
+                                        "example": 90,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "default": 1800,
+                                        "example": 1800,
+                                        "minimum": 1,
+                                        "description": "Error Report Interval in seconds."
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "flash": {
+                                "type": "object",
+                                "description": "Flash Usage Error Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Error FLASH usage limit",
+                                        "default": 90,
+                                        "example": 90,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "description": "Error Report Interval in seconds.",
+                                        "default": 1800,
+                                        "example": 1800,
+                                        "minimum": 1
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "ram": {
+                                "type": "object",
+                                "description": "RAM Usage Error Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Error RAM usage limit",
+                                        "default": 90,
+                                        "example": 90,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "description": "Error Report Interval in seconds.",
+                                        "default": 1800,
+                                        "minimum": 1,
+                                        "example": 1800
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "reader_gateway": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Reader Gateway Errors"
+                            },
+                            "antenna": {
+                                "type": "boolean",
+                                "description": "Antenna Connect/Disconnect Alerts",
+                                "default": true
+                            },
+                            "database": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Radio Database Error Alerts"
+                            },
+                            "radio": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Radio Error Alerts"
+                            },
+                            "radio_control": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Radio Control Error Alerts"
+                            }
+                        }
+                    },
+                    "warnings": {
+                        "type": "object",
+                        "description": "Asynchronous Management Warnings",
+                        "properties": {
+                            "cpu": {
+                                "type": "object",
+                                "description": "CPU Usage Warning Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Warning CPU usage limit",
+                                        "default": 80,
+                                        "example": 80,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "default": 1800,
+                                        "example": 1800,
+                                        "minimum": 1,
+                                        "description": "Warning Report Interval in seconds."
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "flash": {
+                                "type": "object",
+                                "description": "Flash Usage Warning Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Warning FLASH usage limit",
+                                        "default": 80,
+                                        "example": 90,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "description": "Warning Report Interval in seconds.",
+                                        "default": 1800,
+                                        "example": 1800,
+                                        "minimum": 1
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "ram": {
+                                "type": "object",
+                                "description": "RAM Usage Warning Alerts",
+                                "properties": {
+                                    "threshold": {
+                                        "type": "number",
+                                        "description": "Warning RAM usage limit",
+                                        "default": 90,
+                                        "example": 90,
+                                        "minimum": 1,
+                                        "maximum": 99
+                                    },
+                                    "reportIntervalInSec": {
+                                        "type": "number",
+                                        "description": "Warning Report Interval in seconds.",
+                                        "default": 1800,
+                                        "minimum": 1,
+                                        "example": 1800
+                                    }
+                                },
+                                "required": [
+                                    "threshold"
+                                ]
+                            },
+                            "ntp": {
+                                "description": "NTP Warning Alert",
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "description": "NTP offset warnings config",
+                                        "properties": {
+                                            "threshold": {
+                                                "type": "number",
+                                                "description": "NTP offset threshold"
+                                            },
+                                            "reportIntervalInSec": {
+                                                "type": "number",
+                                                "description": "Warning Report Interval in seconds."
+                                            }
+                                        },
+                                        "required": [
+                                            "threshold"
+                                        ]
+                                    },
+                                    {
+                                        "type": "boolean",
+                                        "description": "NTP sync warning alerts",
+                                        "default": true
+                                    }
+                                ]
+                            },
+                            "temperature": {
+                                "type": "object",
+                                "description": "Reader temperature warning limits",
+                                "properties": {
+                                    "ambient": {
+                                        "type": "number",
+                                        "description": "Ambient temperature limit",
+                                        "default": 75
+                                    },
+                                    "pa": {
+                                        "type": "number",
+                                        "description": "PA temperature limit",
+                                        "default": 105
+                                    }
+                                },
+                                "required": [
+                                    "ambient",
+                                    "pa"
+                                ]
+                            },
+                            "database": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Radio Database warnings"
+                            },
+                            "radio_api": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "NGE warnings"
+                            },
+                            "radio_control": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Radio Control warnings"
+                            },
+                            "reader_gateway": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Reader Gateway Errors"
+                            }
+                        }
+                    },
+                    "heartbeat": {
+                        "type": "object",
+                        "description": "Asynchronous Heartbeat Events",
+                        "properties": {
+                            "fields": {
+                                "type": "object",
+                                "description": "heartbeat fields",
+                                "properties": {
+                                    "radio_control": {
+                                        "type": "array",
+                                        "description": "Radio Control related heartbeat events",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ANTENNAS",
+                                                "RADIO_ACTIVITY",
+                                                "RADIO_CONNECTION",
+                                                "CPU",
+                                                "RAM",
+                                                "UPTIME",
+                                                "NUM_ERRORS",
+                                                "NUM_WARNINGS",
+                                                "NUM_TAG_READS",
+                                                "NUM_TAG_READS_PER_ANTENNA",
+                                                "NUM_DATA_MESSAGES_TXED",
+                                                "NUM_RADIO_PACKETS_RXED"
+                                            ]
+                                        }
+                                    },
+                                    "reader_gateway": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "NUM_DATA_MESSAGES_RXED",
+                                                "NUM_DATA_MESSAGES_TXED",
+                                                "NUM_DATA_MESSAGES_RETAINED",
+                                                "NUM_DATA_MESSAGES_DROPPED",
+                                                "NUM_MANAGEMENT_EVENTS_TXED",
+                                                "CPU",
+                                                "RAM",
+                                                "UPTIME",
+                                                "NUM_ERRORS",
+                                                "NUM_WARNINGS"
+                                            ]
+                                        }
+                                    },
+                                    "system": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "CPU",
+                                                "FLASH",
+                                                "NTP",
+                                                "RAM",
+                                                "SYSTEMTIME",
+                                                "TEMPERATURE",
+                                                "UPTIME"
+                                            ]
+                                        }
+                                    },
+                                    "userapps": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "STATUS",
+                                                "CPU",
+                                                "RAM",
+                                                "UPTIME",
+                                                "NUM_DATA_MESSAGES_RXED",
+                                                "NUM_DATA_MESSAGES_TXED",
+                                                "INCOMING_DATA_BUFFER_PERCENTAGE_REMAINING",
+                                                "OUTGOING_DATA_BUFFER_PERCENTAGE_REMAINING"
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "interval": {
+                                "type": "number",
+                                "description": "heartbeat report interval in seconds",
+                                "default": 60
+                            }
+                        },
+                        "required": [
+                            "fields",
+                            "interval"
+                        ]
+                    },
+                    "gpiEvents": {
+                        "type": "boolean",
+                        "description": "GPI Events",
+                        "default": true
+                    },
+                    "userappEvents": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "asyncronous events from user applications "
+                    }
+                },
+                "x-stoplight": {
+                    "id": "g87wolgr80pk8"
+                }
+            },
+            "readerConfig": {
+                "title": "Reader Configuration",
+                "type": "object",
+                "properties": {
+                    "xml": {
+                        "type": "string",
+                        "description": "Current reader XML configuration"
+                    },
+                    "GPIO-LED": {
+                        "$ref": "#/components/schemas/GPIOLEDConfig.v1"
+                    },
+                    "READER-GATEWAY": {
+                        "type": "object",
+                        "description": "Gateway specific configuration",
+                        "properties": {
+                            "retention": {
+                                "$ref": "#/components/schemas/retention"
+                            },
+                            "batching": {
+                                "$ref": "#/components/schemas/batching"
+                            },
+                            "managementEventConfig": {
+                                "$ref": "#/components/schemas/eventsConfig.v1"
+                            }
+                        }
+                    }
+                },
+                "description": "",
+                "x-stoplight": {
+                    "id": "tkpdfxnj0yb1b"
+                }
+            },
+            "logLevel.v1": {
+                "title": "logLevel",
+                "type": "object",
+                "description": "Reader Logging Configuration",
+                "properties": {
+                    "radioPacketLog": {
+                        "type": "boolean",
+                        "description": "Enables or Disables the Radio Control radio packet log"
+                    },
+                    "components": {
+                        "type": "array",
+                        "description": "System sub-components",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "componentName": {
+                                    "type": "string",
+                                    "enum": [
+                                        "radio_control",
+                                        "cloud_agent"
+                                    ],
+                                    "description": "Name of subcomponent"
+                                },
+                                "level": {
+                                    "type": "string",
+                                    "enum": [
+                                        "DEBUG",
+                                        "INFO",
+                                        "WARNING",
+                                        "ERROR",
+                                        "FATAL",
+                                        "OFF"
+                                    ],
+                                    "description": "Logging Level"
+                                }
+                            },
+                            "required": [
+                                "componentName",
+                                "level"
+                            ]
+                        }
+                    }
+                },
+                "x-stoplight": {
+                    "id": "tuwtw22avnp2s"
+                }
+            }
+        }
+    }
+}

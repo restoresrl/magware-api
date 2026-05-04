@@ -1,0 +1,609 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: Windows Local User Management API
+  description: |
+    API REST per la gestione di utenti e gruppi locali Windows.
+    Permette di creare, modificare, eliminare e interrogare utenti locali,
+    con supporto per l'assegnazione a gruppi locali e la gestione delle policy
+    di password.
+  contact:
+    name: Windows Local Admin API
+servers:
+  - url: 'http://localhost:8080/api/v1'
+    description: Server locale (sviluppo)
+  - url: 'https://{hostname}:8443/api/v1'
+    description: Server remoto (produzione)
+    variables:
+      hostname:
+        description: Hostname del server Windows target
+        default: server.local
+paths:
+  /users:
+    post:
+      tags:
+        - users
+      summary: Crea un nuovo utente locale
+      description: |
+        Crea un nuovo utente Windows locale e lo assegna al gruppo specificato.
+        L'utente viene abilitato per default; la possibilità di cambiare password
+        è disabilitata per default.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              utente_standard:
+                summary: Utente standard abilitato
+                value:
+                  username: mario.rossi
+                  password: P@ssw0rd!2024
+                  full_name: Mario Rossi
+                  group: Utenti
+                  enabled: true
+                  can_change_password: false
+              utente_admin:
+                summary: Utente amministratore
+                value:
+                  username: admin.locale
+                  password: Adm!n$ecure99
+                  full_name: Amministratore Locale
+                  group: Administrators
+                  enabled: true
+                  can_change_password: false
+      responses:
+        '201':
+          description: Utente creato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: 'Dati di input non validi (es. username già esistente, password non conforme)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                username_duplicato:
+                  value:
+                    code: USER_ALREADY_EXISTS
+                    message: L'utente 'mario.rossi' esiste già nel sistema
+                password_non_valida:
+                  value:
+                    code: INVALID_PASSWORD
+                    message: La password non soddisfa i requisiti di complessità
+        '404':
+          description: Gruppo specificato non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                gruppo_non_trovato:
+                  value:
+                    code: GROUP_NOT_FOUND
+                    message: Il gruppo 'NonEsiste' non è stato trovato
+        '500':
+          description: Errore interno del server / errore Windows API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+  '/users/{username}':
+    get:
+      tags:
+        - users
+      summary: Recupera le informazioni di un utente
+      description: |
+        Verifica se un utente locale esiste e restituisce i suoi parametri:
+        full name, gruppo di appartenenza, stato abilitazione e possibilità
+        di cambiare password.
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/UsernameParam'
+      responses:
+        '200':
+          description: Utente trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                utente_esistente:
+                  value:
+                    username: mario.rossi
+                    full_name: Mario Rossi
+                    group: Utenti
+                    enabled: true
+                    can_change_password: false
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                non_trovato:
+                  value:
+                    code: USER_NOT_FOUND
+                    message: L'utente 'mario.rossi' non esiste nel sistema locale
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+    patch:
+      tags:
+        - users
+      summary: Modifica un utente locale esistente
+      description: |
+        Aggiorna uno o più attributi di un utente locale esistente.
+        Tutti i campi sono opzionali: vengono aggiornati solo quelli presenti
+        nella richiesta. Permette di modificare full name, password, stato
+        di abilitazione e gruppo di appartenenza.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UsernameParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            examples:
+              cambia_password:
+                summary: Solo cambio password
+                value:
+                  password: NuovaP@ss2024!
+              disabilita_utente:
+                summary: Disabilitazione utente
+                value:
+                  enabled: false
+              aggiornamento_completo:
+                summary: Aggiornamento completo
+                value:
+                  full_name: Mario Rossi Jr.
+                  password: NuovaP@ss2024!
+                  enabled: true
+                  can_change_password: true
+                  group: Administrators
+      responses:
+        '200':
+          description: Utente aggiornato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Dati di input non validi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                nessun_campo:
+                  value:
+                    code: EMPTY_UPDATE
+                    message: Nessun campo da aggiornare fornito
+                password_non_valida:
+                  value:
+                    code: INVALID_PASSWORD
+                    message: La nuova password non soddisfa i requisiti di complessità
+        '404':
+          description: Utente o gruppo non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+    delete:
+      tags:
+        - users
+      summary: Elimina un utente locale
+      description: |
+        Rimuove definitivamente un utente locale dal sistema Windows.
+        L'operazione è irreversibile. L'utente viene anche rimosso
+        automaticamente da tutti i gruppi di cui fa parte.
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UsernameParam'
+      responses:
+        '204':
+          description: Utente eliminato con successo (nessun contenuto nella risposta)
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                non_trovato:
+                  value:
+                    code: USER_NOT_FOUND
+                    message: L'utente 'mario.rossi' non esiste nel sistema locale
+        '409':
+          description: Impossibile eliminare (es. utente attualmente connesso)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                utente_connesso:
+                  value:
+                    code: USER_SESSION_ACTIVE
+                    message: 'Impossibile eliminare l''utente: sessione attiva in corso'
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+  /groups:
+    get:
+      tags:
+        - groups
+      summary: Elenca tutti i gruppi locali
+      description: Restituisce la lista di tutti i gruppi locali presenti nel sistema Windows.
+      operationId: listGroups
+      responses:
+        '200':
+          description: Lista dei gruppi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GroupResponse'
+              examples:
+                lista_gruppi:
+                  value:
+                    groups:
+                      - name: Administrators
+                        description: Administrators have complete and unrestricted access
+                        member_count: 2
+                      - name: Users
+                        description: Users are prevented from making accidental or intentional system-wide changes
+                        member_count: 5
+                      - name: Remote Desktop Users
+                        description: Members in this group are granted the right to logon remotely
+                        member_count: 3
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+  '/groups/{groupname}':
+    get:
+      tags:
+        - groups
+      summary: Recupera i dettagli di un gruppo locale
+      description: 'Restituisce le informazioni di un gruppo locale, inclusa la lista dei membri.'
+      operationId: getGroup
+      parameters:
+        - $ref: '#/components/parameters/GroupnameParam'
+      responses:
+        '200':
+          description: Gruppo trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupDetailResponse'
+              examples:
+                gruppo_trovato:
+                  value:
+                    name: Utenti
+                    description: Utenti standard del sistema
+                    member_count: 2
+                    members:
+                      - mario.rossi
+                      - luigi.verdi
+        '404':
+          description: Gruppo non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BasicAuth: []
+        - BearerAuth: []
+      servers:
+        - url: 'http://localhost:8080/api/v1'
+          description: Server locale (sviluppo)
+        - url: 'https://{hostname}:8443/api/v1'
+          description: Server remoto (produzione)
+          variables:
+            hostname:
+              description: Hostname del server Windows target
+              default: server.local
+tags:
+  - name: users
+    description: Operazioni sugli utenti locali Windows
+  - name: groups
+    description: Operazioni sui gruppi locali Windows
+components:
+  parameters:
+    UsernameParam:
+      name: username
+      in: path
+      description: Nome utente Windows locale (SAM Account Name)
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-zA-Z0-9._\-]+$'
+        minLength: 1
+        maxLength: 20
+        example: mario.rossi
+      examples:
+        default:
+          value: mario.rossi
+    GroupnameParam:
+      name: groupname
+      in: path
+      description: Nome del gruppo locale Windows
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 256
+        example: Administrators
+      examples:
+        default:
+          value: Administrators
+  securitySchemes:
+    BasicAuth:
+      type: http
+      description: Credenziali di un account Windows con privilegi amministrativi locali
+      scheme: basic
+    BearerAuth:
+      type: http
+      description: JWT ottenuto tramite autenticazione preliminare
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: |
+            Nome utente Windows (SAM Account Name).
+            Non può contenere spazi o caratteri speciali tranne punto, underscore e trattino.
+          pattern: '^[a-zA-Z0-9._\-]+$'
+          minLength: 1
+          maxLength: 20
+          example: mario.rossi
+        password:
+          type: string
+          description: |
+            Password dell'utente. Deve rispettare le policy di complessità
+            Windows attive sulla macchina (tipicamente: maiuscole, minuscole,
+            numeri e caratteri speciali).
+          format: password
+          minLength: 8
+          maxLength: 127
+          example: P@ssw0rd!2024
+        full_name:
+          type: string
+          description: Nome completo (display name) dell'utente
+          maxLength: 256
+          example: Mario Rossi
+        group:
+          type: string
+          description: Nome del gruppo locale a cui assegnare l'utente
+          minLength: 1
+          maxLength: 256
+          example: Utenti
+        enabled:
+          type: boolean
+          description: Se true l'account è abilitato al login. Default true.
+          default: true
+          example: true
+        can_change_password:
+          type: boolean
+          description: |
+            Se true l'utente può cambiare la propria password.
+            Default false (password gestita solo dall'amministratore).
+          default: false
+          example: false
+      required:
+        - username
+        - password
+        - group
+    UserResponse:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Nome utente Windows (SAM Account Name)
+          example: mario.rossi
+        full_name:
+          type: string
+          description: Nome completo dell'utente
+          example: Mario Rossi
+        group:
+          type: string
+          description: Gruppo locale di appartenenza primario
+          example: Utenti
+        enabled:
+          type: boolean
+          description: Stato dell'account (true = abilitato)
+          example: true
+        can_change_password:
+          type: boolean
+          description: L'utente può cambiare la propria password
+          example: false
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - USER_ALREADY_EXISTS
+            - USER_NOT_FOUND
+            - USER_SESSION_ACTIVE
+            - GROUP_NOT_FOUND
+            - INVALID_PASSWORD
+            - INVALID_USERNAME
+            - EMPTY_UPDATE
+            - WINDOWS_API_ERROR
+            - UNAUTHORIZED
+            - INTERNAL_ERROR
+          description: Codice errore identificativo
+          example: USER_NOT_FOUND
+        message:
+          type: string
+          description: Descrizione leggibile dell'errore
+          example: L'utente 'mario.rossi' non esiste nel sistema locale
+        details:
+          type: string
+          description: Dettagli tecnici aggiuntivi (solo in ambiente di sviluppo)
+          example: 'Win32 error code 2221: The user name could not be found'
+      required:
+        - code
+        - message
+    UpdateUserRequest:
+      type: object
+      description: |
+        Tutti i campi sono opzionali. Viene aggiornato solo ciò che viene fornito.
+        Almeno un campo deve essere presente.
+      properties:
+        full_name:
+          type: string
+          description: Nuovo nome completo dell'utente
+          maxLength: 256
+          example: Mario Rossi Jr.
+        password:
+          type: string
+          description: Nuova password. Deve rispettare le policy di complessità Windows.
+          format: password
+          minLength: 8
+          maxLength: 127
+          example: NuovaP@ss2024!
+        enabled:
+          type: boolean
+          description: Abilita (true) o disabilita (false) l'account
+          example: false
+        can_change_password:
+          type: boolean
+          description: Consente o nega all'utente di cambiare la propria password
+          example: true
+        group:
+          type: string
+          description: |
+            Nuovo gruppo di appartenenza. L'utente viene rimosso dal gruppo
+            corrente e aggiunto al nuovo gruppo.
+          minLength: 1
+          maxLength: 256
+          example: Administrators
+      minProperties: 1
+    GroupResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome del gruppo locale
+          example: Administrators
+        description:
+          type: string
+          description: Descrizione del gruppo
+          example: Administrators have complete and unrestricted access
+        member_count:
+          type: integer
+          description: Numero di membri nel gruppo
+          example: 2
+    GroupDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/GroupResponse'
+        - type: object
+          properties:
+            members:
+              type: array
+              description: Lista degli username dei membri del gruppo
+              items:
+                type: string
+              example:
+                - mario.rossi
+                - luigi.verdi
+security:
+  - BasicAuth: []
+  - BearerAuth: []

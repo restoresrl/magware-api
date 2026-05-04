@@ -1,0 +1,422 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Magware/CLS API",
+        "version": "2.1.0",
+        "description": "Magware API customized for CLS",
+        "contact": {
+            "name": "Magware Support Team",
+            "url": "http://support.re-store.it",
+            "email": "support@re-store.it"
+        }
+    },
+    "paths": {
+        "/deliveries": {
+            "post": {
+                "summary": "Create delivery",
+                "operationId": "post-orders",
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/success"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/error"
+                    }
+                },
+                "description": "Transmit a SAP delivery to Magware",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/delivery_creation"
+                            },
+                            "examples": {
+                                "example-1": {
+                                    "value": {
+                                        "code": "800123456",
+                                        "date": "2019-08-24",
+                                        "movement_type": "string",
+                                        "destination_code": "string",
+                                        "invoice_code": "string",
+                                        "courier_code": "DHLEXP",
+                                        "high_priority": 0,
+                                        "items": [
+                                            {
+                                                "row_number": 1,
+                                                "item": "string",
+                                                "quantity": 1,
+                                                "stock_type": "AVAIL"
+                                            }
+                                        ],
+                                        "warehouse_annotations": "string",
+                                        "delivery_annotations": "string",
+                                        "trasp": "string",
+                                        "porto": "string",
+                                        "impegno": "string",
+                                        "rif": "string",
+                                        "dtrif": "2019-08-24",
+                                        "noterif": "string",
+                                        "qtatotrif": 0,
+                                        "codval": "string",
+                                        "val": 1,
+                                        "mailref": "string",
+                                        "filemit": "string",
+                                        "comtrsp": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/owner"
+                    }
+                ]
+            },
+            "parameters": []
+        },
+        "/version": {
+            "get": {
+                "summary": "Get version",
+                "tags": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "examples": {
+                                    "example-1": {
+                                        "value": {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "get-version",
+                "description": "Testing response from web service",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/owner"
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "delivery_creation": {
+                "title": "Delivery model",
+                "type": "object",
+                "description": "Model for creation of delivery orders",
+                "x-examples": {
+                    "example-1": {
+                        "code": "800123456",
+                        "date": "2019-08-24",
+                        "movement_type": "string",
+                        "destination_code": "string",
+                        "invoice_code": "string",
+                        "courier_code": "DHLEXP",
+                        "high_priority": true,
+                        "items": [
+                            {
+                                "row_number": 1,
+                                "item": "string",
+                                "quantity": 1,
+                                "stock_type": "AVAIL"
+                            }
+                        ],
+                        "warehouse_annotations": "string",
+                        "delivery_annotations": "string",
+                        "trasp": "string",
+                        "porto": "string",
+                        "impegno": "string",
+                        "rif": "string",
+                        "dtrif": "2019-08-24",
+                        "noterif": "string",
+                        "qtatotrif": 0,
+                        "codval": "string",
+                        "val": "string",
+                        "mailref": "string",
+                        "filemit": "string",
+                        "comtrsp": "string"
+                    }
+                },
+                "x-internal": true,
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "800123456",
+                        "description": "CODRIC Nr. impegno"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "DTRIC Data ora in cui è stata creata su SAP la consegna"
+                    },
+                    "movement_type": {
+                        "type": "string",
+                        "description": "CAUTRA Causale da stampare in bolla (CAUSALE DEL TRASPORTO)"
+                    },
+                    "destination_code": {
+                        "type": "string",
+                        "description": "CODCLIDES Codice identificativo del cliente  destinazione (come da tabella .CLI)"
+                    },
+                    "invoice_code": {
+                        "type": "string",
+                        "description": "CODCLIFAT Codice identificativo del cliente  fatturazione (come da tabella .CLI)"
+                    },
+                    "courier_code": {
+                        "type": "string",
+                        "description": "CODVET Come da tabella .VET"
+                    },
+                    "high_priority": {
+                        "type": "integer",
+                        "description": "URGENTE High priority delivery"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "row_number": {
+                                    "type": "integer",
+                                    "example": 1,
+                                    "description": "NUMRIGA N. riga richiesta (univoco per una richiesta)"
+                                },
+                                "item": {
+                                    "type": "string",
+                                    "description": "CODART Codice articolo (chiave)"
+                                },
+                                "quantity": {
+                                    "type": "number",
+                                    "format": "decimal",
+                                    "example": 1,
+                                    "description": "QTARIC Requested quantity"
+                                },
+                                "stock_type": {
+                                    "type": "string",
+                                    "example": "AVAIL",
+                                    "description": "CODMAG Magazzino logico"
+                                },
+                                "codarttag": {
+                                    "type": "string",
+                                    "description": "CODARTTAG Codice articolo per etichetta"
+                                }
+                            },
+                            "required": [
+                                "row_number",
+                                "item",
+                                "quantity",
+                                "stock_type"
+                            ]
+                        }
+                    },
+                    "warehouse_annotations": {
+                        "type": "string",
+                        "description": "NOTETEC Note da stampare in corpo bolla"
+                    },
+                    "delivery_annotations": {
+                        "type": "string",
+                        "description": "NOTESPE Note che verranno trasmesse nel file corriere e stampate in bolla (ANNOTAZIONI)"
+                    },
+                    "trasp": {
+                        "type": "string",
+                        "description": "TRASP Stampare in bolla (TRASPORTO A CURA DEL)"
+                    },
+                    "porto": {
+                        "type": "string",
+                        "description": "PORTO Porto da stampare in bolla (RESA)"
+                    },
+                    "impegno": {
+                        "type": "string",
+                        "description": "IMPEGNO Da stampare in corpo bolla (All'attenzione di: xxxxx)"
+                    },
+                    "rif": {
+                        "type": "string",
+                        "description": "RIF Nr. ODL/ODV/Impegno sciolto/REINTEGRO. Campo di aggregazione per gli ACCANTONATI."
+                    },
+                    "dtrif": {
+                        "type": "string",
+                        "description": "DTRIF Data dell'ordine del cliente da stampare in corpo bolla",
+                        "format": "date"
+                    },
+                    "noterif": {
+                        "type": "string",
+                        "description": "NOTERIF Note dell'ordine da stampare in corpo bolla"
+                    },
+                    "qtatotrif": {
+                        "description": "QTATOTRIF QTA'  TOTALE PZ nell' ODL/ODV/Impegno sciolto/REINTEGRO (da utilizzare per gestire ACCANTONATI)",
+                        "type": "integer"
+                    },
+                    "codval": {
+                        "type": "string",
+                        "description": "CODVAL Valuta contrass. (Vuoto se non contrassegno)"
+                    },
+                    "val": {
+                        "type": "number",
+                        "description": "VAL Valore contrassegno"
+                    },
+                    "mailref": {
+                        "type": "string",
+                        "description": "MAILREF Indirizzo mail di chi ha effettuato ODV/OL. E' possibile aggiungere più indirizzi mail separati da punto e virgola"
+                    },
+                    "filemit": {
+                        "type": "string",
+                        "description": "FILEMIT Filiale emittente da stampare in testata Bolla"
+                    },
+                    "comtrsp": {
+                        "type": "string",
+                        "description": "COMTRSP Committente trasporto da stampare in testata Bolla"
+                    },
+                    "noteatt": {
+                        "type": "string",
+                        "description": "NOTEATT\tNote attenzione\tDa stampare in corpo bolla (All'attenzione di: xxxxx)\n"
+                    },
+                    "intervento": {
+                        "type": "string",
+                        "description": "INTERVENTO Numero intervento SAP"
+                    },
+                    "nome_cli": {
+                        "type": "string",
+                        "description": "NOME_CLI Nome Cliente\n"
+                    },
+                    "seriale": {
+                        "type": "string",
+                        "description": "SERIALE Seriale della macchina\n"
+                    }
+                },
+                "required": [
+                    "code",
+                    "date",
+                    "destination_code",
+                    "invoice_code",
+                    "courier_code",
+                    "high_priority",
+                    "items"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "APIKey": {
+                "name": "APIKey",
+                "type": "apiKey",
+                "in": "header",
+                "description": "Assigned by Magware team"
+            }
+        },
+        "responses": {
+            "success": {
+                "description": "Successful response",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "success"
+                                    ]
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "status"
+                            ]
+                        },
+                        "examples": {
+                            "success": {
+                                "value": {
+                                    "status": "success"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "error": {
+                "description": "Error processing request",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "example": "error",
+                                    "enum": [
+                                        "error"
+                                    ]
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "description"
+                            ]
+                        },
+                        "examples": {
+                            "error": {
+                                "value": {
+                                    "status": "error",
+                                    "description": "Error creating object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "parameters": {
+            "owner": {
+                "name": "owner",
+                "in": "header",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "RST"
+                },
+                "description": "Proprietario/Divisione (Fisso CLS)"
+            }
+        },
+        "examples": {}
+    },
+    "tags": [
+        {
+            "name": "Inbound"
+        },
+        {
+            "name": "Inventory"
+        },
+        {
+            "name": "Master Data"
+        },
+        {
+            "name": "Models"
+        },
+        {
+            "name": "Outbound"
+        }
+    ],
+    "servers": [
+        {
+            "url": "https://api.multilogistics.net:55555",
+            "description": ""
+        }
+    ],
+    "security": [
+        {
+            "APIKey": []
+        }
+    ]
+}

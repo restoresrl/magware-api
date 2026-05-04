@@ -1,0 +1,252 @@
+{
+    "openapi": "3.1.0",
+    "x-stoplight": {
+        "id": "wsqkfd595n7si"
+    },
+    "info": {
+        "title": "RFID Kway",
+        "version": "1.0",
+        "summary": "API progetto RFID Magware Kway",
+        "description": "API per terminalino RFID Magware",
+        "contact": {
+            "name": "Carlo Torrese",
+            "email": "carlo.torrese@re-store.it"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000"
+        }
+    ],
+    "paths": {
+        "/getUdc/{code}": {
+            "get": {
+                "summary": "getUdc",
+                "tags": [],
+                "responses": {
+                    "200": {
+                        "description": "UdC trovata",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "x-stoplight": {
+                                                "id": "celvhjn0dmnm5"
+                                            },
+                                            "description": "Messaggio ok da visualizzare all'utente"
+                                        },
+                                        "numTags": {
+                                            "type": "number",
+                                            "x-stoplight": {
+                                                "id": "brrdlog2ibka1"
+                                            },
+                                            "description": "n. di tags previsti"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "numTags"
+                                    ]
+                                },
+                                "examples": {
+                                    "Example 1": {
+                                        "value": {
+                                            "message": "UdC da controllare OK",
+                                            "numTags": 12
+                                        }
+                                    },
+                                    "Example 2": {
+                                        "value": {
+                                            "message": "UdC per richiesta 123456778",
+                                            "numTags": 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "Not Acceptable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "x-examples": {
+                                        "Example 1": {
+                                            "error": "UdC '345435' inesistente"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "Example 1": {
+                                        "value": {
+                                            "error": "UdC '345435' inesistente"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "operationId": "get-getUdc",
+                "description": "Ritorna se UdC esiste",
+                "parameters": []
+            },
+            "parameters": [
+                {
+                    "schema": {
+                        "type": "string",
+                        "example": "XU1234567890"
+                    },
+                    "name": "code",
+                    "in": "path",
+                    "required": true,
+                    "description": "Codice dell'UdC da inventariare"
+                }
+            ]
+        },
+        "/setUdc": {
+            "put": {
+                "summary": "setUdc",
+                "operationId": "put-setUdc",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "x-examples": {
+                                        "Example 1": {
+                                            "message": "UdC da controllare OK"
+                                        }
+                                    },
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Messaggio OK da visualizzare all'utente"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "Example 1": {
+                                        "value": {
+                                            "message": "UdC trasmessa correttamente"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "Not Acceptable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "x-stoplight": {
+                                                "id": "q1vl7ce6qyipi"
+                                            },
+                                            "description": "Descrizione errore da visualizzare all'utente"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "Example 1": {
+                                        "value": {
+                                            "error": "Num tag superiore al previsto"
+                                        }
+                                    },
+                                    "Example 2": {
+                                        "value": {
+                                            "error": "Peso non congruente"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "description": "Invia dati UdC (tags + peso)",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "udc": {
+                                        "type": "string",
+                                        "x-stoplight": {
+                                            "id": "d94k7vyns67vg"
+                                        },
+                                        "description": "Codice UdC letta"
+                                    },
+                                    "weight": {
+                                        "type": "number",
+                                        "x-stoplight": {
+                                            "id": "cm6knshoyaq9h"
+                                        },
+                                        "format": "double",
+                                        "description": "Peso UdC richiesto all'utente"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "x-stoplight": {
+                                            "id": "9j591w4ckylbu"
+                                        },
+                                        "description": "Tags letti",
+                                        "items": {
+                                            "x-stoplight": {
+                                                "id": "z0vri5ekecjr0"
+                                            },
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "udc",
+                                    "weight",
+                                    "tags"
+                                ]
+                            },
+                            "examples": {
+                                "Example 1": {
+                                    "value": {
+                                        "udc": "XU1234567890",
+                                        "weight": 1.79,
+                                        "tags": [
+                                            "123123123123132",
+                                            "567567575675345",
+                                            "306483647277355"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {},
+        "securitySchemes": {}
+    }
+}
