@@ -1123,6 +1123,7 @@ components:
         note:
           type: string
           maxLength: 255
+          description: Free-form note associated with the item, visible to warehouse operators
         warehouse_category:
           type: object
           description: Item category defined by warehouse. It can be shared with items of other owners
@@ -1340,6 +1341,7 @@ components:
         arrival_date:
           type: string
           format: date
+          description: Expected arrival date of the goods at the warehouse
           example: "2021-06-10"
         stock_type:
           type: string
@@ -1488,9 +1490,11 @@ components:
         arrival_date:
           type: string
           format: date
+          description: Date the ASN arrived at the warehouse
         stock_date:
           type: string
           format: date
+          description: Date when goods were put into stock
         channel:
           type: string
           maxLength: 50
@@ -1565,10 +1569,12 @@ components:
           type: string
           maxLength: 100
           example: c/o Restore SrL
+          description: Additional address details (e.g. building name, floor, suite number)
         city:
           type: string
           maxLength: 50
           example: MILANO
+          description: City name
         zip:
           type: string
           maxLength: 20
@@ -1706,6 +1712,7 @@ components:
           $ref: "#/components/schemas/movement_type"
         destination:
           type: object
+          description: Recipient and delivery address details
           required:
             - code
             - name
@@ -1752,6 +1759,7 @@ components:
           type: string
           maxLength: 15
           example: DHLEXP
+          description: Code identifying the courier assigned to this delivery (e.g. `DHLEXP`, `BRTEXP`)
         high_priority:
           type: boolean
           description: |-
@@ -1869,6 +1877,7 @@ components:
           type: string
           maxLength: 255
           example: Freight prepaid, Porto Franco, etc
+          description: Shipping terms agreed with the customer (e.g. `Franco Destino`, `Porto Assegnato`)
         warehouse_annotations:
           type: string
           description: Notes specific to the warehouse (text information)
@@ -1876,6 +1885,7 @@ components:
         delivery_annotations:
           type: string
           maxLength: 255
+          description: Notes to be printed on the delivery document, visible to the courier and recipient
         cash_on_delivery:
           type: object
           description: Must be present only if Cash On Delivery is requested!
@@ -2008,6 +2018,7 @@ components:
           type: string
           maxLength: 100
           example: "800123456"
+          description: Delivery unique code, as assigned by the Host system
         preparation_date:
           type: string
           format: date-time
@@ -2022,6 +2033,7 @@ components:
           deprecated: true
         delivery_note:
           type: object
+          description: Physical delivery note (DDT) issued by the warehouse
           required:
             - code
             - date
@@ -2108,6 +2120,7 @@ components:
           type: string
           maxLength: 100
           example: "800123456"
+          description: Delivery unique code, as assigned by the Host system
         courier_code:
           type: string
           maxLength: 15
@@ -2122,6 +2135,7 @@ components:
           format: decimal
         destination:
           type: object
+          description: Recipient details and delivery address
           required:
             - name
           properties:
@@ -2163,6 +2177,7 @@ components:
           type: string
           maxLength: 100
           example: "800123456"
+          description: Delivery unique code, as assigned by the Host system
         cancellation_date:
           type: string
           format: date-time
@@ -2199,6 +2214,7 @@ components:
           description: Courier of the manifest
         deliveries:
           type: array
+          description: List of deliveries consolidated in this shipment manifest
           items:
             type: object
             properties:
@@ -2238,10 +2254,12 @@ components:
         stock_type:
           type: string
           maxLength: 50
+          description: "Logical warehouse where the stock is held (e.g. `AVAIL` for available, `FLAWED` for damaged goods)"
         quantity:
           type: number
           format: decimal
           example: 12
+          description: Quantity in stock for this lot/stock type combination
         reserved_quantity:
           type: number
           format: decimal
@@ -2283,21 +2301,26 @@ components:
           type: string
           maxLength: 15
           example: "800123456"
+          description: Adjustment unique identifier, assigned by the Host system
         reason_code:
           type: string
           example: LACK
           maxLength: 50
+          description: "Code identifying the reason for this inventory adjustment (e.g. `LACK`, `RETURN`)"
         sign:
           type: string
           enum:
             - +
             - "-"
+          description: "Direction of the adjustment: `+` for stock increase, `-` for stock decrease"
         date:
           type: string
           format: date
+          description: Date of the inventory adjustment
         time:
           type: string
           format: time
+          description: Time of the inventory adjustment
         items:
           type: array
           items:
@@ -2317,28 +2340,35 @@ components:
           type: string
           maxLength: 50
           example: P001
+          description: Code identifying the movement type
         description:
           type: string
           maxLength: 255
           example: Purchase from supplier
+          description: Human-readable label of the movement type
     package:
       title: package
       type: object
       properties:
         code:
           type: string
+          description: Package identifier (e.g. SSCC barcode)
         alternative_code:
           type: string
           maxLength: 255
+          description: Alternative package identifier
         weight:
           type: number
           format: decimal
+          description: Package gross weight in Kg
         volume:
           type: number
           format: decimal
+          description: Package volume in m³
         package_type:
           type: string
           maxLength: 100
+          description: "Package type (e.g. `BOX`, `PLT` for pallet, `ENV` for envelope)"
         items:
           type: array
           items:
@@ -2360,6 +2390,7 @@ components:
         row_number:
           type: integer
           example: 1
+          description: Row number of the item within the package, unique per package
         item:
           $ref: "#/components/schemas/item_reference"
         quantity:
@@ -2370,6 +2401,7 @@ components:
         reference:
           type: string
           maxLength: 50
+          description: Reference code for the item row (e.g. order line reference)
         lot_number:
           type: string
           maxLength: 100

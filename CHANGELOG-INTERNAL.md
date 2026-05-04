@@ -14,6 +14,10 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 > Tutto il lavoro fatto dall'inizio del repo è in `[Unreleased]` finché non si rilascia la prima release pubblica (al termine della revisione della spec). A quel punto l'intero contenuto qui sotto verrà consolidato in inglese in `CHANGELOG.md`, taggato con il primo `vX.Y.Z` e promosso a sezione versionata anche qui.
 
+### Changed
+
+- **Track 3 passo 3 — description mancanti**: aggiunte description a 32 property di `components/schemas` che ne erano prive. Schemi toccati: `item` (`note`), `asn_creation` (`arrival_date`), `asn_received_details` (`arrival_date`, `stock_date`), `address` (`address2`, `city`), `delivery_creation` (`destination`, `courier_code`, `freight_term`, `delivery_annotations`), `delivery_prepared_details` (`code`, `delivery_note`), `delivery_note_details` (`code`, `destination`), `delivery_cancelled_details` (`code`), `shipment_details` (`deliveries`), `item_stock` (`stock_type`, `quantity`), `adjustment` (`code`, `reason_code`, `sign`, `date`, `time`), `movement_type` (`code`, `description`), `package` (`code`, `alternative_code`, `weight`, `volume`, `package_type`), `package_item` (`row_number`, `reference`). Nessuna modifica strutturale — solo description aggiunte.
+
 ### Added
 
 - `item_stock` schema: aggiunti campi `variant_quantity` (integer, opzionale) e `variant_reserved_quantity` (integer, opzionale) — emessi sempre da `GET /stocks` e `GET /stocks/{item_code}` via `json.setint` su colonne `min_tot` e `min_pre` (aggregati per variante su tutti i lotti e stock type). Opzionali per coerenza con `reserved_quantity` (schema condiviso con `adjustment.items`). Sorgente: `n_get_stocks.sru`.
