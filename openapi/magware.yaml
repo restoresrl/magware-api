@@ -1860,9 +1860,8 @@ components:
           properties:
             currency:
               type: string
-              description: '3 digit ISO 4217 Cash On Delivery currency (default: "EUR")'
+              description: 3-digit ISO 4217 Cash On Delivery currency. Conventional value is "EUR".
               example: EUR
-              default: EUR
             value:
               type: number
               description: Cash On Delivery total amount
@@ -2431,8 +2430,7 @@ components:
           properties:
             currency:
               type: string
-              default: EUR
-              description: '3 digit ISO 4217 Cash On Delivery currency (default: "EUR")'
+              description: 3-digit ISO 4217 Cash On Delivery currency. Conventional value is "EUR".
             value:
               type: string
               description: Cash On Delivery total amount
