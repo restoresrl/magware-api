@@ -1176,7 +1176,7 @@ components:
                 description: Array of barcodes that uniquely identify the item and the variant. Must be unique for the owner
                 items:
                   type: string
-                  maxLength: 50
+                  maxLength: 100
                   example: "1234567890123"
               volume:
                 type: number
@@ -1507,7 +1507,7 @@ components:
                 maxLength: 255
               lot_number:
                 type: string
-                maxLength: 15
+                maxLength: 100
                 description: Lot number, if enabled for the item
               serial_number:
                 type: string
@@ -1719,7 +1719,7 @@ components:
               maxLength: 100
             title:
               type: string
-              maxLength: 100
+              maxLength: 500
               description: |-
                 Honorific or title of the recipient (e.g. `Dott.`, `Dr.`,
                 `Prof.`). Persisted alongside the destination contact data
@@ -1756,7 +1756,7 @@ components:
           description: Expected shipment date
         reference:
           type: string
-          maxLength: 255
+          maxLength: 250
           description: Reference information for the delivery, returned to Host
           example: "123456789000"
         items:
@@ -1790,7 +1790,7 @@ components:
                 maxLength: 50
               lot_number:
                 type: string
-                maxLength: 15
+                maxLength: 100
                 description: Lot number requested for the item
               serial_number:
                 type: string
@@ -2197,7 +2197,7 @@ components:
           example: 12
         lot_number:
           type: string
-          maxLength: 15
+          maxLength: 100
           description: Lot number, if enabled for the item
         serial_number:
           type: string
@@ -2221,11 +2221,12 @@ components:
       properties:
         code:
           type: string
+          maxLength: 15
           example: "800123456"
         reason_code:
           type: string
           example: LACK
-          maxLength: 5
+          maxLength: 50
         sign:
           type: string
           enum:
@@ -2308,7 +2309,7 @@ components:
           type: string
         lot_number:
           type: string
-          maxLength: 15
+          maxLength: 100
           description: Lot number, if enabled for the item
         serial_number:
           type: string
