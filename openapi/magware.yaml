@@ -1147,6 +1147,7 @@ components:
             required:
               - code
               - description
+              - quantity
             properties:
               code:
                 type: string
@@ -1169,7 +1170,6 @@ components:
                 format: decimal
                 type: number
                 minimum: 0.001
-                default: 1
               barcodes:
                 type: array
                 uniqueItems: true
@@ -1202,7 +1202,6 @@ components:
                 description: Indicate that this variant is the default one for the item
               quantity_per_package:
                 type: integer
-                default: 1
                 example: 12
                 description: Default quantity per package, expressed in number of whole variants per package.
                 minimum: 1
@@ -1715,11 +1714,9 @@ components:
             formal_salutation:
               type: string
               maxLength: 100
-              default: Egr. Sig.
             informal_salutation:
               type: string
               maxLength: 100
-              default: Caro
             title:
               type: string
               maxLength: 100
@@ -1869,7 +1866,6 @@ components:
             value:
               type: number
               description: Cash On Delivery total amount
-              default: 123.45
             type:
               type: string
               description: Cash on delivery type, depend on courier
@@ -1903,11 +1899,9 @@ components:
             formal_salutation:
               type: string
               maxLength: 100
-              default: Egr. Sig.
             informal_salutation:
               type: string
               maxLength: 100
-              default: Caro
         international_shipment:
           type: object
           description: International shipment information, required only for international destination!
@@ -1993,7 +1987,6 @@ components:
         cancelled:
           type: boolean
           description: Indicates that the delivery was cancelled by the warehouse (i.e. not fulfilled at all)
-          default: false
           deprecated: true
         delivery_note:
           type: object
@@ -2022,7 +2015,6 @@ components:
         channel:
           type: string
           description: Transmission channel
-          default: WS
           enum:
             - WS
             - FTP
@@ -2138,7 +2130,6 @@ components:
         channel:
           type: string
           description: Transmission channel
-          default: WS
           enum:
             - WS
             - FTP
