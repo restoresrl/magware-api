@@ -16,6 +16,8 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Changed
 
+- **Track 5 — Esempi e response**: rimossi 8 blocchi `x-examples` residui di Stoplight (non standard OpenAPI, non renderizzati da Scalar — presenti su `item`, `asn_creation`, `asn_received_details`, `delivery_creation`, `delivery_prepared_details`, `delivery_note_details`, `documents` e su una response inline). Aggiunti `examples:` nei requestBody di `POST /asn` (esempio `standard`: ASN a due righe articolo), `POST /deliveries` (delivery con destinazione e due articoli), `POST /shipments` (shipment che raggruppa due deliveries). Ricostruito l'esempio `GET /adjustments/{id}`: rimpiazzati i tre placeholder `"string"` (`stock_type`, `lot_number`, `serial_number`) con valori reali. Nessuna modifica strutturale alla spec.
+
 - **Track 3 passo 3 — description mancanti**: aggiunte description a 32 property di `components/schemas` che ne erano prive. Schemi toccati: `item` (`note`), `asn_creation` (`arrival_date`), `asn_received_details` (`arrival_date`, `stock_date`), `address` (`address2`, `city`), `delivery_creation` (`destination`, `courier_code`, `freight_term`, `delivery_annotations`), `delivery_prepared_details` (`code`, `delivery_note`), `delivery_note_details` (`code`, `destination`), `delivery_cancelled_details` (`code`), `shipment_details` (`deliveries`), `item_stock` (`stock_type`, `quantity`), `adjustment` (`code`, `reason_code`, `sign`, `date`, `time`), `movement_type` (`code`, `description`), `package` (`code`, `alternative_code`, `weight`, `volume`, `package_type`), `package_item` (`row_number`, `reference`). Nessuna modifica strutturale — solo description aggiunte.
 
 ### Added

@@ -400,6 +400,34 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/asn_creation"
+            examples:
+              standard:
+                summary: Single-supplier ASN with two item lines
+                value:
+                  code: ASN123456
+                  supplier:
+                    code: F0001
+                    name: Acme Supplier srl
+                  delivery_note:
+                    code: D123456AB
+                    date: "2021-06-09"
+                  movement_type:
+                    code: P001
+                    description: Purchase from supplier
+                  arrival_date: "2021-06-24"
+                  contents:
+                    - row_number: 1
+                      item:
+                        code: A000010003
+                        variant: "01"
+                      quantity: 5
+                      reference: "5000123401"
+                    - row_number: 2
+                      item:
+                        code: A000010005
+                        variant: "01"
+                      quantity: 7
+                      reference: "5000123402"
       tags:
         - ASN
   /asn/received:
@@ -503,6 +531,39 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/delivery_creation"
+            examples:
+              standard:
+                summary: Delivery order with two items to a named destination
+                value:
+                  code: "800123456"
+                  date: "2021-06-24"
+                  movement_type:
+                    code: V001
+                    description: Sales order
+                  destination:
+                    code: C12345
+                    name: Mario Rossi srl
+                    address:
+                      address1: Via Roma 18
+                      city: MILANO
+                      zip: "20100"
+                      country: IT
+                  courier_code: DHLEXP
+                  shipment_date: "2021-06-26"
+                  reference: "123456789000"
+                  items:
+                    - row_number: 1
+                      item:
+                        code: A000010003
+                        variant: "01"
+                      quantity: 2
+                      stock_type: AVAIL
+                    - row_number: 2
+                      item:
+                        code: A000010005
+                        variant: "01"
+                      quantity: 1
+                      stock_type: AVAIL
       tags:
         - Deliveries
   /deliveries/prepared:
@@ -656,6 +717,16 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/shipment_creation"
+            examples:
+              standard:
+                summary: Group two deliveries into a single shipment
+                value:
+                  code: DDT123456
+                  date: "2021-06-26"
+                  deliveries:
+                    - "800123456"
+                    - "800123457"
+                  courier_code: DHLEXP
     get:
       summary: Get shipments list
       operationId: get-shipments
@@ -749,12 +820,12 @@ paths:
                       - item:
                           code: A000010003
                           variant: "01"
-                        stock_type: string
+                        stock_type: AVAIL
                         quantity: 12
-                        lot_number: string
-                        serial_number: string
-                        expiration_date: "2019-08-24"
-                        expedition_date: "2019-08-24"
+                        lot_number: L2021001
+                        serial_number: SN000123
+                        expiration_date: "2022-12-31"
+                        expedition_date: "2021-09-01"
         "400":
           $ref: "#/components/responses/error"
         "404":
@@ -976,10 +1047,6 @@ paths:
                 required:
                   - product
                   - version
-                x-examples:
-                  example-1:
-                    product: Magware 2021
-                    version: 21.0.0.391
               examples:
                 example-1:
                   value:
@@ -994,112 +1061,6 @@ components:
     item:
       description: Model for items
       type: object
-      x-examples:
-        clothing:
-          value:
-            code: 1234567890AB
-            description: A red pretty t-shirt
-            um: PCS
-            note: string
-            warehouse_category:
-              code: "001"
-              description: Clothing
-            owner_category:
-              code: "001"
-              description: T-shirt
-            variants:
-              - code: "10"
-                description: XXS
-                quantity: 1
-                barcodes:
-                  - "1234567890123"
-                volume: 0.12
-                weight: 1.23
-                shippable: false
-            lot_control: false
-            serial_number_control: false
-            expiration_date_control: false
-            expedition_date_control: true
-            expedition_days: 0
-            obsolete: false
-        food&beverage:
-          value:
-            code: 545664789AB
-            description: Red wine
-            um: PCS
-            note: Some notes
-            warehouse_category:
-              code: "002"
-              description: Food & beverage
-            owner_category:
-              code: "056"
-              description: Wine
-            variants:
-              - code: "-"
-                description: "-"
-                quantity: 1
-                barcodes:
-                  - "9874561320"
-                volume: 0.012
-                weight: 1.05
-                shippable: false
-            lot_control: true
-            serial_number_control: false
-            expiration_date_control: true
-            expedition_date_control: true
-            expedition_days: 365
-            obsolete: false
-        clothing multi-variant:
-          value:
-            code: 1234567890AB
-            description: A red pretty t-shirt
-            um: PCS
-            note: string
-            warehouse_category:
-              code: "001"
-              description: Clothing
-            owner_category:
-              code: "001"
-              description: T-shirt
-            variants:
-              - code: "10"
-                description: XXS
-                quantity: 1
-                barcodes:
-                  - "1234567890123"
-                volume: 0.12
-                weight: 1.23
-                shippable: false
-              - code: "20"
-                description: XS
-                quantity: 1
-                barcodes:
-                  - "1234567890124"
-                volume: 0.12
-                weight: 1.23
-                shippable: false
-              - code: "30"
-                description: S
-                quantity: 1
-                barcodes:
-                  - "1234567890125"
-                volume: 0.12
-                weight: 1.23
-                shippable: false
-              - code: "40"
-                description: M
-                quantity: 1
-                barcodes:
-                  - "1234567890126"
-                volume: 0.12
-                weight: 1.23
-                shippable: false
-            lot_control: false
-            serial_number_control: false
-            expiration_date_control: false
-            expedition_date_control: true
-            expedition_days: 0
-            obsolete: false
       title: Item model
       required:
         - code
@@ -1298,33 +1259,6 @@ components:
       title: ASN creation model
       type: object
       description: Model for creation of ASN
-      x-examples:
-        Example 1:
-          code: ASN123456
-          arrival_date: "2021-06-10"
-          stock_type: AVAIL
-          supplier:
-            code: F0001
-            name: Supplier srl
-          delivery_note:
-            code: D123456AB
-            date: "2021-06-09"
-          movement_type:
-            code: P001
-            description: Purchase from supplier
-          contents:
-            - row_number: 1
-              item:
-                code: A000010003
-                variant: "01"
-              quantity: 5
-              reference: "5000123401"
-              custom_attributes:
-                - name: a_custom_string
-                  value: lorem ipsum doloret
-          attributes:
-            - name: a_custom_string
-              value: lorem ipsum doloret
       required:
         - code
         - supplier
@@ -1436,31 +1370,6 @@ components:
       title: ASN received model
       type: object
       description: ASN received detail model
-      x-examples:
-        Example 1:
-          asn_code: string
-          supplier: string
-          delivery_note:
-            code: string
-            date: "2019-08-24"
-          movement_type:
-            code: P001
-            description: Purchase from supplier
-          arrival_date: "2019-08-24"
-          stock_date: "2019-08-24"
-          items:
-            - row_number: 1
-              item:
-                code: A000010003
-                variant: "01"
-              expected_quantity: 0
-              received_quantity: 0
-              stock_type: string
-              reference: string
-              lot_number: string
-              serial_number: string
-              expiration_date: "2019-08-24"
-              expedition_date: "2019-08-24"
       required:
         - asn_code
         - supplier
@@ -1615,83 +1524,6 @@ components:
       title: Delivery order creation model
       type: object
       description: Model for creation of delivery order
-      x-examples:
-        Example 1:
-          code: "800123456"
-          date: "2019-08-24"
-          movement_type:
-            code: P001
-            description: Purchase from supplier
-          destination:
-            code: string
-            name: string
-            description: string
-            address:
-              address1: Via Roma 18
-              address2: c/o Restore SrL
-              city: MILANO
-              zip: "20100"
-              province: MI
-              country: IT
-              phone: "+3902123456789"
-              email: mario.rossi@mariorossi.it
-            first_name: Mario
-            last_name: Rossi
-            middle_name: Andrea
-            formal_salutation: Egr. Sig.
-            informal_salutation: Caro
-          courier_code: DHLEXP
-          high_priority: true
-          shipment_date: "2019-08-24"
-          reference: "123456789000"
-          items:
-            - row_number: 1
-              item:
-                code: A000010003
-                variant: "01"
-              quantity: 1
-              stock_type: AVAIL
-              reference: string
-              lot_number: string
-              serial_number: string
-              expiration_date: "2019-08-24"
-              expedition_date: "2019-08-24"
-              do_not_pick: false
-              do_not_print: false
-              parent_row: 0
-              custom_attributes:
-                - name: a_custom_string
-                  value: lorem ipsum doloret
-          print_delivery: false
-          ship_on_demand: false
-          allow_extra_items: false
-          freight_term: Freight prepaid, Porto Franco, etc
-          warehouse_annotations: string
-          delivery_annotations: string
-          cash_on_delivery:
-            currency: EUR
-            value: 123.45
-            type: string
-          billing:
-            code: string
-            name: string
-            description: string
-            address:
-              address1: Via Roma 18
-              address2: c/o Restore SrL
-              city: MILANO
-              zip: "20100"
-              province: MI
-              country: IT
-              phone: "+3902123456789"
-              email: mario.rossi@mariorossi.it
-          international_shipment:
-            currency: USD
-            value: 12345.2
-            incoterm: EXW
-          custom_attributes:
-            - name: a_custom_string
-              value: lorem ipsum doloret
       required:
         - code
         - date
@@ -1976,35 +1808,6 @@ components:
       title: Delivery order prepared model
       type: object
       description: Prepared deliver order details model
-      x-examples:
-        Example 1:
-          code: "800123456"
-          preparation_date: "2019-08-24T14:15:22Z"
-          courier_code: string
-          cancelled: false
-          delivery_note:
-            code: string
-            date: "2019-08-24"
-          weight: 0
-          volume: 0
-          packages:
-            - code: string
-              alternative_code: string
-              weight: 0
-              volume: 0
-              package_type: string
-              items:
-                - row_number: 1
-                  item:
-                    code: A000010003
-                    variant: "01"
-                  quantity: 1
-                  reference: string
-                  lot_number: string
-                  serial_number: string
-                  expiration_date: "2019-08-24"
-                  expedition_date: "2019-08-24"
-          channel: WS
       required:
         - code
         - preparation_date
@@ -2080,35 +1883,6 @@ components:
       title: Delivery note model
       type: object
       description: Delivery note details model
-      x-examples:
-        Example 1:
-          code: "800123456"
-          preparation_date: "2019-08-24T14:15:22Z"
-          courier_code: string
-          cancelled: false
-          delivery_note:
-            code: string
-            date: "2019-08-24"
-          weight: 0
-          volume: 0
-          packages:
-            - code: string
-              alternative_code: string
-              weight: 0
-              volume: 0
-              package_type: string
-              items:
-                - row_number: 1
-                  item:
-                    code: A000010003
-                    variant: "01"
-                  quantity: 1
-                  reference: string
-                  lot_number: string
-                  serial_number: string
-                  expiration_date: "2019-08-24"
-                  expedition_date: "2019-08-24"
-          channel: WS
       required:
         - code
         - courier_code
@@ -2547,13 +2321,6 @@ components:
     documents:
       title: documents
       type: object
-      x-examples:
-        Example 1:
-          code: INV12345
-          date: "2019-08-24"
-          type: Invoice
-          print: true
-          content: Y29tcGxleCBkYXRhIGluIFhNTCBvciBKU09OLg==
       description: |-
         Arrays of documents in PDF format.
 
