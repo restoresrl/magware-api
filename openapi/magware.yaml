@@ -1194,12 +1194,12 @@ components:
                 minimum: 0.000001
               shippable:
                 type: boolean
-                description: "Indicate that the item package is shippable without need of an external package or re-packaging "
+                description: Indicates that the item package is shippable without need of an external package or re-packaging
                 default: false
               default:
                 type: boolean
                 default: false
-                description: Indicate that this variant is the default one for the item
+                description: Indicates that this variant is the default one for the item
               quantity_per_package:
                 type: integer
                 example: 12
@@ -1208,18 +1208,18 @@ components:
         lot_control:
           type: boolean
           default: false
-          description: Indicate that lot control and tracking is needed for the item
+          description: Indicates that lot control and tracking is needed for the item
         serial_number_control:
           type: boolean
           default: false
-          description: Indicate that serial number control and tracking is needed for the item
+          description: Indicates that serial number control and tracking is needed for the item
         expiration_date_control:
           type: boolean
           default: false
-          description: Indicate that expiration date control and tracking is needed for the item
+          description: Indicates that expiration date control and tracking is needed for the item
         expedition_date_control:
           type: boolean
-          description: Indicate that expedition date control and tracking is needed for the item
+          description: Indicates that expedition date control and tracking is needed for the item
           default: false
         expedition_days:
           type: integer
@@ -1232,15 +1232,15 @@ components:
             on GET. Do not rely on its value.
         obsolete:
           type: boolean
-          description: Indicate that the item is obsolete and no more managed in the future
+          description: Indicates that the item is obsolete and no more managed in the future
           default: false
         variable_weight:
           type: boolean
-          description: Item with variable weights, for example meat, fish and cheese
+          description: Indicates that the item has variable weights (e.g. meat, fish, cheese)
           default: false
         variable_volume:
           type: boolean
-          description: Item with variable volume
+          description: Indicates that the item has variable volume
           default: false
         can_be_added_to_deliveries:
           type: boolean
@@ -1807,7 +1807,7 @@ components:
               do_not_pick:
                 type: boolean
                 default: false
-                description: Indicate that the item must not be picked and delivered
+                description: Indicates that the item must not be picked and delivered
               package_type:
                 type: string
                 example: BOX01
@@ -1815,7 +1815,7 @@ components:
               do_not_print:
                 type: boolean
                 default: false
-                description: Indicate that the row must not be printed on the delivery note or other documents
+                description: Indicates that the row must not be printed on the delivery note or other documents
               parent_row:
                 type:
                   - integer
@@ -1827,18 +1827,18 @@ components:
                 $ref: "#/components/schemas/custom_attributes"
         print_delivery:
           type: boolean
-          description: Indicate that warehouse must print and apply the delivery notes
+          description: Indicates that warehouse must print and apply the delivery notes
           default: false
         ship_on_demand:
           type: boolean
           default: false
-          description: Warehouse must wait explicit confirmation to ship the delivery
+          description: Indicates that the warehouse must wait for explicit confirmation before shipping the delivery
         allow_extra_items:
           type: boolean
           description: |-
-            A boolean flag that indicates whether additional items can be added to the delivery beyond the originally requested quantity.
-            - If set to true, the system allows the delivery to include quantities exceeding the customer's initial request.
-            - If set to false, the delivery must strictly adhere to the requested quantity.
+            Indicates whether additional items can be added to the delivery beyond the originally requested quantity.
+            - If `true`, the system allows the delivery to include quantities exceeding the customer's initial request.
+            - If `false`, the delivery must strictly adhere to the requested quantity.
           default: false
         freight_term:
           type: string
@@ -2470,7 +2470,7 @@ components:
           description: Type of the document. Example "Delivery notes" or "Invoice"
         print:
           type: boolean
-          description: Indicate that the document must be printed.
+          description: Indicates that the document must be printed.
         content:
           type: string
           description: PDF document, encoded in base64 format
