@@ -1,6 +1,6 @@
 {
   "name": "magware-api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "OpenAPI 3.1 specification for the Magware WMS REST API by Restore S.r.l.",
   "homepage": "https://api.magware.it",

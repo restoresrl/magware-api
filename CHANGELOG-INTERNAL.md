@@ -10,9 +10,7 @@ Questo changelog documenta **solo le modifiche al contratto pubblico delle API**
 
 I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività interne **non rientrano** in questo file: restano tracciati nel `git log` e, per le scelte strutturali, nella sezione "Storia delle decisioni" di `CLAUDE.md`.
 
-## [Unreleased]
-
-> Tutto il lavoro fatto dall'inizio del repo è in `[Unreleased]` finché non si rilascia la prima release pubblica (al termine della revisione della spec). A quel punto l'intero contenuto qui sotto verrà consolidato in inglese in `CHANGELOG.md`, taggato con il primo `vX.Y.Z` e promosso a sezione versionata anche qui.
+## [1.0.0] - 2026-05-05
 
 ### Added
 
