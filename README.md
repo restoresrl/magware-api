@@ -1,5 +1,9 @@
 # magware-api
 
+[![Lint](https://github.com/restoresrl/magware-api/actions/workflows/lint.yml/badge.svg)](https://github.com/restoresrl/magware-api/actions/workflows/lint.yml)
+[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-85EA2D?logo=openapiinitiative&logoColor=white)](openapi/magware.yaml)
+[![License](https://img.shields.io/badge/license-proprietary-lightgrey)](LICENSE)
+
 Repository in cui [Restore S.r.l.](https://www.re-store.it) **cura la specifica OpenAPI delle API REST di Magware** (WMS) come prodotto a sé stante.
 
 Lo scopo primario non è la pubblicazione tecnica — pure necessaria — ma il lavoro continuo di **miglioramento qualitativo della spec** (struttura, descrizioni, esempi, naming, coerenza spec ↔ backend) e la **sua evoluzione** quando l'API si arricchisce di nuove funzioni.
