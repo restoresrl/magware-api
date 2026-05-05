@@ -759,7 +759,7 @@ paths:
                   value:
                     code: "000001"
                     date: "2021-06-24"
-                    time: 14:15:22Z
+                    time: "14:15:22Z"
                     courier_code: DHLEXP
                     deliveries:
                       - delivery_code: DEL000001
@@ -813,9 +813,9 @@ paths:
                   value:
                     code: "800123456"
                     reason_code: LACK
-                    sign: +
+                    sign: "+"
                     date: "2019-08-24"
-                    time: 14:15:22Z
+                    time: "14:15:22Z"
                     items:
                       - item:
                           code: A000010003
@@ -864,7 +864,7 @@ paths:
                 example-1:
                   value:
                     date: "2021-06-26"
-                    time: 14:15:22Z
+                    time: "14:15:22Z"
                     items:
                       - item:
                           code: A000010003
@@ -926,7 +926,7 @@ paths:
                 example-1:
                   value:
                     date: "2021-06-23"
-                    time: 14:15:22Z
+                    time: "14:15:22Z"
                     item:
                       item:
                         code: A000010003
@@ -1395,6 +1395,7 @@ components:
               type: string
               format: date
         movement_type:
+          description: Type of stock movement applied when receiving the ASN.
           $ref: "#/components/schemas/movement_type"
         arrival_date:
           type: string
@@ -1414,6 +1415,7 @@ components:
             constrained to a fixed enum.
         items:
           type: array
+          description: List of items received in the ASN, with expected and actual quantities.
           items:
             type: object
             required:
@@ -1541,6 +1543,7 @@ components:
           format: date
           description: Delivery creation date
         movement_type:
+          description: Type of stock movement to apply when fulfilling the delivery.
           $ref: "#/components/schemas/movement_type"
         destination:
           type: object
@@ -1625,6 +1628,7 @@ components:
           example: "123456789000"
         items:
           type: array
+          description: List of items requested in the delivery.
           items:
             type: object
             required:
@@ -1799,9 +1803,11 @@ components:
                 it's not specified in the request differently
               example: EXW
         custom_attributes:
+          description: Additional custom attributes for the delivery, for integration with external systems.
           $ref: "#/components/schemas/custom_attributes"
         documents:
           type: array
+          description: List of documents to associate with the delivery (e.g. order numbers, invoices).
           items:
             $ref: "#/components/schemas/documents"
     delivery_prepared_details:
@@ -1857,6 +1863,7 @@ components:
           format: decimal
         packages:
           type: array
+          description: List of packages that make up the prepared delivery.
           items:
             $ref: "#/components/schemas/package"
         channel:
@@ -1926,6 +1933,7 @@ components:
               $ref: "#/components/schemas/address"
         packages:
           type: array
+          description: List of packages included in the delivery note.
           items:
             $ref: "#/components/schemas/package"
         tracking:
@@ -2084,7 +2092,7 @@ components:
         sign:
           type: string
           enum:
-            - +
+            - "+"
             - "-"
           description: "Direction of the adjustment: `+` for stock increase, `-` for stock decrease"
         date:
@@ -2097,6 +2105,7 @@ components:
           description: Time of the inventory adjustment
         items:
           type: array
+          description: List of stock items affected by this adjustment.
           items:
             $ref: "#/components/schemas/item_stock"
       required:
@@ -2145,6 +2154,7 @@ components:
           description: "Package type (e.g. `BOX`, `PLT` for pallet, `ENV` for envelope)"
         items:
           type: array
+          description: List of items packed in this package.
           items:
             $ref: "#/components/schemas/package_item"
       required:
