@@ -29,6 +29,8 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Changed
 
+- **Track 1 — Delivery Notes marcate "Coming soon"**: gli endpoint `/delivery_notes/prepared` e `/delivery_notes/{id}` non sono ancora implementati nel backend Magware. Aggiunta nota `⚠️ Not yet implemented` in entrambe le description. Tag `Delivery Notes` sostituito da `Coming soon` su entrambe le operation; rimosso il tag globale `Delivery Notes` (nessuna operation lo usava più); aggiunto tag globale `Coming soon` in fondo alla lista con description che avvisa l'integratore. In Scalar il gruppo apparirà separato in sidebar.
+
 - **Track 3 completato — description su property array e $ref**: aggiunte description alle 10 property di `components/schemas` rimaste prive dopo il passo 3 — tutte array oppure con schema tramite $ref. Schemi toccati: asn_received_details (movement_type, items); delivery_creation (movement_type, items, custom_attributes, documents); delivery_prepared_details (packages); delivery_note_details (packages); adjustment (items); package (items). Per le property con $ref, la description è aggiunta come keyword sibling — valida in OpenAPI 3.1. Nessuna modifica strutturale.
 
 - **Track 5 completato — YAML quoting normalization**: quotati i valori scalari negli `examples` che erano ambigui o incoerenti: `time: "14:15:22Z"` (4 occorrenze — POST /shipments, GET /adjustments/{id}, GET /stocks, GET /stocks/{item_code}); `sign: "+"` nell'esempio GET /adjustments/{id}. Quotato anche il valore `"+"` nell'enum `adjustment.sign` per coerenza con `"-"` già quotato. Nessun cambio semantico — solo quoting difensivo contro parser YAML 1.1 che potrebbe interpretare `14:15:22Z` come timestamp.
