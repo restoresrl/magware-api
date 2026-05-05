@@ -847,19 +847,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  date:
-                    type: string
-                    format: date
-                    example: "2021-06-26"
-                  time:
-                    type: string
-                    format: time
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/item_stock"
+                $ref: "#/components/schemas/stock_snapshot"
               examples:
                 example-1:
                   value:
@@ -909,33 +897,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  date:
-                    type: string
-                    format: date
-                    example: "2021-06-23"
-                  time:
-                    type: string
-                    format: time
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/item_stock"
+                $ref: "#/components/schemas/stock_snapshot"
               examples:
                 example-1:
                   value:
                     date: "2021-06-23"
                     time: "14:15:22Z"
-                    item:
-                      item:
-                        code: A000010003
-                        variant: "01"
-                      stock_type: AVAIL
-                      quantity: 12
-                      reserved_quantity: 3
-                      variant_quantity: 15
-                      variant_reserved_quantity: 3
+                    items:
+                      - item:
+                          code: A000010003
+                          variant: "01"
+                        stock_type: AVAIL
+                        quantity: 12
+                        reserved_quantity: 3
+                        variant_quantity: 15
+                        variant_reserved_quantity: 3
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -1066,6 +1042,24 @@ paths:
           $ref: "#/components/responses/internal_server_error"
 components:
   schemas:
+    stock_snapshot:
+      title: Stock snapshot model
+      type: object
+      description: Stock snapshot returned by inventory queries, including the timestamp of the snapshot and the list of stock records.
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the stock snapshot
+        time:
+          type: string
+          format: time
+          description: Time of the stock snapshot
+        items:
+          type: array
+          description: List of stock records included in the snapshot.
+          items:
+            $ref: "#/components/schemas/item_stock"
     item:
       description: Model for items
       type: object

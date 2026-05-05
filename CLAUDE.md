@@ -138,8 +138,9 @@ Prima di ogni commit: `npm run check` deve passare pulito.
   - [x] **Track 3 — Descrizioni** (commit `f9e4036`, `c920cc5`, `b083b31`, 2026-05-04; completato 2026-05-05): stile boolean uniforme (`Indicates whether`); description aggiunte a 32 property mancanti (passo 3) + 10 property array/`$ref` rimaste (passo 3 completamento); asimmetrie request/response `maxLength` risolte (passo 2); YAML quoting difensivo per `time`/`sign` nei valori enum e negli esempi.
   - [x] **Track 5 — Esempi e response** (commit `01fcbe2`, 2026-05-04; completato 2026-05-05): rimossi 8 blocchi `x-examples` Stoplight non-standard; aggiunti `examples:` nei requestBody di `POST /asn`, `POST /deliveries`, `POST /shipments`; ricostruito esempio `GET /adjustments/{id}` (placeholder → valori reali); quotati `time: 14:15:22Z` (4 occorrenze) e `sign: +`/enum `"+"`.
 
-  **Track aperti** (sequenza raccomandata di lavoro):
-  - [ ] **Track 1 — Struttura e tassonomia**: asimmetrie path da decidere (`/asn` singolare contro tutti gli altri plurale; `/delivery_notes/{id}` non sotto `/prepared/`); schemi inline duplicati (`/stocks` e `/stocks/{item_code}` hanno wrapper date/time/items quasi identico — estraibile in `stock_list`). Lasciato per ultimo perché alcune scelte sono breaking.
+  - [x] **Track 1 — Struttura e tassonomia** (2026-05-05): `/asn` confermato corretto (acronimo, non si pluralizza); `/delivery_notes/{id}` confermato entità propria — path invariato; endpoint Delivery Notes marcati `Planned` (non ancora implementati nel backend) con tag globale dedicato e nota in description; schema wrapper `{ date, time, items[] }` estratto come `stock_snapshot` in `components/schemas` ed eliminata la duplicazione inline su `GET /stocks` e `GET /stocks/{item_code}`; corretto bug esempio `item` → `items` su `GET /stocks/{item_code}`.
+
+  **Fase 2bis completata.** Tutti i 9 track chiusi. La spec è pronta per il primo rilascio pubblico (bump semver + tag git + `CHANGELOG.md` consolidato).
 
   L'output di ogni track va in `CHANGELOG-INTERNAL.md` (per-commit, IT) e — al rilascio finale — consolidato in `CHANGELOG.md` (release-level, EN). La Fase 2bis non blocca la Fase 3: si può lavorare in parallelo sul sito Astro mentre la spec viene revisionata.
 
