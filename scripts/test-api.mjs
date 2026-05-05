@@ -146,10 +146,10 @@ console.log("─".repeat(60));
 section("LIVELLO 2 — POST/PUT");
 console.log("\nLIVELLO 2 — POST/PUT\n");
 
-// L2-1: POST /items — crea APITEST001
+// L2-1: POST /items — crea item singolo
 {
   const id = "L2-1";
-  const label = `POST /items — crea ${TEST_ITEM_CODE}`;
+  const label = `POST /items — crea ${TEST_ITEM_CODE} (singolo)`;
   const body = {
     code: TEST_ITEM_CODE,
     description: "API Test Item — do not use",
@@ -166,6 +166,47 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
       fail(id, label, `missing fields: ${missing.join(", ")}`);
     } else {
       pass(id, label, `status: ${r.json.status}`);
+    }
+  }
+}
+
+// L2-1b: POST /items — bulk creation (array di 2 items, uno success + uno duplicato)
+{
+  const id = "L2-1b";
+  const BULK_CODE_1 = `${TEST_ITEM_CODE}B1`;
+  const BULK_CODE_2 = TEST_ITEM_CODE; // già creato in L2-1 → deve risultare error
+  const label = `POST /items — bulk [${BULK_CODE_1}, ${BULK_CODE_2}] (1 success + 1 duplicate)`;
+  const body = [
+    {
+      code: BULK_CODE_1,
+      description: "API Test Item Bulk 1 — do not use",
+      um: "PZ",
+      variants: [{ code: "01", description: "variant 01", quantity: 1 }],
+    },
+    {
+      code: BULK_CODE_2,
+      description: "API Test Item Bulk duplicate — do not use",
+      um: "PZ",
+      variants: [{ code: "01", description: "variant 01", quantity: 1 }],
+    },
+  ];
+  const r = await request("POST", "/items", { body });
+  if (!checkStatus(r.status, 200)) {
+    fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
+  } else if (!Array.isArray(r.json)) {
+    fail(id, label, "response is not an array");
+  } else if (r.json.length !== 2) {
+    fail(id, label, `expected 2 results, got ${r.json.length}`);
+  } else {
+    const first = r.json[0];
+    const second = r.json[1];
+    const firstOk = first?.status === "success";
+    const secondErr = second?.status === "error";
+    if (!firstOk || !secondErr) {
+      fail(id, label, `expected [success, error], got [${first?.status}, ${second?.status}]`);
+    } else {
+      pass(id, label, `[${first.status}, ${second.status}]`);
+      realPayloads["POST /items (bulk)"] = r.json;
     }
   }
 }
