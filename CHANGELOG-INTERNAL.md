@@ -167,6 +167,9 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Fixed
 
+- `stock_snapshot.items` description: chiarito che il campo è **assente** (non array vuoto) quando non c'è stock per l'item interrogato — comportamento confermato empiricamente via `GET /stocks/{item_code}` sul sandbox. Il campo non era in `required` quindi la spec era già tecnicamente corretta, ma la description non documentava il comportamento. Integratori devono trattare `items` mancante come equivalente a `[]`.
+- `item_variant.quantity`, `volume`, `weight` description: aggiunta nota che il backend serializza questi campi come **stringhe decimali** nelle GET response (es. `"1.000"`, `"0.010000"`, `"0.100000"`) anziché JSON number. Il `type: number` nella spec è corretto per il request body; nelle response è un quirk del backend (bug lato PB). Confermato dai payload reali raccolti in Fase 2ter.
+- `item_stock.reserved_quantity` description: aggiunta nota analoga — il backend serializza come stringa (`"0"`) anziché JSON number. Stessa origine (bug serializzazione PB). Confermato dai payload reali.
 - `info.license.url`: aggiunto schema `https://` mancante (era `www.re-store.it`, ora `https://www.re-store.it`).
 - `paths./delivery_notes/{id}.get.operationId`: era duplicato (`get-deliveries-prepared-id`, lo stesso usato da `/deliveries/prepared/{id}`); rinominato in `get-delivery-notes-id` per coerenza col path.
 - Schema `delivery_note_details`: rimossa la property `date` (e la sua dichiarazione come `required`) al root — non esiste nel backend reale, l'oggetto reale ha `preparation_date` (al root) e `delivery_note.date` (annidato). Risolta così l'inconsistenza che bloccava il lint Spectral su `oas3-valid-media-example` per l'esempio `Prepared delivery`. Rimosso di conseguenza l'override temporaneo in `.spectral.yaml`.

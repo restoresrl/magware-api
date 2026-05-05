@@ -1057,7 +1057,10 @@ components:
           description: Time of the stock snapshot
         items:
           type: array
-          description: List of stock records included in the snapshot.
+          description: >-
+            List of stock records included in the snapshot. Omitted (not an
+            empty array) when no stock exists for the queried item — treat a
+            missing `items` field as equivalent to an empty array.
           items:
             $ref: "#/components/schemas/item_stock"
     item:
@@ -1140,7 +1143,8 @@ components:
                   it indicates a variant that contains a multiple of the sales unit (example 12 pieces pack).If less
                   than 1 it indicates products managed in decimal units and the necessary precision (for example a
                   fabric with quantity variant = 0.001 and UoM = m2 indicates that the fabric is managed in m2 with an
-                  accuracy of one cm2)
+                  accuracy of one cm2). **Note:** in GET responses the backend serializes this field as a decimal
+                  string (e.g. `"1.000"`) rather than a JSON number.
                 example: 1
                 format: decimal
                 type: number
@@ -1156,14 +1160,18 @@ components:
               volume:
                 type: number
                 format: decimal
-                description: Variant/package volume in m3. If specified must be greater than 0
+                description: >-
+                  Variant/package volume in m3. If specified must be greater than 0.
+                  **Note:** in GET responses serialized as a decimal string (e.g. `"0.010000"`).
                 example: 0.01
                 default: 0.01
                 minimum: 0.000001
               weight:
                 type: number
                 format: decimal
-                description: Gross weight of the variant/package in Kg. If specified must be greater than 0
+                description: >-
+                  Gross weight of the variant/package in Kg. If specified must be greater than 0.
+                  **Note:** in GET responses serialized as a decimal string (e.g. `"0.100000"`).
                 example: 0.123456
                 default: 0.1
                 minimum: 0.000001
@@ -2047,7 +2055,10 @@ components:
         reserved_quantity:
           type: number
           format: decimal
-          description: Quantity reserved (pre-allocated) for pending orders
+          description: >-
+            Quantity reserved (pre-allocated) for pending orders. **Note:**
+            the backend serializes this as a decimal string (e.g. `"0"`)
+            rather than a JSON number.
           example: 0
         variant_quantity:
           type: integer
