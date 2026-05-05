@@ -316,11 +316,30 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   }
 }
 
-// L2-6: POST /shipments — richiede delivery prepared in sandbox (skip temporaneo)
+// L2-6: POST /shipments — usa MAGWARE_TEST_PREPARED_DELIVERY_CODE da .env
 {
   const id = "L2-6";
   const label = `POST /shipments — crea ${TEST_SHIPMENT_CODE}`;
-  skip(id, label, "da riprendere quando c'è una delivery prepared dedicata in sandbox");
+  const preparedDeliveryCode = env.MAGWARE_TEST_PREPARED_DELIVERY_CODE || "";
+  if (!preparedDeliveryCode) {
+    skip(id, label, "MAGWARE_TEST_PREPARED_DELIVERY_CODE non impostato in .env");
+  } else {
+    const today = new Date().toISOString().slice(0, 10);
+    const body = {
+      code: TEST_SHIPMENT_CODE,
+      date: today,
+      time: new Date().toTimeString().slice(0, 8),
+      courier_code: "TESTCOU",
+      deliveries: [preparedDeliveryCode],
+    };
+    const r = await request("POST", "/shipments", { body });
+    // backend returns 201 (spec says 200 — known discrepancy, spec needs fix)
+    if (!checkStatus(r.status, 201)) {
+      fail(id, label, `got ${statusLabel(r.status)} (delivery_code: "${preparedDeliveryCode}"). Body: ${JSON.stringify(r.json)}`);
+    } else {
+      pass(id, label, `delivery_code: ${preparedDeliveryCode}, status: ${r.json?.status}`);
+    }
+  }
 }
 
 // ── LIVELLO 1 — GET ───────────────────────────────────────────────────────────

@@ -167,6 +167,7 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Fixed
 
+- `shipment_creation.deliveries` body nel test corretto: il backend legge `deliveries[i]` come stringa diretta (`json.StringOf("deliveries[i]")` in `n_post_shipments.sru:112`), quindi il request body deve essere array di stringhe (`["DEL001"]`), non array di oggetti (`[{"delivery_code":"DEL001"}]`). La spec era già corretta (`items: {type: string}`); era sbagliato solo il body del test di Fase 2ter.
 - `stock_snapshot.items` description: chiarito che il campo è **assente** (non array vuoto) quando non c'è stock per l'item interrogato — comportamento confermato empiricamente via `GET /stocks/{item_code}` sul sandbox. Il campo non era in `required` quindi la spec era già tecnicamente corretta, ma la description non documentava il comportamento. Integratori devono trattare `items` mancante come equivalente a `[]`.
 - `item_variant.quantity`, `volume`, `weight` description: aggiunta nota che il backend serializza questi campi come **stringhe decimali** nelle GET response (es. `"1.000"`, `"0.010000"`, `"0.100000"`) anziché JSON number. Il `type: number` nella spec è corretto per il request body; nelle response è un quirk del backend (bug lato PB). Confermato dai payload reali raccolti in Fase 2ter.
 - `item_stock.reserved_quantity` description: aggiunta nota analoga — il backend serializza come stringa (`"0"`) anziché JSON number. Stessa origine (bug serializzazione PB). Confermato dai payload reali.
