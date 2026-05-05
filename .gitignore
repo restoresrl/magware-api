@@ -33,6 +33,7 @@ pnpm-debug.log*
 
 # --- Build / cache ---
 dist/
+_site/
 .cache/
 .parcel-cache/
 preview/magware.yaml
