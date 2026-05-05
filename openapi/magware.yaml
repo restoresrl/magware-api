@@ -1953,7 +1953,7 @@ components:
               maxLength: 250
               description: Tracking link, if available
     delivery_cancelled_details:
-      title: Delivery cancelled model
+      title: Delivery order cancelled model
       type: object
       description: Cancelled deliver order details model
       properties:
@@ -2026,7 +2026,7 @@ components:
         - courier_code
         - deliveries
     item_stock:
-      title: Stock details model
+      title: Item stock model
       type: object
       description: Item stock details
       required:
@@ -2132,7 +2132,7 @@ components:
           example: Purchase from supplier
           description: Human-readable label of the movement type
     package:
-      title: package
+      title: Package model
       type: object
       properties:
         code:
@@ -2166,7 +2166,7 @@ components:
         - package_type
         - items
     package_item:
-      title: package_item
+      title: Package item model
       type: object
       required:
         - row_number
@@ -2208,7 +2208,7 @@ components:
           type: number
           description: Total item weight
     item_reference:
-      title: item_reference
+      title: Item reference
       type: object
       properties:
         code:
@@ -2224,7 +2224,7 @@ components:
       required:
         - code
     custom_attributes:
-      title: custom_attributes
+      title: Custom attributes
       type: array
       description: Array of custom attributes
       items:
@@ -2242,7 +2242,7 @@ components:
             description: Custom attribute value. Can be a string, an integer, a boolean or a decimal number
             example: lorem ipsum doloret
     shipment_creation:
-      title: shipment_creation
+      title: Shipment creation model
       type: object
       required:
         - code
@@ -2331,7 +2331,7 @@ components:
         custom_attributes:
           $ref: "#/components/schemas/custom_attributes"
     documents:
-      title: documents
+      title: Document reference
       type: object
       description: |-
         Arrays of documents in PDF format.

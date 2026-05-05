@@ -29,6 +29,8 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Changed
 
+- **Uniformazione titoli degli schemi**: 8 schemi in `components/schemas` avevano titoli inconsistenti o pari al nome snake_case. Corretti: `package` → "Package model"; `package_item` → "Package item model"; `item_reference` → "Item reference"; `custom_attributes` → "Custom attributes"; `shipment_creation` → "Shipment creation model"; `documents` → "Document reference"; `item_stock` → "Item stock model" (era "Stock details model"); `delivery_cancelled_details` → "Delivery order cancelled model" (allineato a "Delivery order prepared model"). Nessuna modifica strutturale.
+
 - **Track 1 — estrazione schema `stock_snapshot`**: lo schema wrapper `{ date, time, items[] }` della response 200 era scritto inline e duplicato identicamente in `GET /stocks` e `GET /stocks/{item_code}`. Estratto come `components/schemas/stock_snapshot` e referenziato con `$ref` in entrambi i path. Corretto anche un bug nell'esempio di `GET /stocks/{item_code}`: la chiave `item` (singolare, oggetto scalare) corretta in `items` (array — coerente con lo schema). Nessun impatto sul wire.
 
 - **Track 1 — Delivery Notes marcate "Planned"**: gli endpoint `/delivery_notes/prepared` e `/delivery_notes/{id}` non sono ancora implementati nel backend Magware. Aggiunta nota `⚠️ Not yet implemented` in entrambe le description. Tag `Delivery Notes` sostituito da `Planned` su entrambe le operation; rimosso il tag globale `Delivery Notes` (nessuna operation lo usava più); aggiunto tag globale `Planned` in fondo alla lista con description che avvisa l'integratore. In Scalar il gruppo apparirà separato in sidebar.
