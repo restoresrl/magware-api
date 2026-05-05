@@ -16,6 +16,7 @@
     "format": "prettier --write \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
     "check": "npm run lint:api && npm run lint:md && npm run format:check",
+    "test:api": "node scripts/test-api.mjs",
     "prepreview": "node scripts/inject-changelog.mjs",
     "preview": "npx --yes serve . -l 3000 --no-clipboard"
   },

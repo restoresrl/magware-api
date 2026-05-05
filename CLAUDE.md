@@ -144,6 +144,8 @@ Prima di ogni commit: `npm run check` deve passare pulito.
 
   L'output di ogni track va in `CHANGELOG-INTERNAL.md` (per-commit, IT) e — al rilascio finale — consolidato in `CHANGELOG.md` (release-level, EN). La Fase 2bis non blocca la Fase 3: si può lavorare in parallelo sul sito Astro mentre la spec viene revisionata.
 
+- [ ] **Fase 2ter — Validazione API contro sandbox**. Script `scripts/test-api.mjs` (`npm run test:api`) per validare tutti gli endpoint contro il sandbox Magware prima del primo rilascio pubblico. Livello 1 (GET con discovery automatica) + Livello 2 (POST/PUT write, item di test `APITEST001`). Output: report pass/fail + payload reali per aggiornare gli `examples:` nella spec. Credenziali e codici di test in `magware-refs/.env` (gitignored). Al termine: aggiornare esempi nella spec + bump `v1.0.0`. **Prerequisito per il primo rilascio.**
+
 - [ ] **Fase 3 — Sito di pubblicazione su `api.magware.it`**. Aggiungere a questo stesso repo un piccolo sito **Astro + `@scalar/api-reference`** (o Astro Starlight con plug-in OpenAPI) che renderizza `openapi/magware.yaml` e lo pubblica su `api.magware.it` via Cloudflare Workers (deploy autonomo, repo auto-contenuto). Decisione presa il 2026-04-30 — vedi "Storia delle decisioni".
 - [ ] **Fase 4 — DNS `api.magware.it`**. Configurare il record DNS (Cloudflare) per puntare al Worker. Verificare TLS e cache headers.
 - [ ] **Fase 5 — Redirect dal vecchio Stoplight**. Aggiornare `api.re-store.it/docs/magware-api` per fare 301 verso `api.magware.it/...` corrispondenti. Sostituire i link nel sito `restore-site` (oggi presenti in `src/pages/magware.astro` e `docs/02-magware/04-architettura-tecnica.md`).
