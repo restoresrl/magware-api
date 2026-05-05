@@ -29,7 +29,7 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Changed
 
-- **Track 1 — Delivery Notes marcate "Coming soon"**: gli endpoint `/delivery_notes/prepared` e `/delivery_notes/{id}` non sono ancora implementati nel backend Magware. Aggiunta nota `⚠️ Not yet implemented` in entrambe le description. Tag `Delivery Notes` sostituito da `Coming soon` su entrambe le operation; rimosso il tag globale `Delivery Notes` (nessuna operation lo usava più); aggiunto tag globale `Coming soon` in fondo alla lista con description che avvisa l'integratore. In Scalar il gruppo apparirà separato in sidebar.
+- **Track 1 — Delivery Notes marcate "Planned"**: gli endpoint `/delivery_notes/prepared` e `/delivery_notes/{id}` non sono ancora implementati nel backend Magware. Aggiunta nota `⚠️ Not yet implemented` in entrambe le description. Tag `Delivery Notes` sostituito da `Planned` su entrambe le operation; rimosso il tag globale `Delivery Notes` (nessuna operation lo usava più); aggiunto tag globale `Planned` in fondo alla lista con description che avvisa l'integratore. In Scalar il gruppo apparirà separato in sidebar.
 
 - **Track 3 completato — description su property array e $ref**: aggiunte description alle 10 property di `components/schemas` rimaste prive dopo il passo 3 — tutte array oppure con schema tramite $ref. Schemi toccati: asn_received_details (movement_type, items); delivery_creation (movement_type, items, custom_attributes, documents); delivery_prepared_details (packages); delivery_note_details (packages); adjustment (items); package (items). Per le property con $ref, la description è aggiunta come keyword sibling — valida in OpenAPI 3.1. Nessuna modifica strutturale.
 

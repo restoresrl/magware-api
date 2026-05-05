@@ -970,7 +970,7 @@ paths:
 
         Return a list of prepared delivery notes not yet acquired by Host
       tags:
-        - Coming soon
+        - Planned
   /delivery_notes/{id}:
     parameters:
       - name: id
@@ -1030,7 +1030,7 @@ paths:
         "500":
           $ref: "#/components/responses/internal_server_error"
       tags:
-        - Coming soon
+        - Planned
   /version:
     get:
       summary: Version
@@ -2581,7 +2581,7 @@ tags:
       quantities).
   - name: Utility
     description: Service and diagnostic endpoints (e.g. API version).
-  - name: Coming soon
+  - name: Planned
     description: >-
       Endpoints that are planned but not yet implemented in the current version of Magware.
       Do not integrate against these — schemas and behaviour may still change before release.
