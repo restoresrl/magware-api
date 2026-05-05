@@ -167,6 +167,15 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ### Fixed
 
+- Aggiornati esempi response di 8 endpoint con payload reali raccolti in Fase 2ter:
+  `GET /items/{item_code}` (nuovo esempio aggiunto), `GET /asn/received/{id}`,
+  `GET /deliveries/prepared/{id}`, `GET /shipments/{id}`, `GET /adjustments/{id}`,
+  `GET /stocks`, `GET /stocks/{item_code}` (aggiunto esempio "no stock"), `GET /version`.
+- Schema fix emersi dalla validazione degli esempi reali:
+  `preparation_date` in `delivery_prepared_details`: `format: date-time` → `format: date` (backend emette solo date, non datetime).
+  `tracking_id` in `shipment_details`: `type: integer` → `type: string` (backend emette stringa vuota quando non disponibile).
+  `row_number` in `asn_received_details.items`, `delivery_prepared_details` packages items, `package_item`: ammesso `null` (`type: ["integer", "null"]`) — il backend non assegna sempre il row_number nelle response.
+  `barcodes[]` items: ammesso `null` — il backend emette `[null]` per varianti senza barcode configurato.
 - `shipment_creation.deliveries` body nel test corretto: il backend legge `deliveries[i]` come stringa diretta (`json.StringOf("deliveries[i]")` in `n_post_shipments.sru:112`), quindi il request body deve essere array di stringhe (`["DEL001"]`), non array di oggetti (`[{"delivery_code":"DEL001"}]`). La spec era già corretta (`items: {type: string}`); era sbagliato solo il body del test di Fase 2ter.
 - `stock_snapshot.items` description: chiarito che il campo è **assente** (non array vuoto) quando non c'è stock per l'item interrogato — comportamento confermato empiricamente via `GET /stocks/{item_code}` sul sandbox. Il campo non era in `required` quindi la spec era già tecnicamente corretta, ma la description non documentava il comportamento. Integratori devono trattare `items` mancante come equivalente a `[]`.
 - `item_variant.quantity`, `volume`, `weight` description: aggiunta nota che il backend serializza questi campi come **stringhe decimali** nelle GET response (es. `"1.000"`, `"0.010000"`, `"0.100000"`) anziché JSON number. Il `type: number` nella spec è corretto per il request body; nelle response è un quirk del backend (bug lato PB). Confermato dai payload reali raccolti in Fase 2ter.

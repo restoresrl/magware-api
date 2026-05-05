@@ -281,6 +281,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/item"
+              examples:
+                example-1:
+                  value:
+                    code: A000010003
+                    description: Sample product
+                    um: pz
+                    note: ""
+                    warehouse_category:
+                      code: ""
+                      description: ""
+                    owner_category:
+                      code: ""
+                      description: ""
+                    lot_control: false
+                    serial_number_control: false
+                    expiration_date_control: false
+                    expedition_date_control: false
+                    obsolete: false
+                    variable_weight: false
+                    variable_volume: false
+                    variants:
+                      - code: "01"
+                        description: variant 01
+                        quantity: 1
+                        volume: 0.01
+                        weight: 0.1
+                        shippable: false
+                        barcodes:
+                          - null
         "404":
           $ref: "#/components/responses/not_found"
         "401":
@@ -469,41 +498,27 @@ paths:
               examples:
                 example-1:
                   value:
-                    asn_code: ASN123456
-                    supplier: F0001
+                    asn_code: CIPREP001
+                    supplier: CLAUDETEST_SUP
                     delivery_note:
-                      code: D123456AB
-                      date: "2021-06-09"
+                      code: PREP001
+                      date: "2026-05-05"
                     movement_type:
                       code: P001
                       description: Purchase from supplier
-                    arrival_date: "2021-06-24"
-                    stock_date: "2021-06-26"
+                    arrival_date: "2026-05-05"
+                    stock_date: "2026-05-05"
+                    channel: WS
                     items:
-                      - row_number: 1
+                      - row_number: null
                         item:
-                          code: A000010003
-                          variant: "01"
-                        expected_quantity: 5
-                        received_quantity: 4
-                        stock_type: AVAIL
-                        reference: "5000123401"
-                      - row_number: 1
-                        item:
-                          code: A000010003
-                          variant: "01"
-                        expected_quantity: 5
-                        received_quantity: 1
-                        stock_type: FLAWED
-                        reference: "5000123401"
-                      - row_number: 2
-                        item:
-                          code: A000010005
-                          variant: "01"
-                        expected_quantity: 7
-                        received_quantity: 7
-                        stock_type: AVAIL
-                        reference: "5000123402"
+                          code: ARTTEST001
+                          variant: CT
+                        expected_quantity: 10
+                        received_quantity: 10
+                        lot_number: LOT12345
+                        expiration_date: "2030-12-30"
+                        weight: 1
         "404":
           $ref: "#/components/responses/not_found"
         "401":
@@ -605,29 +620,29 @@ paths:
               examples:
                 Prepared delivery:
                   value:
-                    code: "800123456"
-                    preparation_date: "2019-08-24T14:15:22Z"
-                    cancelled: false
-                    courier_code: DHLEXP
+                    code: M000949
+                    courier_code: STD
+                    preparation_date: "2026-05-05"
                     delivery_note:
-                      code: DEL00000001
-                      date: "2021-06-24"
-                    weight: 12
-                    volume: 0.45
+                      code: "202600000001"
+                      date: "2026-05-05"
+                    weight: 0.4
+                    volume: 0
                     channel: WS
                     packages:
-                      - code: XU12345
-                        alternative_code: "11112222333344445555"
-                        weight: 12
-                        volume: 0.45
-                        package_type: T1
+                      - code: "2044"
+                        weight: 0.4
+                        volume: 0
+                        package_type: F50
                         items:
-                          - row_number: 1
+                          - row_number: null
                             item:
-                              code: A000010003
-                              variant: "01"
-                            quantity: 1
-                            reference: aaabbbcc
+                              code: ARTTEST001
+                              variant: CT
+                            quantity: 3
+                            lot_number: LOT12345
+                            expiration_date: "2030-12-30"
+                            weight: 0.3
         "400":
           $ref: "#/components/responses/error"
         "404":
@@ -757,15 +772,15 @@ paths:
               examples:
                 example-1:
                   value:
-                    code: "000001"
-                    date: "2021-06-24"
-                    time: "14:15:22Z"
-                    courier_code: DHLEXP
+                    code: "0000046"
+                    date: "2026-05-05"
+                    time: "22:14:27"
+                    courier_code: STD
                     deliveries:
-                      - delivery_code: DEL000001
-                        tracking_code: AWB000001
-                        tracking_link: https://example.com/123456
-                        tracking_id: 123456789
+                      - delivery_code: M000949
+                        tracking_code: ""
+                        tracking_link: ""
+                        tracking_id: ""
         "400":
           $ref: "#/components/responses/error"
         "404":
@@ -811,21 +826,19 @@ paths:
               examples:
                 Example 1:
                   value:
-                    code: "800123456"
-                    reason_code: LACK
-                    sign: "+"
-                    date: "2019-08-24"
-                    time: "14:15:22Z"
+                    code: "642"
+                    reason_code: RETNEG
+                    sign: "-"
+                    date: "2026-05-05"
+                    time: "22:05:32"
                     items:
                       - item:
-                          code: A000010003
-                          variant: "01"
-                        stock_type: AVAIL
-                        quantity: 12
-                        lot_number: L2021001
-                        serial_number: SN000123
-                        expiration_date: "2022-12-31"
-                        expedition_date: "2021-09-01"
+                          code: ARTTEST001
+                          variant: CT
+                        quantity: 7
+                        lot_number: LOT12345
+                        expiration_date: "2030-12-30"
+                        weight: 0.7
         "400":
           $ref: "#/components/responses/error"
         "404":
@@ -851,25 +864,19 @@ paths:
               examples:
                 example-1:
                   value:
-                    date: "2021-06-26"
-                    time: "14:15:22Z"
+                    date: "2026-05-05"
+                    time: "22:04:01"
                     items:
                       - item:
-                          code: A000010003
-                          variant: "01"
-                        stock_type: AVAIL
-                        quantity: 12
-                        reserved_quantity: 3
-                        variant_quantity: 15
-                        variant_reserved_quantity: 3
-                      - item:
-                          code: A000010005
-                          variant: "01"
-                        stock_type: FLAWED
-                        quantity: 2
+                          code: ARTTEST001
+                          variant: CT
+                        quantity: 7
                         reserved_quantity: 0
-                        variant_quantity: 2
+                        variant_quantity: 7
                         variant_reserved_quantity: 0
+                        lot_number: LOT12345
+                        expiration_date: "2030-12-30"
+                        weight: 0.7
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -900,18 +907,26 @@ paths:
                 $ref: "#/components/schemas/stock_snapshot"
               examples:
                 example-1:
+                  summary: Item with stock
                   value:
-                    date: "2021-06-23"
-                    time: "14:15:22Z"
+                    date: "2026-05-05"
+                    time: "22:04:01"
                     items:
                       - item:
-                          code: A000010003
-                          variant: "01"
-                        stock_type: AVAIL
-                        quantity: 12
-                        reserved_quantity: 3
-                        variant_quantity: 15
-                        variant_reserved_quantity: 3
+                          code: ARTTEST001
+                          variant: CT
+                        quantity: 7
+                        reserved_quantity: 0
+                        variant_quantity: 7
+                        variant_reserved_quantity: 0
+                        lot_number: LOT12345
+                        expiration_date: "2030-12-30"
+                        weight: 0.7
+                example-2:
+                  summary: Item with no stock (items field absent)
+                  value:
+                    date: "2026-05-05"
+                    time: "22:04:02"
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -1034,8 +1049,9 @@ paths:
               examples:
                 example-1:
                   value:
-                    product: Magware 2021
-                    version: 21.0.0.391
+                    product: Magware 2021 R2
+                    version: 21.11.0.813
+                    db: MW21R2_DEV
         "401":
           $ref: "#/components/responses/unauthorized"
         "500":
@@ -1154,7 +1170,9 @@ components:
                 uniqueItems: true
                 description: Array of barcodes that uniquely identify the item and the variant. Must be unique for the owner
                 items:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                   maxLength: 100
                   example: "1234567890123"
               volume:
@@ -1340,8 +1358,10 @@ components:
               - quantity
             properties:
               row_number:
-                type: integer
-                description: Row number, unique for an ASN
+                type:
+                  - integer
+                  - "null"
+                description: Row number, unique for an ASN. Null when not set by the backend.
                 minimum: 1
                 example: 1
               item:
@@ -1435,8 +1455,10 @@ components:
               - received_quantity
             properties:
               row_number:
-                type: integer
-                description: Row number, unique for an ASN
+                type:
+                  - integer
+                  - "null"
+                description: Row number, unique for an ASN. Null when not assigned by the backend.
                 minimum: 1
               item:
                 $ref: "#/components/schemas/item_reference"
@@ -1647,9 +1669,11 @@ components:
               - quantity
             properties:
               row_number:
-                type: integer
+                type:
+                  - integer
+                  - "null"
                 example: 1
-                description: Sequential row number. Must be unique for the delivery
+                description: Sequential row number. Null when not assigned by the backend.
               item:
                 $ref: "#/components/schemas/item_reference"
               quantity:
@@ -1840,8 +1864,8 @@ components:
           description: Delivery unique code, as assigned by the Host system
         preparation_date:
           type: string
-          format: date-time
-          description: Preparation or cancellation date
+          format: date
+          description: Preparation date
         courier_code:
           type: string
           maxLength: 15
@@ -2023,8 +2047,9 @@ components:
                 maxLength: 250
                 description: Tracking link generated by the courier
               tracking_id:
-                type: integer
-                description: Internal Id of tracking system (ex. Gsped ID)
+                type: string
+                maxLength: 250
+                description: Internal Id of tracking system (ex. Gsped ID). Empty string when not yet assigned.
             required:
               - delivery_code
       required:
@@ -2185,9 +2210,11 @@ components:
         - quantity
       properties:
         row_number:
-          type: integer
+          type:
+            - integer
+            - "null"
           example: 1
-          description: Row number of the item within the package, unique per package
+          description: Row number of the item within the package. Null when not assigned by the backend.
         item:
           $ref: "#/components/schemas/item_reference"
         quantity:
