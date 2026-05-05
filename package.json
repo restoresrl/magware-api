@@ -13,8 +13,8 @@
   "scripts": {
     "lint:api": "spectral lint openapi/magware.yaml",
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules",
-    "format": "prettier --write \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore",
-    "format:check": "prettier --check \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore",
+    "format": "prettier --write \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
     "check": "npm run lint:api && npm run lint:md && npm run format:check",
     "prepreview": "node scripts/inject-changelog.mjs",
     "preview": "npx --yes serve . -l 3000 --no-clipboard"
