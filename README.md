@@ -48,6 +48,24 @@ npm run preview          # genera preview/magware.yaml (CHANGELOG iniettato) e s
 
 Reference accessibile su `http://localhost:3000/preview/`.
 
+### Notifiche release
+
+Alla pubblicazione di una nuova versione è possibile inviare una mail di notifica
+a tutti gli iscritti in `magware-refs/notify-release.json` (file locale, non versionato).
+
+```bash
+npm run notify-release -- --dry-run      # anteprima in console (no invio)
+npm run notify-release -- --preview-html # apre l'HTML nel browser (no invio)
+npm run notify-release                   # invio reale
+```
+
+Lo script legge la versione corrente da `package.json` e il changelog della release
+corrispondente da `CHANGELOG.md`, quindi invia sempre la **versione più recente**.
+
+**Prerequisiti**: compilare `magware-refs/notify-release.json` con le credenziali SMTP
+e la lista destinatari. Ogni destinatario ha un campo `lang` (`"it"` o `"en"`) che
+seleziona il template di lingua; il changelog è sempre in inglese.
+
 ## Pubblicazione
 
 Pipeline pianificata (vedi roadmap completa in `CLAUDE.md`): sito Astro + Scalar nello stesso repo, deploy su Cloudflare Workers, dominio `api.magware.it`.
