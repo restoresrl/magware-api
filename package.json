@@ -17,6 +17,7 @@
     "format:check": "prettier --check \"**/*.{yaml,yml,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore",
     "check": "npm run lint:api && npm run lint:md && npm run format:check",
     "test:api": "node scripts/test-api.mjs",
+    "notify-release": "node scripts/notify-release.mjs",
     "build:site": "node scripts/inject-changelog.mjs && mkdir -p _site && cp preview/magware.yaml _site/magware.yaml && cp site/index.html _site/index.html && cp site/CNAME _site/CNAME",
     "prepreview": "node scripts/inject-changelog.mjs",
     "preview": "npx --yes serve . -l 3000 --no-clipboard"
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@stoplight/spectral-cli": "^6.11.1",
     "markdownlint-cli": "^0.43.0",
+    "nodemailer": "^8.0.7",
     "prettier": "^3.4.2"
   }
 }
