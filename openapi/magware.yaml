@@ -108,7 +108,7 @@ info:
     url: http://support.re-store.it
     email: support@re-store.it
   license:
-    name: (C) 2022-2025 Restore SRL
+    name: (C) 2022-2026 Restore SRL
     url: https://www.re-store.it
 paths:
   /items:
