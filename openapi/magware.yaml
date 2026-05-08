@@ -14,7 +14,7 @@ info:
     ## Endpoints
 
     This reference documents the public **sandbox** endpoint:
-    `https://sandbox.magware.it:9999`. Production URLs are tenant-specific
+    `https://sandbox.magware.it`. Production URLs are tenant-specific
     and provided by Restore during customer onboarding.
 
     ## Authentication
@@ -2618,7 +2618,7 @@ tags:
       Endpoints that are planned but not yet implemented in the current version of Magware.
       Do not integrate against these — schemas and behaviour may still change before release.
 servers:
-  - url: https://sandbox.magware.it:9999
+  - url: https://sandbox.magware.it
     description: Sandbox
 security:
   - APIKey: []

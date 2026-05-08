@@ -10,6 +10,12 @@ Questo changelog documenta **solo le modifiche al contratto pubblico delle API**
 
 I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività interne **non rientrano** in questo file: restano tracciati nel `git log` e, per le scelte strutturali, nella sezione "Storia delle decisioni" di `CLAUDE.md`.
 
+## [Unreleased]
+
+### Changed
+
+- `servers[0].url` aggiornato da `https://sandbox.magware.it:9999` a `https://sandbox.magware.it` (porta 443 standard). Aggiornato anche il riferimento testuale in `info.description`. Cambio infrastrutturale lato server: il sandbox è ora raggiungibile su porta HTTPS standard, il certificato Sectigo PositiveSSL scaduto il 2025-10-28 sostituito con Let's Encrypt autorinnovante via win-acme su Windows Server (challenge HTTP-01 self-hosting, hook post-renewal che riavvia il servizio Windows `mwp01dbe06621656220` (display name `mwp_mwp`) per fargli ricaricare i nuovi PEM). Nessun integratore stava usando il sandbox al momento della migrazione, quindi la `:9999` è stata dismessa direttamente senza periodo di transizione. Nessun bump semver e nessuna voce nel `CHANGELOG.md` pubblico: il cambio è puramente operativo, contratto wire invariato.
+
 ## [1.0.0] - 2026-05-05
 
 ### Added
