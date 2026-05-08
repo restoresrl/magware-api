@@ -8,11 +8,11 @@ Repository in cui [Restore S.r.l.](https://www.re-store.it) **cura la specifica 
 
 Lo scopo primario non è la pubblicazione tecnica — pure necessaria — ma il lavoro continuo di **miglioramento qualitativo della spec** (struttura, descrizioni, esempi, naming, coerenza spec ↔ backend) e la **sua evoluzione** quando l'API si arricchisce di nuove funzioni.
 
-La spec è scritta in **OpenAPI 3.1** (YAML, file unico `openapi/magware.yaml`) ed è la fonte di verità unica. La pubblicazione finale avverrà su **`api.magware.it`** come API reference interattiva renderizzata con [**Scalar**](https://scalar.com), in sostituzione della precedente edizione [Stoplight](https://stoplight.io) che verrà dismessa.
+La spec è scritta in **OpenAPI 3.1** (YAML, file unico `openapi/magware.yaml`) ed è la fonte di verità unica. La reference è pubblicata su **[api.magware.it](https://api.magware.it)** come API reference interattiva renderizzata con [**Scalar**](https://scalar.com); ha sostituito la precedente edizione [Stoplight](https://stoplight.io), dismessa a maggio 2026.
 
 ## Stato
 
-Spec importata da Stoplight, lint Spectral pulito, preview locale Scalar funzionante. La revisione qualitativa della spec (Fase 2bis della roadmap) è il prossimo grosso blocco di lavoro; in parallelo si svilupperà il sito di pubblicazione (Fase 3). Per il dettaglio operativo e le decisioni storiche vedere `CLAUDE.md`.
+Spec stabile, prima release pubblica `v1.0.0` (2026-05-05) live su `api.magware.it`. Da qui in avanti il lavoro è continuativo: miglioramenti qualitativi, evoluzione della spec quando l'API si arricchisce di nuove funzioni, manutenzione. Per il dettaglio operativo e le decisioni storiche vedere `CLAUDE.md`.
 
 ## Struttura
 
@@ -20,11 +20,21 @@ Spec importata da Stoplight, lint Spectral pulito, preview locale Scalar funzion
 magware-api/
 ├── openapi/
 │   └── magware.yaml             # spec OpenAPI 3.1 (sorgente unica)
+├── scripts/
+│   ├── inject-changelog.mjs     # inietta CHANGELOG.md nella info.description per la pubblicazione
+│   ├── notify-release.mjs       # email di notifica release agli iscritti
+│   └── test-api.mjs             # smoke test contro il sandbox
+├── site/                        # sito di pubblicazione (HTML statico + Scalar via CDN + CNAME)
+├── preview/                     # preview locale (server dev)
 ├── .spectral.yaml               # ruleset di lint per la spec
 ├── .markdownlint.json           # ruleset di lint per la documentazione
-├── .github/workflows/lint.yml   # CI: spectral + markdownlint sui PR
-├── package.json                 # script di sviluppo
+├── .github/workflows/
+│   ├── lint.yml                 # CI: spectral + markdownlint sui PR e push
+│   └── deploy.yml               # deploy su GitHub Pages al push su main
+├── CHANGELOG.md                 # release-level, EN, public-facing
+├── CHANGELOG-INTERNAL.md        # per-commit, IT, contributor-facing
 ├── CLAUDE.md                    # handoff per sessioni Claude Code
+├── package.json                 # script di sviluppo
 └── README.md
 ```
 
@@ -66,9 +76,42 @@ corrispondente da `CHANGELOG.md`, quindi invia sempre la **versione più recente
 e la lista destinatari. Ogni destinatario ha un campo `lang` (`"it"` o `"en"`) che
 seleziona il template di lingua; il changelog è sempre in inglese.
 
+### Test API
+
+Smoke test end-to-end contro il sandbox (`https://sandbox.magware.it`).
+Verifica che tutti gli endpoint documentati in `openapi/magware.yaml` rispondano
+correttamente, sia in lettura sia in scrittura.
+
+```bash
+npm run test:api
+```
+
+Lo script (`scripts/test-api.mjs`) esegue tre blocchi:
+
+- **Livello 1 — GET con discovery automatica** dei codici esistenti (sola lettura, sicuro).
+- **Livello 2 — POST/PUT** per creare un item di test, ASN, delivery e shipment con codici univoci basati su timestamp.
+- **Error cases** — verifica risposte 401/404/400 attese.
+
+Output: report pass/fail per ciascun endpoint + dump dei payload JSON reali —
+utili per aggiornare gli `examples:` nella spec con valori veri.
+
+**Prerequisiti**: compilare `magware-refs/.env` (file locale, gitignored) con
+`MAGWARE_API_URL`, `MAGWARE_API_KEY`, `MAGWARE_OWNER` e il codice item di test
+(credenziali dedicate fornite dal team Restore).
+
+**Nota operativa**: il Livello 2 scrive dati reali nel sandbox. Le esecuzioni
+vanno concordate con Restore per evitare sovrapposizioni con sessioni di altri
+integratori. La pulizia dei dati di test residui è gestita lato sandbox.
+
 ## Pubblicazione
 
-Pipeline pianificata (vedi roadmap completa in `CLAUDE.md`): sito Astro + Scalar nello stesso repo, deploy su Cloudflare Workers, dominio `api.magware.it`.
+La reference è live su **[api.magware.it](https://api.magware.it)**.
+Stack: HTML statico + [Scalar](https://scalar.com) via CDN per il rendering,
+hosting su **GitHub Pages**. Pipeline (vedi `.github/workflows/deploy.yml`):
+
+1. `scripts/inject-changelog.mjs` legge `CHANGELOG.md` e lo inietta nella `info.description` della spec, scrivendo il risultato in `_site/magware.yaml`.
+2. Vengono copiati `site/index.html` (loader Scalar) e `site/CNAME` (binding al dominio) in `_site/`.
+3. Deploy automatico via `actions/deploy-pages` ad ogni push su `main`.
 
 ## Licenza
 
