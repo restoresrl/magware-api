@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Fase 2ter — Validazione API contro sandbox Magware.
 //
+// Reset: PUT /test — reset dati di test sandbox prima di tutto (abort-on-fail).
 // Livello 1: GET tests con discovery automatica degli ID esistenti.
 // Livello 2: POST/PUT write tests (item APITEST001 + ASN/delivery/shipment).
 // Error cases: 401, 404, 400 trasversali.
@@ -8,6 +9,7 @@
 // Esecuzione: npm run test:api
 // Prerequisiti: magware-refs/.env compilato (MAGWARE_SANDBOX_URL, MAGWARE_OWNER, MAGWARE_APIKEY).
 // Per POST /shipments (L2-6): serve almeno una delivery in stato "prepared" in sandbox.
+// Nota: PUT /test è un endpoint sandbox-only (reset dati di test), non documentato nella spec pubblica.
 
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -140,6 +142,24 @@ console.log("Magware API — sandbox test");
 console.log(`Base URL : ${BASE_URL}`);
 console.log(`Owner    : ${OWNER}`);
 console.log("─".repeat(60));
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+
+section("RESET");
+console.log("\nRESET\n");
+
+// R-01: PUT /test — reset sandbox test data prima di lanciare la suite
+{
+  const id = "R-01";
+  const label = "PUT /test — reset dati di test sandbox";
+  const r = await request("PUT", "/test");
+  if (!checkStatus(r.status, 200)) {
+    fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
+    console.log("\n✗ Reset fallito — abort suite (i test successivi girerebbero su stato non pulito).");
+    process.exit(1);
+  }
+  pass(id, label);
+}
 
 // ── LIVELLO 2 — POST/PUT ──────────────────────────────────────────────────────
 
