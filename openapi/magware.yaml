@@ -91,6 +91,37 @@ info:
     Recommended polling frequency: **5 minutes** for list endpoints, with
     detail calls fired immediately after IDs are received.
 
+    ## Multi-warehouse
+
+    Magware supports multiple physical warehouses per owner. An optional
+    `warehouse_code` field (max 15 characters) is available across the
+    ASN, Deliveries, Adjustments, Stocks and Shipments flows — both in
+    request payloads (where applicable) and in response payloads.
+
+    **Requests** — `warehouse_code` is always optional. When omitted, the
+    operation targets the default warehouse configured for the owner.
+    Single-warehouse integrators do not need to provide it and can keep
+    their current payloads unchanged.
+
+    **Responses** — when present, `warehouse_code` identifies the physical
+    warehouse the document or stock snapshot refers to. Single-warehouse
+    integrators can safely ignore the field; no breaking change in the
+    wire contract.
+
+    **Validation** — if `warehouse_code` is supplied but does not exist
+    or is not authorized for the owner, the API responds with
+    `400 Bad Request` and the standard error envelope.
+
+    **Items master data is intentionally not warehouse-scoped**: an item
+    is unique per owner, independent of warehouse. Stock quantities,
+    instead, are warehouse-specific by nature and the `stock_snapshot`
+    response carries `warehouse_code` at the root.
+
+    Note that `warehouse_code` is **orthogonal** to `stock_type` (logical
+    warehouse: `AVAIL`, `FLAWED`, `WS`). The two coexist —
+    `warehouse_code` identifies the physical site, `stock_type` the
+    logical bucket within it.
+
     ## Webhook alternative
 
     For latency-sensitive use cases, **webhook notifications** are available
@@ -1071,6 +1102,16 @@ components:
           type: string
           format: time
           description: Time of the stock snapshot
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse the snapshot refers to. Always
+            populated in responses when the owner is configured with one or
+            more warehouses. Single-warehouse integrators can safely ignore
+            this field. See the **Multi-warehouse** section in the API
+            overview for details.
+          example: WH_MI
         items:
           type: array
           description: >-
@@ -1300,6 +1341,15 @@ components:
           description: ASN identification code, assigned by ERP
           maxLength: 100
           example: ASN123456
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse this ASN refers to. Optional:
+            when omitted, the ASN is registered against the default
+            warehouse configured for the owner. See the **Multi-warehouse**
+            section in the API overview.
+          example: WH_MI
         arrival_date:
           type: string
           format: date
@@ -1410,6 +1460,15 @@ components:
           type: string
           description: ASN identification code, assigned by ERP
           maxLength: 100
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse the ASN was received into.
+            Always populated in responses when the owner is configured
+            with one or more warehouses. Single-warehouse integrators can
+            safely ignore this field.
+          example: WH_MI
         supplier:
           type: string
           maxLength: 50
@@ -1570,6 +1629,15 @@ components:
           maxLength: 100
           example: "800123456"
           description: Delivery unique code, assigned by Host system
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse this delivery is fulfilled from.
+            Optional: when omitted, the delivery is registered against the
+            default warehouse configured for the owner. See the
+            **Multi-warehouse** section in the API overview.
+          example: WH_MI
         date:
           type: string
           format: date
@@ -1862,6 +1930,15 @@ components:
           maxLength: 100
           example: "800123456"
           description: Delivery unique code, as assigned by the Host system
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse that prepared this delivery.
+            Always populated in responses when the owner is configured
+            with one or more warehouses. Single-warehouse integrators can
+            safely ignore this field.
+          example: WH_MI
         preparation_date:
           type: string
           format: date
@@ -1994,6 +2071,14 @@ components:
           maxLength: 100
           example: "800123456"
           description: Delivery unique code, as assigned by the Host system
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse that handled this delivery
+            before cancellation. Always populated in responses when the
+            owner is configured with one or more warehouses.
+          example: WH_MI
         cancellation_date:
           type: string
           format: date-time
@@ -2016,6 +2101,15 @@ components:
           type: string
           maxLength: 100
           description: Shipment code, generated by Magware
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse the shipment leaves from.
+            Always populated in responses when the owner is configured
+            with one or more warehouses. Single-warehouse integrators can
+            safely ignore this field.
+          example: WH_MI
         date:
           type: string
           format: date
@@ -2122,6 +2216,15 @@ components:
           maxLength: 15
           example: "800123456"
           description: Adjustment unique identifier, assigned by the Host system
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse where the adjustment was
+            performed. Always populated in responses when the owner is
+            configured with one or more warehouses. Single-warehouse
+            integrators can safely ignore this field.
+          example: WH_MI
         reason_code:
           type: string
           example: LACK
@@ -2293,6 +2396,16 @@ components:
           description: |-
             Shipment code/number, generated by host system.
             Can be, for example, delivery note number
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse the shipment is dispatched from.
+            Optional: when omitted, the shipment is registered against the
+            default warehouse configured for the owner. Must be consistent
+            with the warehouse of the deliveries being consolidated. See
+            the **Multi-warehouse** section in the API overview.
+          example: WH_MI
         date:
           type: string
           format: date
@@ -2599,18 +2712,22 @@ tags:
     description: >-
       Advanced Shipping Notices: notify the WMS that goods are about to arrive at the warehouse, then poll the list of
       received ASNs and fetch their details.
+      Supports the optional `warehouse_code` field — see the Multi-warehouse section in the API overview.
   - name: Deliveries
     description: >-
       Outbound delivery orders: create a new delivery order, then poll the lists of prepared and cancelled orders and
       fetch their details.
+      Supports the optional `warehouse_code` field — see the Multi-warehouse section in the API overview.
   - name: Shipments
     description: >-
       Shipments dispatched from the warehouse: create a new shipment, list dispatched shipments, and fetch
       tracking/delivery details.
+      Supports the optional `warehouse_code` field — see the Multi-warehouse section in the API overview.
   - name: Inventory
     description: >-
       Warehouse inventory: query stock levels by item or warehouse-wide, and retrieve adjustments (corrections to stock
       quantities).
+      Supports the optional `warehouse_code` field — see the Multi-warehouse section in the API overview.
   - name: Utility
     description: Service and diagnostic endpoints (e.g. API version).
   - name: Planned

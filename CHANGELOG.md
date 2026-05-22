@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Optional `warehouse_code` field (string, max 15 characters) on ASN,
+  Deliveries, Adjustments, Stocks and Shipments — both in request payloads
+  (where applicable) and in response payloads. When omitted in requests,
+  the operation targets the default warehouse configured for the owner.
+  When supplied but not existing or not authorized for the owner, the API
+  responds with `400 Bad Request`. Always populated in responses when the
+  owner is configured with one or more warehouses. Single-warehouse
+  integrators are not affected — no payload changes required, the field
+  can be safely ignored if present in responses.
+- New **Multi-warehouse** section in the API overview, covering request
+  fallback behaviour, response semantics, validation, and the
+  coexistence with the existing `stock_type` field (logical warehouse:
+  `AVAIL`, `FLAWED`, `WS`) — the two are orthogonal.
+- Items master data is intentionally **not** warehouse-scoped: an item is
+  unique per owner regardless of warehouse.
+
 ## [1.0.0] - 2026-05-05
 
 First stable public release of the Magware API reference. This version documents
