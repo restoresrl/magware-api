@@ -532,6 +532,7 @@ paths:
                 example-1:
                   value:
                     asn_code: CIPREP001
+                    warehouse_code: MWTEST
                     supplier: CLAUDETEST_SUP
                     delivery_note:
                       code: PREP001
@@ -654,6 +655,7 @@ paths:
                 Prepared delivery:
                   value:
                     code: M000949
+                    warehouse_code: MWTEST
                     courier_code: STD
                     preparation_date: "2026-05-05"
                     delivery_note:
@@ -808,6 +810,7 @@ paths:
                     code: "0000046"
                     date: "2026-05-05"
                     time: "22:14:27"
+                    warehouse_code: MWTEST
                     courier_code: STD
                     deliveries:
                       - delivery_code: M000949
@@ -864,6 +867,7 @@ paths:
                     sign: "-"
                     date: "2026-05-05"
                     time: "22:05:32"
+                    warehouse_code: MWTEST
                     items:
                       - item:
                           code: ARTTEST001
@@ -903,6 +907,7 @@ paths:
                       - item:
                           code: ARTTEST001
                           variant: CT
+                        warehouse_code: MWTEST
                         quantity: 7
                         reserved_quantity: 0
                         variant_quantity: 7
@@ -948,6 +953,7 @@ paths:
                       - item:
                           code: ARTTEST001
                           variant: CT
+                        warehouse_code: MWTEST
                         quantity: 7
                         reserved_quantity: 0
                         variant_quantity: 7
