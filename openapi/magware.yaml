@@ -2075,6 +2075,10 @@ components:
           type: string
           maxLength: 15
           description: |-
+            ⚠️ **Not yet implemented.** This field is not currently emitted by
+            the backend for cancelled deliveries: clients should not expect it
+            in the response. Full support is planned in a future release.
+
             Code of the physical warehouse that handled this delivery
             before cancellation. Always populated in responses when the
             owner is configured with one or more warehouses.
