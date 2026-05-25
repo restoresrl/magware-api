@@ -114,8 +114,10 @@ info:
 
     **Items master data is intentionally not warehouse-scoped**: an item
     is unique per owner, independent of warehouse. Stock quantities,
-    instead, are warehouse-specific by nature and the `stock_snapshot`
-    response carries `warehouse_code` at the root.
+    instead, are warehouse-specific by nature — each entry in the
+    `stock_snapshot.items` array carries its own `warehouse_code`, so
+    one snapshot can describe stocks across multiple physical
+    warehouses.
 
     Note that `warehouse_code` is **orthogonal** to `stock_type` (logical
     warehouse: `AVAIL`, `FLAWED`, `WS`). The two coexist —
@@ -1102,16 +1104,6 @@ components:
           type: string
           format: time
           description: Time of the stock snapshot
-        warehouse_code:
-          type: string
-          maxLength: 15
-          description: |-
-            Code of the physical warehouse the snapshot refers to. Always
-            populated in responses when the owner is configured with one or
-            more warehouses. Single-warehouse integrators can safely ignore
-            this field. See the **Multi-warehouse** section in the API
-            overview for details.
-          example: WH_MI
         items:
           type: array
           description: >-
@@ -1119,7 +1111,7 @@ components:
             empty array) when no stock exists for the queried item — treat a
             missing `items` field as equivalent to an empty array.
           items:
-            $ref: "#/components/schemas/item_stock"
+            $ref: "#/components/schemas/stock_item"
     item:
       description: Model for items
       type: object
@@ -2156,6 +2148,72 @@ components:
         - time
         - courier_code
         - deliveries
+    stock_item:
+      title: Stock item model
+      type: object
+      description: |-
+        Stock record for the `stock_snapshot.items` array. Identical to
+        `item_stock` but carries an additional `warehouse_code` field,
+        since stock quantities are warehouse-specific by nature.
+      required:
+        - item
+        - quantity
+      properties:
+        item:
+          $ref: "#/components/schemas/item_reference"
+        warehouse_code:
+          type: string
+          maxLength: 15
+          description: |-
+            Code of the physical warehouse this stock entry belongs to.
+            Always populated when the owner has at least one warehouse
+            configured. See the **Multi-warehouse** section in the API
+            overview.
+          example: WH_MI
+        stock_type:
+          type: string
+          maxLength: 50
+          description: "Logical warehouse where the stock is held (e.g. `AVAIL` for available, `FLAWED` for damaged goods)"
+        quantity:
+          type: number
+          format: decimal
+          example: 12
+          description: Quantity in stock for this lot/stock type combination
+        reserved_quantity:
+          type: number
+          format: decimal
+          description: >-
+            Quantity reserved (pre-allocated) for pending orders. **Note:**
+            the backend serializes this as a decimal string (e.g. `"0"`)
+            rather than a JSON number.
+          example: 0
+        variant_quantity:
+          type: integer
+          description: Total quantity for this item variant across all lots and stock types
+          example: 15
+        variant_reserved_quantity:
+          type: integer
+          description: Total reserved quantity for this item variant across all lots and stock types
+          example: 3
+        lot_number:
+          type: string
+          maxLength: 100
+          description: Lot number, if enabled for the item
+        serial_number:
+          type: string
+          maxLength: 25
+          description: Serial number, if enabled for the item
+        expiration_date:
+          type: string
+          format: date
+          description: Expiration date, if enabled for the item
+        expedition_date:
+          type: string
+          format: date
+          description: Expedition date, if enabled for the item
+        weight:
+          type: number
+          description: Total item weight
     item_stock:
       title: Item stock model
       type: object
