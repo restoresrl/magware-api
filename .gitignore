@@ -23,6 +23,9 @@ pnpm-debug.log*
 *.swo
 *~
 
+# --- Claude Code (settings locali utente, non parte del progetto) ---
+.claude/
+
 # --- Environment / secrets ---
 .env
 .env.*
