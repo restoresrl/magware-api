@@ -9,6 +9,9 @@
 // Esecuzione: npm run test:api
 // Prerequisiti: magware-refs/.env compilato (MAGWARE_SANDBOX_URL, MAGWARE_OWNER, MAGWARE_APIKEY).
 // Per POST /shipments (L2-6): serve almeno una delivery in stato "prepared" in sandbox.
+// Per i test multi-warehouse (POST con warehouse_code, GET asserzioni warehouse_code, E-06/E-07):
+//   serve MAGWARE_TEST_WAREHOUSE_CODE in .env, valorizzato con un codice magazzino valido del sandbox.
+//   Se assente, gli step MW vengono saltati (graceful skip).
 // Nota: PUT /test è un endpoint sandbox-only (reset dati di test), non documentato nella spec pubblica.
 
 import { readFileSync } from "node:fs";
@@ -43,6 +46,8 @@ const env = loadEnv(resolve(repoRoot, "magware-refs/.env"));
 const BASE_URL = env.MAGWARE_SANDBOX_URL;
 const OWNER = env.MAGWARE_OWNER;
 const APIKEY = env.MAGWARE_APIKEY;
+// Multi-warehouse: opzionale. Se vuoto, gli step MW vengono skippati.
+const WH_CODE = env.MAGWARE_TEST_WAREHOUSE_CODE || null;
 
 function timestamp() {
   return new Date().toISOString().replace(/[-T:Z.]/g, "").slice(0, 14);
@@ -320,6 +325,7 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   const today = new Date().toISOString().slice(0, 10);
   const body = {
     code: TEST_ASN_CODE,
+    ...(WH_CODE && { warehouse_code: WH_CODE }),
     supplier: { code: "CLAUDETEST_SUP", name: "Claude Test Supplier" },
     movement_type: { code: "P001", description: "Purchase from supplier" },
     arrival_date: today,
@@ -337,7 +343,7 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   if (!checkStatus(r.status, 201)) {
     fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
   } else {
-    pass(id, label, `status: ${r.json?.status}`);
+    pass(id, label, `status: ${r.json?.status}${WH_CODE ? ` (warehouse_code: ${WH_CODE})` : ""}`);
   }
 }
 
@@ -348,6 +354,7 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   const today = new Date().toISOString().slice(0, 10);
   const body = {
     code: TEST_DELIVERY_CODE,
+    ...(WH_CODE && { warehouse_code: WH_CODE }),
     date: today,
     movement_type: { code: "V001", description: "Test movement" },
     destination: {
@@ -373,7 +380,7 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   if (!checkStatus(r.status, 201)) {
     fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
   } else {
-    pass(id, label, `status: ${r.json?.status}`);
+    pass(id, label, `status: ${r.json?.status}${WH_CODE ? ` (warehouse_code: ${WH_CODE})` : ""}`);
   }
 }
 
@@ -388,6 +395,8 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
     const today = new Date().toISOString().slice(0, 10);
     const body = {
       code: TEST_SHIPMENT_CODE,
+      // warehouse_code: backend lo ignora — Not yet implemented (spec marker)
+      ...(WH_CODE && { warehouse_code: WH_CODE }),
       date: today,
       time: new Date().toTimeString().slice(0, 8),
       courier_code: "TESTCOU",
@@ -448,11 +457,15 @@ console.log("\nLIVELLO 1 — GET\n");
       if (!checkStatus(dr.status, 200)) {
         fail(detailId, `GET /asn/received/${firstId}`, `got ${statusLabel(dr.status)}`);
       } else {
-        const missing = checkRequired(dr.json, ["asn_code", "supplier", "arrival_date", "stock_date"]);
+        const required = ["asn_code", "supplier", "arrival_date", "stock_date"];
+        if (WH_CODE) required.push("warehouse_code");
+        const missing = checkRequired(dr.json, required);
         if (missing.length) {
           fail(detailId, `GET /asn/received/${firstId}`, `missing: ${missing.join(", ")}`);
+        } else if (WH_CODE && dr.json.warehouse_code !== WH_CODE) {
+          fail(detailId, `GET /asn/received/${firstId}`, `warehouse_code mismatch: expected "${WH_CODE}", got "${dr.json.warehouse_code}"`);
         } else {
-          pass(detailId, `GET /asn/received/${firstId}`);
+          pass(detailId, `GET /asn/received/${firstId}`, WH_CODE ? `warehouse_code: ${dr.json.warehouse_code}` : "");
           realPayloads["GET /asn/received/{id}"] = dr.json;
         }
       }
@@ -481,11 +494,13 @@ console.log("\nLIVELLO 1 — GET\n");
       if (!checkStatus(dr.status, 200)) {
         fail(detailId, `GET /deliveries/prepared/${firstId}`, `got ${statusLabel(dr.status)}`);
       } else {
-        const missing = checkRequired(dr.json, ["code", "preparation_date", "courier_code", "delivery_note", "weight", "volume"]);
+        const required = ["code", "preparation_date", "courier_code", "delivery_note", "weight", "volume"];
+        if (WH_CODE) required.push("warehouse_code");
+        const missing = checkRequired(dr.json, required);
         if (missing.length) {
           fail(detailId, `GET /deliveries/prepared/${firstId}`, `missing: ${missing.join(", ")}`);
         } else {
-          pass(detailId, `GET /deliveries/prepared/${firstId}`);
+          pass(detailId, `GET /deliveries/prepared/${firstId}`, WH_CODE ? `warehouse_code: ${dr.json.warehouse_code}` : "");
           realPayloads["GET /deliveries/prepared/{id}"] = dr.json;
         }
       }
@@ -547,11 +562,13 @@ console.log("\nLIVELLO 1 — GET\n");
       if (!checkStatus(dr.status, 200)) {
         fail(detailId, `GET /shipments/${firstId}`, `got ${statusLabel(dr.status)}`);
       } else {
-        const missing = checkRequired(dr.json, ["code", "date", "time", "deliveries"]);
+        const required = ["code", "date", "time", "deliveries"];
+        if (WH_CODE) required.push("warehouse_code");
+        const missing = checkRequired(dr.json, required);
         if (missing.length) {
           fail(detailId, `GET /shipments/${firstId}`, `missing: ${missing.join(", ")}`);
         } else {
-          pass(detailId, `GET /shipments/${firstId}`);
+          pass(detailId, `GET /shipments/${firstId}`, WH_CODE ? `warehouse_code: ${dr.json.warehouse_code}` : "");
           realPayloads["GET /shipments/{id}"] = dr.json;
         }
       }
@@ -570,8 +587,11 @@ console.log("\nLIVELLO 1 — GET\n");
     const missing = checkRequired(r.json, ["date", "time", "items"]);
     if (missing.length) {
       fail(id, label, `missing: ${missing.join(", ")}`);
+    } else if (WH_CODE && r.json.items?.length > 0 && !r.json.items.some((i) => i.warehouse_code)) {
+      fail(id, label, `no items[].warehouse_code populated (expected at least one with WH_CODE set)`);
     } else {
-      pass(id, label, `${r.json.items?.length ?? 0} items`);
+      const whItems = WH_CODE ? r.json.items?.filter((i) => i.warehouse_code).length ?? 0 : null;
+      pass(id, label, `${r.json.items?.length ?? 0} items${whItems !== null ? `, ${whItems} with warehouse_code` : ""}`);
       realPayloads["GET /stocks"] = r.json;
     }
   }
@@ -588,10 +608,13 @@ console.log("\nLIVELLO 1 — GET\n");
     const missing = checkRequired(r.json, ["date", "time"]);
     if (missing.length) {
       fail(id, label, `missing: ${missing.join(", ")}`);
+    } else if (WH_CODE && r.json.items?.length > 0 && !r.json.items.some((i) => i.warehouse_code)) {
+      fail(id, label, `no items[].warehouse_code populated (expected at least one with WH_CODE set)`);
     } else {
       // backend omits "items" when there is no stock (returns 200 with no items array)
       const itemCount = r.json.items?.length ?? 0;
-      pass(id, label, `${itemCount} stock records${r.json.items === undefined ? " (items field absent — no stock)" : ""}`);
+      const whItems = WH_CODE ? r.json.items?.filter((i) => i.warehouse_code).length ?? 0 : null;
+      pass(id, label, `${itemCount} stock records${r.json.items === undefined ? " (items field absent — no stock)" : ""}${whItems !== null && itemCount > 0 ? `, ${whItems} with warehouse_code` : ""}`);
       realPayloads[`GET /stocks/{item_code}`] = r.json;
     }
   }
@@ -618,11 +641,13 @@ console.log("\nLIVELLO 1 — GET\n");
       if (!checkStatus(dr.status, 200)) {
         fail(detailId, `GET /adjustments/${firstId}`, `got ${statusLabel(dr.status)}`);
       } else {
-        const missing = checkRequired(dr.json, ["code", "reason_code", "sign", "date", "time"]);
+        const required = ["code", "reason_code", "sign", "date", "time"];
+        if (WH_CODE) required.push("warehouse_code");
+        const missing = checkRequired(dr.json, required);
         if (missing.length) {
           fail(detailId, `GET /adjustments/${firstId}`, `missing: ${missing.join(", ")}`);
         } else {
-          pass(detailId, `GET /adjustments/${firstId}`);
+          pass(detailId, `GET /adjustments/${firstId}`, WH_CODE ? `warehouse_code: ${dr.json.warehouse_code}` : "");
           realPayloads["GET /adjustments/{id}"] = dr.json;
         }
       }
@@ -692,6 +717,61 @@ console.log("\nERROR CASES\n");
     fail(id, label, `got ${statusLabel(r.status)}`);
   } else {
     pass(id, label);
+  }
+}
+
+// E-06: 400 POST /asn con warehouse_code inesistente
+{
+  const id = "E-06";
+  const label = `POST /asn con warehouse_code="INVALID_WH_XYZ" → 400`;
+  if (!WH_CODE) {
+    skip(id, label, "MAGWARE_TEST_WAREHOUSE_CODE non impostato in .env");
+  } else {
+    const today = new Date().toISOString().slice(0, 10);
+    const body = {
+      code: `${TEST_ASN_CODE}-BADWH`,
+      warehouse_code: "INVALID_WH_XYZ",
+      supplier: { code: "CLAUDETEST_SUP", name: "Claude Test Supplier" },
+      movement_type: { code: "P001", description: "Purchase from supplier" },
+      arrival_date: today,
+      delivery_note: { code: `DN${TEST_ASN_CODE}-BADWH`, date: today },
+      contents: [{ row_number: 1, item: { code: TEST_ITEM_CODE, variant: "01" }, quantity: 1 }],
+    };
+    const r = await request("POST", "/asn", { body });
+    if (!checkStatus(r.status, 400)) {
+      fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
+    } else {
+      pass(id, label);
+    }
+  }
+}
+
+// E-07: 400 POST /deliveries con warehouse_code inesistente
+{
+  const id = "E-07";
+  const label = `POST /deliveries con warehouse_code="INVALID_WH_XYZ" → 400`;
+  if (!WH_CODE) {
+    skip(id, label, "MAGWARE_TEST_WAREHOUSE_CODE non impostato in .env");
+  } else {
+    const today = new Date().toISOString().slice(0, 10);
+    const body = {
+      code: `${TEST_DELIVERY_CODE}-BADWH`,
+      warehouse_code: "INVALID_WH_XYZ",
+      date: today,
+      movement_type: { code: "V001", description: "Test movement" },
+      destination: {
+        code: "TESTCLI",
+        name: "Test Cliente API",
+        address: { address1: "Via Roma 1", city: "MILANO", zip: "20100", country: "IT" },
+      },
+      items: [{ row_number: 1, item: { code: TEST_ITEM_CODE, variant: "01" }, quantity: 1 }],
+    };
+    const r = await request("POST", "/deliveries", { body });
+    if (!checkStatus(r.status, 400)) {
+      fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
+    } else {
+      pass(id, label);
+    }
   }
 }
 
