@@ -2,23 +2,54 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-25
+
 ### Added
 
-- Optional `warehouse_code` field (string, max 15 characters) on ASN,
-  Deliveries, Adjustments, Stocks and Shipments — both in request payloads
-  (where applicable) and in response payloads. When omitted in requests,
-  the operation targets the default warehouse configured for the owner.
-  When supplied but not existing or not authorized for the owner, the API
-  responds with `400 Bad Request`. Always populated in responses when the
-  owner is configured with one or more warehouses. Single-warehouse
-  integrators are not affected — no payload changes required, the field
-  can be safely ignored if present in responses.
+- **Multi-warehouse support.** New optional `warehouse_code` field
+  (string, max 15 characters) on ASN, Deliveries, Shipments, Adjustments
+  and Stocks flows, both in request payloads (where applicable) and in
+  response payloads. When omitted on input, the operation targets the
+  default warehouse configured for the owner. Single-warehouse
+  integrators are not affected: the field can be omitted in requests
+  and safely ignored if present in responses — no payload changes
+  required.
+- New schema `stock_item` for `stock_snapshot.items`. Identical to the
+  existing `item_stock` schema but with an additional `warehouse_code`
+  field. Stock quantities are warehouse-specific by nature, so each
+  entry in the `stock_snapshot.items` array now carries its own
+  `warehouse_code` — one snapshot can describe stocks across multiple
+  physical warehouses. The existing `item_stock` schema is unchanged
+  and still used by `adjustment.items` (where `warehouse_code` lives
+  at the root of `adjustment`, not per item).
 - New **Multi-warehouse** section in the API overview, covering request
   fallback behaviour, response semantics, validation, and the
   coexistence with the existing `stock_type` field (logical warehouse:
-  `AVAIL`, `FLAWED`, `WS`) — the two are orthogonal.
-- Items master data is intentionally **not** warehouse-scoped: an item is
-  unique per owner regardless of warehouse.
+  `AVAIL`, `FLAWED`, `WS`) — the two are orthogonal. Items master data
+  is intentionally **not** warehouse-scoped: an item is unique per
+  owner regardless of warehouse.
+- Examples in the response payloads of `GET /asn/received/{id}`,
+  `GET /deliveries/prepared/{id}`, `GET /shipments/{id}`,
+  `GET /adjustments/{id}`, `GET /stocks` and `GET /stocks/{item_code}`
+  updated to include `warehouse_code`, reflecting real sandbox
+  payloads.
+
+### Validation
+
+- Requests supplying a `warehouse_code` that does not exist in Magware
+  return `400 Bad Request` with the standard error envelope. Currently
+  applies to `POST /asn` and `POST /deliveries`.
+
+### Known issues
+
+- `POST /shipments`: the `warehouse_code` field on `shipment_creation`
+  is currently **accepted but ignored** by the backend — shipments are
+  always registered against the owner's default warehouse, regardless
+  of the value supplied. Full support is planned in a future release.
+- `GET /deliveries/cancelled/{id}`: the `warehouse_code` field on
+  `delivery_cancelled_details` is **not currently emitted** by the
+  backend. Clients should not expect it in the response. Full support
+  is planned in a future release.
 
 ## [1.0.0] - 2026-05-05
 

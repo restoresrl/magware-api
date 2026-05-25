@@ -12,6 +12,8 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-25
+
 ### Added
 
 - **Esempi `examples:` delle response GET aggiornati con `warehouse_code` reale dal sandbox post smoke test multi-WH** (2026-05-25). Aggiunta la property `warehouse_code: MWTEST` (valore prodotto dal sandbox dopo il rilascio team PB) negli `examples:` di 6 response: `GET /asn/received/{id}` (`example-1`), `GET /deliveries/prepared/{id}` (`Prepared delivery`), `GET /shipments/{id}` (`example-1`), `GET /adjustments/{id}` (`Example 1`), `GET /stocks` (`example-1` — dentro `items[0]`), `GET /stocks/{item_code}` (`example-1` — dentro `items[0]`). Ordering coerente col payload reale del backend (es. `shipment_details`: `warehouse_code` dopo `time`, prima di `courier_code`). Non toccati: `GET /deliveries/cancelled/{id}` (Not yet implemented lato output, `warehouse_code` non emesso dal backend) e `example-2` di `GET /stocks/{item_code}` (caso "no items", nessun item dove aggiungere il campo). Quantità e altri valori degli esempi mantenuti invariati (allineati al commit `5af27e6` di Fase 2ter, non rilevanti per multi-WH). Validazione end-to-end: 31/31 step di `scripts/test-api.mjs` passati contro `https://sandbox.magware.it` (inclusi i nuovi MW POST con WH esplicito, GET con assert valore, E-06/E-07 400 su WH invalido).
