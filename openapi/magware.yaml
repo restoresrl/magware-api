@@ -2400,6 +2400,11 @@ components:
           type: string
           maxLength: 15
           description: |-
+            ⚠️ **Not yet implemented.** This field is currently accepted but
+            ignored by the backend: shipments are always registered against
+            the owner's default warehouse, regardless of the value supplied.
+            Full support is planned in a future release.
+
             Code of the physical warehouse the shipment is dispatched from.
             Optional: when omitted, the shipment is registered against the
             default warehouse configured for the owner. Must be consistent
