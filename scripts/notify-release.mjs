@@ -113,13 +113,19 @@ function buildEmail(name, lang) {
   const vars = { name, version, release_date: releaseDate, changelog: changelogMd };
   const subject = fill(t.subject, vars);
   const body = fill(t.body, vars);
+  const footer = t.footer ? fill(t.footer, vars) : "";
+  const text = footer ? `${body}\n\n---\n${footer}` : body;
+  const footerHtml = footer
+    ? `<hr style="border:none;border-top:1px solid #eee;margin:32px 0 12px"><p style="font-size:0.85em;color:#888;margin:0">${inlineFormat(footer)}</p>`
+    : "";
   const html = `<!DOCTYPE html>
 <html>
 <body style="font-family:sans-serif;color:#333;max-width:680px;margin:0 auto;padding:24px">
 ${mdToHtml(body)}
+${footerHtml}
 </body>
 </html>`;
-  return { subject, text: body, html };
+  return { subject, text, html };
 }
 
 // ── Send ──────────────────────────────────────────────────────────────────────
