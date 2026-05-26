@@ -180,6 +180,7 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
     description: "API Test Item — do not use",
     um: "PZ",
     can_be_added_to_deliveries: true,
+    expedition_days: 30,
     variants: [{ code: "01", description: "variant 01", quantity: 1 }],
   };
   const r = await request("POST", "/items", { body });
@@ -247,6 +248,8 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
     const missing = checkRequired(r.json, ["code", "um", "variants"]);
     if (missing.length) {
       fail(id, label, `missing required fields: ${missing.join(", ")}`);
+    } else if (r.json.expedition_days !== 30) {
+      fail(id, label, `expected expedition_days=30, got ${r.json.expedition_days}`);
     } else {
       pass(id, label);
       realPayloads["GET /items/{item_code}"] = r.json;
@@ -283,23 +286,46 @@ console.log("\nLIVELLO 2 — POST/PUT\n");
   }
 }
 
-// L2-2: PUT /items/{item_code}
+// L2-2: PUT /items/{item_code} — body minimale per verificare semantica merge
+// (solo expedition_days inviato; description/booleani/variants devono restare invariati)
 {
   const id = "L2-2";
-  const label = `PUT /items/${TEST_ITEM_CODE} — aggiorna note`;
-  const body = {
-    code: TEST_ITEM_CODE,
-    description: "API Test Item — do not use",
-    um: "PZ",
-    note: "updated by test-api.mjs",
-    can_be_added_to_deliveries: true,
-    variants: [{ code: "01", description: "variant 01", quantity: 1 }],
-  };
+  const label = `PUT /items/${TEST_ITEM_CODE} — merge: solo expedition_days: 45`;
+  const body = { expedition_days: 45 };
   const r = await request("PUT", `/items/${TEST_ITEM_CODE}`, { body });
   if (!checkStatus(r.status, 200)) {
     fail(id, label, `got ${statusLabel(r.status)}. Body: ${JSON.stringify(r.json)}`);
   } else {
     pass(id, label);
+  }
+}
+
+// L2-2b: GET /items/{item_code} dopo PUT — verifica merge (campo aggiornato + altri invariati)
+{
+  const id = "L2-2b";
+  const label = `GET /items/${TEST_ITEM_CODE} — verifica PUT merge (1 update + 3 preserved)`;
+  const r = await request("GET", `/items/${TEST_ITEM_CODE}`);
+  if (!checkStatus(r.status, 200)) {
+    fail(id, label, `got ${statusLabel(r.status)}`);
+  } else {
+    const errors = [];
+    if (r.json.expedition_days !== 45) {
+      errors.push(`expedition_days expected 45 (updated), got ${r.json.expedition_days}`);
+    }
+    if (r.json.description !== "API Test Item — do not use") {
+      errors.push(`description expected unchanged from POST, got ${JSON.stringify(r.json.description)}`);
+    }
+    if (r.json.lot_control !== false) {
+      errors.push(`lot_control expected unchanged (false), got ${r.json.lot_control}`);
+    }
+    if (r.json.variants?.[0]?.code !== "01") {
+      errors.push(`variants[0].code expected unchanged ("01"), got ${JSON.stringify(r.json.variants?.[0]?.code)}`);
+    }
+    if (errors.length) {
+      fail(id, label, errors.join("; "));
+    } else {
+      pass(id, label, "merge OK: expedition_days updated to 45, description/lot_control/variants preserved");
+    }
   }
 }
 

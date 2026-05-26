@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-26
+
+### Added
+
+- `item.expedition_days` is now active. The backend reads it on
+  `POST /items` and `PUT /items/{item_code}`, and returns it on
+  `GET /items/{item_code}` when set. The field is optional; when
+  provided it must be `>= 1`. Specifies the number of days for
+  expedition date calculation from the item's expiration date.
+
+### Changed
+
+- `PUT /items/{item_code}` description now documents the **merge
+  semantics** of the operation explicitly: only fields included in
+  the request body are updated, fields omitted from the body are
+  left unchanged on the existing record, and to clear a field you
+  must send it explicitly (e.g. `"note": ""`). The same rule applies
+  to `variants[]`: only entries listed in the body are upserted,
+  existing variants not in the body remain unchanged. This documents
+  a behaviour that was already in place — the previous wording
+  ("full item representation") was misleading. No wire change for
+  integrators who were sending full payloads; integrators relying on
+  partial bodies now have an explicit contract.
+
+### Removed
+
+- Deprecation marker on `item.expedition_days` — the field is no
+  longer marked `deprecated`, as the backend now implements it on
+  POST/PUT/GET.
+
 ## [1.1.0] - 2026-05-25
 
 ### Added
