@@ -108,9 +108,8 @@ info:
     integrators can safely ignore the field; no breaking change in the
     wire contract.
 
-    **Validation** — if `warehouse_code` is supplied but does not exist
-    or is not authorized for the owner, the API responds with
-    `400 Bad Request` and the standard error envelope.
+    **Validation** — if `warehouse_code` is supplied but does not exist,
+    the API responds with `400 Bad Request` and the standard error envelope.
 
     **Items master data is intentionally not warehouse-scoped**: an item
     is unique per owner, independent of warehouse. Stock quantities,
@@ -1468,9 +1467,8 @@ components:
           maxLength: 15
           description: |-
             Code of the physical warehouse the ASN was received into.
-            Always populated in responses when the owner is configured
-            with one or more warehouses. Single-warehouse integrators can
-            safely ignore this field.
+            Always populated when the underlying record has a warehouse
+            assigned; omitted for legacy records.
           example: WH_MI
         supplier:
           type: string
@@ -1938,9 +1936,8 @@ components:
           maxLength: 15
           description: |-
             Code of the physical warehouse that prepared this delivery.
-            Always populated in responses when the owner is configured
-            with one or more warehouses. Single-warehouse integrators can
-            safely ignore this field.
+            Always populated when the underlying record has a warehouse
+            assigned; omitted for legacy records.
           example: WH_MI
         preparation_date:
           type: string
@@ -2083,8 +2080,8 @@ components:
             in the response. Full support is planned in a future release.
 
             Code of the physical warehouse that handled this delivery
-            before cancellation. Always populated in responses when the
-            owner is configured with one or more warehouses.
+            before cancellation. Always populated when the underlying
+            record has a warehouse assigned; omitted for legacy records.
           example: WH_MI
         cancellation_date:
           type: string
@@ -2113,9 +2110,8 @@ components:
           maxLength: 15
           description: |-
             Code of the physical warehouse the shipment leaves from.
-            Always populated in responses when the owner is configured
-            with one or more warehouses. Single-warehouse integrators can
-            safely ignore this field.
+            Always populated when the underlying record has a warehouse
+            assigned; omitted for legacy records.
           example: WH_MI
         date:
           type: string
@@ -2177,9 +2173,8 @@ components:
           maxLength: 15
           description: |-
             Code of the physical warehouse this stock entry belongs to.
-            Always populated when the owner has at least one warehouse
-            configured. See the **Multi-warehouse** section in the API
-            overview.
+            Always populated when the underlying record has a warehouse
+            assigned; omitted for legacy records.
           example: WH_MI
         stock_type:
           type: string
@@ -2294,9 +2289,8 @@ components:
           maxLength: 15
           description: |-
             Code of the physical warehouse where the adjustment was
-            performed. Always populated in responses when the owner is
-            configured with one or more warehouses. Single-warehouse
-            integrators can safely ignore this field.
+            performed. Always populated when the underlying record has a
+            warehouse assigned; omitted for legacy records.
           example: WH_MI
         reason_code:
           type: string
