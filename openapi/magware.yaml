@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Magware API
-  version: 1.2.0
+  version: 1.3.0
   description: |
     # Magware API
 
@@ -50,7 +50,16 @@ info:
     - `401 Unauthorized` — missing or invalid `APIKey`/`owner`.
     - `404 Not Found` — the resource id does not exist (or has already
       been acquired by a previous detail call, see polling pattern below).
-    - `500 Internal Server Error` — unexpected runtime error.
+    - `500 Internal Server Error` — unexpected runtime error. The body
+      carries only a generic message; the details are logged on the
+      Magware side.
+
+    **Exception — `404 Not Found`:** the body is the bare message as plain
+    text (e.g. `Item with code '1234567890AB' not found for owner 'RST'`),
+    not the JSON envelope, even though the response carries
+    `Content-Type: application/json`. Do not parse a `404` body as JSON;
+    rely on the status code. `HEAD /items/{item_code}` returns `404` with
+    an empty body.
 
     `409 Conflict` and `422 Unprocessable Entity` are **not** used by the
     API — duplicates and validation errors are signalled as `400`.
@@ -151,14 +160,17 @@ paths:
         Create an item to be managed by the warehouse.
 
         The request body can be either a **single item object** or an **array
-        of item objects** (up to 100) for bulk creation. Both forms return
-        HTTP `200`, but the response body shape differs:
+        of item objects** (up to 100) for bulk creation. The response body
+        shape differs:
 
-        - Single item → `success` envelope (`{status, description}`).
-        - Bulk array → array of per-item results, where each entry reports
-          `success` or `error` independently. The HTTP status is `200` even
-          if some items in the array failed; check each element's `status`
-          field.
+        - Single item → `success` envelope (`{status, description}`). The
+          HTTP status is `200` by default; a Magware installation can be
+          configured by Restore to answer `201 Created` instead. Treat both
+          `200` and `201` as success.
+        - Bulk array → always HTTP `200` with an array of per-item results,
+          where each entry reports `success` or `error` independently. The
+          HTTP status is `200` even if some items in the array failed; check
+          each element's `status` field.
       responses:
         "200":
           description: |-
@@ -190,6 +202,21 @@ paths:
                       item_code: "999999999"
                       status: error
                       description: "Item '999999999' already exists"
+        "201":
+          description: |-
+            Single item created, on installations configured to answer
+            `201 Created` for single-item creation. Same body as the
+            single-item `200` response. Bulk requests always answer `200`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/success"
+              examples:
+                single:
+                  summary: Single item created
+                  value:
+                    status: success
+                    description: "Item '1234567890AB' created"
         "400":
           $ref: "#/components/responses/error"
         "401":
@@ -285,10 +312,17 @@ paths:
         variant, that variant is updated; otherwise a new variant is
         created. As with root-level fields, only `variants[i]` entries
         present in the body are touched — existing variants not listed in
-        the request body remain unchanged. Once a variant exists, its
-        `quantity` field is **immutable** — sending a `variants[i].quantity`
-        value different from the persisted one returns `400 Bad Request`
-        with description `"Quantity for variant '<code>' for item '<item>' can't be updated"`.
+        the request body remain unchanged.
+
+        A **new** variant created by PUT takes `variants[i].quantity` when
+        provided (must be greater than 0) and defaults to `1` when omitted;
+        `shippable` defaults to `false`. This is the way to add a variant
+        (e.g. a new size) to an existing item.
+
+        Once a variant exists, its `quantity` field is **immutable** —
+        sending a `variants[i].quantity` value different from the persisted
+        one returns `400 Bad Request` with description
+        `"Quantity for variant <code> for item '<item>' can't be updated"`.
       responses:
         "200":
           $ref: "#/components/responses/success"
@@ -348,8 +382,7 @@ paths:
                         volume: 0.01
                         weight: 0.1
                         shippable: false
-                        barcodes:
-                          - null
+                        barcodes: []
         "404":
           $ref: "#/components/responses/not_found"
         "401":
@@ -1214,11 +1247,11 @@ components:
               barcodes:
                 type: array
                 uniqueItems: true
-                description: Array of barcodes that uniquely identify the item and the variant. Must be unique for the owner
+                description: >-
+                  Array of barcodes that uniquely identify the item and the variant. Must be unique for the owner. In
+                  GET responses it is an empty array when the variant has no barcodes.
                 items:
-                  type:
-                    - string
-                    - "null"
+                  type: string
                   maxLength: 100
                   example: "1234567890123"
               volume:
@@ -2678,7 +2711,8 @@ components:
                 description: "Resource created"
     error:
       description: |-
-        Bad request — payload validation failed, business rule violated, or
+        Bad request — payload validation failed, business rule violated
+        (including validation errors raised by Magware business objects), or
         the requested operation is not implemented for this resource. Body
         is the standard error envelope.
       content:
@@ -2727,20 +2761,30 @@ components:
         an item code, ASN id, delivery id, shipment id, or adjustment id
         that has never been created or has already been acquired by a
         previous detail call).
+
+        **The body is the bare message as plain text, not the JSON error
+        envelope**, although the response header is
+        `Content-Type: application/json`. Do not parse it as JSON; rely on
+        the status code. Other endpoints return similar messages (e.g.
+        `ASN not found with id 55134833`).
       content:
-        application/json:
+        text/plain:
           schema:
-            $ref: "#/components/schemas/error_response"
+            type: string
           examples:
-            not_found:
-              value:
-                status: error
-                description: "Item with code '1234567890AB' not found for owner 'RST'"
+            get_item:
+              summary: GET /items/{item_code}
+              value: "Item with code '1234567890AB' not found for owner 'RST'"
+            put_item:
+              summary: PUT /items/{item_code}
+              value: "Item '1234567890AB' not exists"
     internal_server_error:
       description: |-
         Unexpected server error (uncaught runtime exception). The
-        `description` field includes the raw error message for diagnostic
-        purposes; integrators should not parse it.
+        `description` field carries only a generic message; the details
+        (database error, query, script) are logged on the Magware side and
+        are not returned to the client. Report the request time to Restore
+        to investigate.
       content:
         application/json:
           schema:
@@ -2749,7 +2793,7 @@ components:
             example:
               value:
                 status: error
-                description: "Internal error, unable to process the request. <details>"
+                description: "Internal error, unable to process the request."
     object_list:
       description: List of Magware objects
       content:

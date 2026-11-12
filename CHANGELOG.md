@@ -2,6 +2,47 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
+Behaviour changes below apply to Magware backend build 21.11.1.852 and later.
+
+### Added
+
+- `PUT /items/{item_code}`: documented how a **new variant** is created by
+  PUT. It takes `variants[i].quantity` when provided (must be greater
+  than 0) and defaults to `1` when omitted; `shippable` defaults to `false`.
+  Before this release a new variant with a `quantity` other than `1` was
+  rejected with `400`.
+- `POST /items`: documented the `201 Created` response. A single-item
+  creation answers `200` by default and `201` on installations configured
+  by Restore to do so; bulk creation always answers `200`. Treat both as
+  success.
+
+### Changed
+
+- `500 Internal Server Error`: `description` now carries only the generic
+  message `Internal error, unable to process the request.`; details are no
+  longer returned to the client.
+- Validation errors raised by Magware business objects now answer `400`
+  with their message instead of `500`.
+- `404 Not Found`: documented the actual body, which is the bare message
+  as plain text (not the JSON error envelope) even though the response
+  carries `Content-Type: application/json`. Do not parse it as JSON.
+
+### Fixed
+
+- `GET /items/{item_code}`: item codes containing an apostrophe (e.g.
+  `ABC'_33`) are now looked up correctly instead of failing with `500`.
+- `GET /items/{item_code}`: `variants[].barcodes` is an empty array when
+  the variant has no barcodes (it was `[null]`); barcode entries are never
+  `null`.
+- `GET /items/{item_code}`: `owner_category` now returns the item's owner
+  category (it returned the warehouse category data).
+- `GET /items/{item_code}`: `variants[].shippable` is always a boolean
+  (`false` when not set; it could be `null`).
+- `POST /items/exists`: the variant must belong to the given item. Before,
+  a variant code existing on any item of the owner returned `exists: true`.
+
 ## [1.2.0] - 2026-05-26
 
 ### Added

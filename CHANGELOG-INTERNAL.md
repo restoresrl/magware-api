@@ -12,6 +12,26 @@ I cambi a tooling, configurazione del repo, CI, `CLAUDE.md` e altre attività in
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
+Allineamento della spec alla build backend Magware **21.11.1.852** (patch API articoli dopo la segnalazione BUBE/BCC del 12/11/2026, piano `mw21r2/.pb-review/bug-hunt-api-items-2026-11-12.md`, fix-01…07) e documentazione di due comportamenti preesistenti (201 del POST, 404 in testo).
+
+### Added
+
+- **PUT /items/{item_code}, variante nuova**: in `description` documentato che una variante creata dal PUT prende `variants[i].quantity` se presente (> 0) e vale 1 se omessa; `shippable` vale `false`. Backend: `n_put_items._upsert_minimo` (fix-06, fix-07). Prima della 852 una `quantity` diversa da 1 su una variante nuova dava 400 "can't be updated". Corretto anche il testo dell'errore documentato: il codice variante è senza apici (`Quantity for variant <code> for item '<item>' can't be updated`).
+- **POST /items, risposta 201**: aggiunta la response `201` e aggiornata la `description`. Il singolo articolo risponde 200 per default e 201 con la chiave `post_items_status=201` nella sezione `[mw_ws]` dell'ini (build 21.11.1.851, commit mw21r2 `a173c7c2`; fino alla 21.11.0.770 rispondeva sempre 201); il POST con array risponde sempre 200. Il nome della chiave non è esposto nella spec pubblica: "configurabile da Restore".
+
+### Changed
+
+- **500**: `components.responses.internal_server_error` riporta solo il messaggio generico `Internal error, unable to process the request.`; il dettaglio (errore SQL, query, script) resta nel log del worker (`w_server_mw_ws.handlerequest`, fix-05). Aggiornata anche la sezione "Errors" di `info.description`.
+- **400 per validazione PDO**: `n_ex_pdo_invalid` risponde 400 con il messaggio (prima finiva nel 500). Aggiornata la description di `components.responses.error`.
+- **404 documentato com'è**: `components.responses.not_found` passa a `text/plain` con `schema: string` ed esempi GET/PUT items. Il backend (`w_server_mw_ws`, catch `n_ex_ws_404`) restituisce `ex_404.getmessage()` senza `_error()`, quindi corpo in testo semplice, ma con header `Content-Type: application/json` (`u_http_server_sockettools.sendresponsejson`). Verificato nei log di risposta di produzione e nelle prove locali del 12/11. Decisione di Carlo (12/11): documentare il comportamento attuale, nessuna modifica backend per ora. Nota: i messaggi 404 per id di ASN, deliveries e shipments hanno un apice finale spurio (`ASN not found with id 123'`); nell'esempio della description è riportato senza.
+
+### Fixed
+
+- **Barcode**: `variants[].barcodes.items` da `string | null` a `string`, description con "array vuoto se la variante non ha barcode"; esempio GET da `[null]` a `[]` (fix-02).
+- Voci pubbliche per i fix backend senza modifiche allo schema: GET con apice nel codice (fix-01, SQL injection chiusa), `owner_category` (fix-03), `POST /items/exists` con join articolo/variante (fix-04), `shippable` mai null (fix-07).
+
 ## [1.2.0] - 2026-05-26
 
 ### Added
